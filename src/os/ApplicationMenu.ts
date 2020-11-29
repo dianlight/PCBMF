@@ -27,7 +27,7 @@ export class ApplicationMenu {
             {
               label: 'File',
               submenu: [
-                { label: "Open Gerber...", click:()=>console.log("Open File Clicked!")},
+                { label: "Open Gerber Zip...", click:()=>console.log("Open File Clicked!")},
                 { type: 'separator' },  
                 isMac ? { role: 'close' } : { role: 'quit' }
               ]

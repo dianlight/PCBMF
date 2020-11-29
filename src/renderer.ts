@@ -36,9 +36,11 @@ import path from "path";
 import pcbStackup from "pcb-stackup";
 import AdmZip from "adm-zip";
 import Vue from "vue";
+import VueRouter from "vue-router";
+import Vuex from "vuex";
 import { TightCNC } from "./tightcnc/ThightCNC";
 import yaml from "yaml";
-import menubar from "./vue/menubar.vue";
+import home from "./vue/home.vue";
 import { ApplicationMenu } from "./os/ApplicationMenu";
 
 console.log('👋 This message is being logged by "renderer.js", included via webpack');
@@ -56,7 +58,7 @@ ipcRenderer.invoke("SerialPort.List").then((ports) => {
 });
 */
 // ZipTest
-const zip = new AdmZip("/Users/ltarantino/Documents/factory/my-new-app/test/zip/Gerber_PCB_2020-11-15_21-25-43_2020-11-21_00-18-45.zip");
+const zip = new AdmZip("/Users/ltarantino/Documents/factory/pcbmf/test/zip/Gerber_PCB_2020-11-15_21-25-43_2020-11-21_00-18-45.zip");
 const zipEntries = zip.getEntries();
 const layers = zipEntries.map( zipe => ({
     filename: zipe.name,
@@ -93,6 +95,7 @@ var config:TightCNC.Config = {
         }
     }
 }
+/*
 ipcRenderer.invoke("StartTightCNC",config).then((pid) => {
     console.log("PID",pid);
     const tight_client = new TightCNC.Client(config);
@@ -104,22 +107,43 @@ ipcRenderer.invoke("StartTightCNC",config).then((pid) => {
 }).catch((err) => {
     document.getElementById('error').textContent = err.message;
 });
+*/
 
 new ApplicationMenu("PCB Mini Factory");
 
+Vue.use(VueRouter);
+Vue.use(Vuex);
+
+const router = new VueRouter({
+    routes:[
+        { path: '/', component: home }
+    ]
+});
+
+const store = new Vuex.Store({
+    state: {
+      count: 0
+    },
+    mutations: {
+      increment (state) {
+        state.count++
+      }
+    }
+  });
+
 const appvue = new Vue({
     el: '#app',
-    data: {
-        message: "yamlstr"
-    },
+    router,
+    store,
+//    data: {
+//        message: "yamlstr"
+//    },
     template: `
-        <div>
-            <menubar/>
-        </div>
+        <router-view></router-view>
     `,
-    components: {
-        menubar,
-    }
+//    components: {
+//        home,
+//    }
 });
 
 

@@ -2,11 +2,14 @@ import { app, ipcMain, BrowserWindow } from 'electron';
 import log from "electron-log";
 import path from "path";
 import SerialPort from "serialport";
-import { fork,spawn, ChildProcess } from "child_process";
+import { fork, spawn, ChildProcess } from "child_process";
 import yaml from "yaml";
 import fs from "fs";
+import Config from "electron-config";
 
 declare const MAIN_WINDOW_WEBPACK_ENTRY: any;
+
+const config = new Config();
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) { // eslint-disable-line global-require
@@ -30,23 +33,36 @@ if (require('electron-squirrel-startup')) { // eslint-disable-line global-requir
 
 
 const createWindow = (): void => {
-  // Create the browser window.
-  const mainWindow = new BrowserWindow({
+  let opts = {
     height: 600,
     width: 800,
+    show: false,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
       enableRemoteModule: true,
       //      preload: path.join(__dirname, 'preload.js')
     }
-  });
+  }
+  Object.assign(opts, config.get('winBounds'))
+  // Create the browser window.
+  const mainWindow = new BrowserWindow(opts);
 
   // and load the index.html of the app.
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
 
-  // Open the DevTools.
-  mainWindow.webContents.openDevTools();
+  if (process.env.NODE_ENV !== 'production') {
+    // Open the DevTools.
+    require('vue-devtools').install()
+    mainWindow.webContents.openDevTools();
+  }
+
+  mainWindow.once('ready-to-show', mainWindow.show)
+
+  // save window size and position
+  mainWindow.on('close', () => {
+    config.set('winBounds', mainWindow.getBounds())
+  })
 };
 
 // This method will be called when Electron has finished
@@ -58,9 +74,9 @@ app.on('ready', createWindow);
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
 app.on('window-all-closed', () => {
-//  if (process.platform !== 'darwin') {
-    app.quit();
-//  }
+  //  if (process.platform !== 'darwin') {
+  app.quit();
+  //  }
 });
 
 app.on('activate', () => {
@@ -81,13 +97,13 @@ ipcMain.handle('SerialPort.List', (event, ...args) => {
 
 const tight_path = path.join(__dirname, "node_modules", "tightcnc", "bin", "tightcnc-server.js");
 
-console.info("CurrendDir:",__dirname);
+console.info("CurrendDir:", __dirname);
 console.log("tmp path is:", app.getPath("temp"));
 
-const tightcnc_conf = path.join(app.getPath("temp"),"tightcnc.conf");
+const tightcnc_conf = path.join(app.getPath("temp"), "tightcnc.conf");
 
-const tightcnc_env = Object.assign(process.env,{
-  "TIGHTCNC_CONFIG":tightcnc_conf
+const tightcnc_env = Object.assign(process.env, {
+  "TIGHTCNC_CONFIG": tightcnc_conf
 });
 
 console.log(process.argv[0]);
@@ -95,14 +111,14 @@ console.log(process.argv[0]);
 
 ipcMain.handle('StartTightCNC', (event, ...args) => {
   console.log(tightcnc_env['TIGHTCNC_CONFIG']);
-//  console.log("0",typeof args[0], yaml.stringify(args[0]));
-//  console.log("1",typeof args[1], args[1]);
-  fs.writeFileSync(tightcnc_conf ,yaml.stringify(args[0]));
-//  const tightcnc = spawn(process.argv[0], [tight_path], {
+  //  console.log("0",typeof args[0], yaml.stringify(args[0]));
+  //  console.log("1",typeof args[1], args[1]);
+  fs.writeFileSync(tightcnc_conf, yaml.stringify(args[0]));
+  //  const tightcnc = spawn(process.argv[0], [tight_path], {
   const tightcnc = fork(tight_path, {
-      env: tightcnc_env,
-      silent: true,
-//    stdio: ['pipe','pipe', 'ipc']
+    env: tightcnc_env,
+    silent: true,
+    //    stdio: ['pipe','pipe', 'ipc']
   }).on("error", (error) => {
     console.error("TightCNC Error:", error);
   }).on("close", (code) => {
@@ -110,17 +126,17 @@ ipcMain.handle('StartTightCNC', (event, ...args) => {
   });
 
   tightcnc.stderr?.on('data', (data: Buffer) => {
-    console.error("E:",data.toString());
+    console.error("E:", data.toString());
   });
 
   tightcnc.stdout?.on('data', (data: Buffer) => {
-    console.info("O",data.toString());
+    console.info("O", data.toString());
   });
 
-  app.on('quit', ()=>{
+  app.on('quit', () => {
     tightcnc.kill("SIGTERM");
   });
-  
+
 
 
   return tightcnc.pid;
