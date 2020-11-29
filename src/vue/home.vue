@@ -1,12 +1,12 @@
 <template>
   <x-box>
-    <x-button>
+    <x-button @click="openGerberZip">
       <x-label>Open Gerber Zip...</x-label>
     </x-button>
     <x-button disabled>
       <x-label>Open Gerber File..</x-label>
     </x-button>
-    <x-button disabled>
+    <x-button  disabled>
       <x-label>Open Excellion File..</x-label>
     </x-button>
   </x-box>
@@ -14,7 +14,15 @@
 
 <script lang="ts">
 import Vue from "vue";
-export default Vue.extend({});
+import store from "./store";
+export default Vue.extend({
+  methods: {
+    openGerberZip(){
+      this.$store.dispatch('openGerber');
+    }
+  }
+
+});
 </script>
 
 <style scoped>
