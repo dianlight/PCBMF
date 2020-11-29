@@ -106,7 +106,7 @@ const tightcnc_env = Object.assign(process.env, {
   "TIGHTCNC_CONFIG": tightcnc_conf
 });
 
-console.log(process.argv[0]);
+//console.log(process.argv[0]);
 
 
 ipcMain.handle('StartTightCNC', (event, ...args) => {

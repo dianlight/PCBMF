@@ -17,6 +17,10 @@ table {
     border-collapse: collapse;
 }
 
+x-box {
+    height: inherit;
+}
+
 table,
 th,
 td {

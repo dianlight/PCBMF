@@ -40,10 +40,10 @@ import VueRouter from "vue-router";
 import Vuex from "vuex";
 import { TightCNC } from "./tightcnc/ThightCNC";
 import yaml from "yaml";
-import home from "./vue/home.vue";
+import statusbar from "./vue/statusbar.vue";
 import { ApplicationMenu } from "./os/ApplicationMenu";
-
-console.log('👋 This message is being logged by "renderer.js", included via webpack');
+import router from "./vue/router";
+import store from "./vue/store";
 
 /*
 ipcRenderer.invoke("SerialPort.List").then((ports) => {
@@ -60,7 +60,7 @@ ipcRenderer.invoke("SerialPort.List").then((ports) => {
 // ZipTest
 const zip = new AdmZip("/Users/ltarantino/Documents/factory/pcbmf/test/zip/Gerber_PCB_2020-11-15_21-25-43_2020-11-21_00-18-45.zip");
 const zipEntries = zip.getEntries();
-const layers = zipEntries.map( zipe => ({
+const layers = zipEntries.map(zipe => ({
     filename: zipe.name,
     gerber: zipe.getData()
 }));
@@ -68,16 +68,16 @@ const layers = zipEntries.map( zipe => ({
 pcbStackup(layers, {
     useOutline: false
 }).then(stackup => {
-//    document.getElementById('topsvg').innerHTML = stackup.top.svg;
-//    document.getElementById('bottomsvg').innerHTML = stackup.bottom.svg;
-//    console.log(stackup.top.svg);
-//    console.log(stackup.bottom.svg);
-}).catch( (err)=> console.error(err));
+    //    document.getElementById('topsvg').innerHTML = stackup.top.svg;
+    //    document.getElementById('bottomsvg').innerHTML = stackup.bottom.svg;
+    //    console.log(stackup.top.svg);
+    //    console.log(stackup.bottom.svg);
+}).catch((err) => console.error(err));
 
 //const tight_path = path.join(__dirname, "node_modules","tightcnc","bin","tightcnc-server.js");
 
 
-var config:TightCNC.Config = {
+var config: TightCNC.Config = {
     enableServer: true,
     authKey: "123Minni",
     controller: TightCNC.Controllers.grbl,
@@ -90,8 +90,8 @@ var config:TightCNC.Config = {
             parity: "none",
             port: '/dev/null',
             stopBits: 1,
-            usedAxes: [ true, true, true ],
-            homableAxes: [ true, true, true ]
+            usedAxes: [true, true, true],
+            homableAxes: [true, true, true]
         }
     }
 }
@@ -111,39 +111,23 @@ ipcRenderer.invoke("StartTightCNC",config).then((pid) => {
 
 new ApplicationMenu("PCB Mini Factory");
 
-Vue.use(VueRouter);
-Vue.use(Vuex);
-
-const router = new VueRouter({
-    routes:[
-        { path: '/', component: home }
-    ]
-});
-
-const store = new Vuex.Store({
-    state: {
-      count: 0
-    },
-    mutations: {
-      increment (state) {
-        state.count++
-      }
-    }
-  });
 
 const appvue = new Vue({
     el: '#app',
     router,
     store,
-//    data: {
-//        message: "yamlstr"
-//    },
+    //    data: {
+    //        message: "yamlstr"
+    //    },
     template: `
+        <x-box vertical>
+        <statusbar/>
         <router-view></router-view>
+        </x-box>
     `,
-//    components: {
-//        home,
-//    }
+    components: {
+           statusbar,
+    }
 });
 
 
