@@ -3,16 +3,36 @@ import Vuex from "vuex";
 import { OpenDialogReturnValue, remote } from "electron";
 import router from "./router";
 import AdmZip from "adm-zip";
+import { getField, updateField } from 'vuex-map-fields';
+import VuexPersistence from 'vuex-persist';
+
 
 
 Vue.use(Vuex);
 
-export default new Vuex.Store({
+interface State {
+    currentFile: string|undefined,
+    layers: {filename: string, gerber: Buffer}[]| undefined,
+    config: {
+        useOutline: boolean;
+    }
+}
+
+export default new Vuex.Store<State>({
     state: {
         currentFile: undefined,
-        layers: undefined
+        layers: undefined,
+        config: {
+            useOutline: true,
+        }
+    },
+    plugins: [new VuexPersistence().plugin],
+    strict: process.env.NODE_ENV !== 'production',
+    getters:{
+        getField
     },
     mutations: {
+        updateField,
         openGerber(state, filePath:string) {
             state.currentFile = filePath;
 
@@ -23,7 +43,13 @@ export default new Vuex.Store({
                 gerber: zipe.getData()
             }));
             console.log(state.layers);
+        },
+        /*
+        update_gerber(state, values){
+            console.log("--> Store received!", values);
+            Object.assign(state.gerber,values);
         }
+        */
     },
     actions: {
         openGerber(context) {
@@ -39,5 +65,5 @@ export default new Vuex.Store({
                 });
 
         }
-    }
+    },
 });
