@@ -28,22 +28,19 @@
 
 import { ipcRenderer } from "electron";
 import tableify from "tableify";
-import "xel/themes/macos.css";
-import "xel/xel.min.js";
 import './index.css';
-import fs from "fs";
-import path from "path";
-import pcbStackup from "pcb-stackup";
-import AdmZip from "adm-zip";
 import Vue from "vue";
-import VueRouter from "vue-router";
-import Vuex from "vuex";
 import { TightCNC } from "./tightcnc/ThightCNC";
-import yaml from "yaml";
-import statusbar from "./vue/statusbar.vue";
+//import yaml from "yaml";
 import { ApplicationMenu } from "./os/ApplicationMenu";
 import router from "./vue/router";
 import store from "./vue/store";
+import app from "./vue/components/app.vue";
+
+import ElementUI from 'element-ui';
+import 'element-ui/lib/theme-chalk/index.css';
+
+Vue.use(ElementUI);
 
 /*
 ipcRenderer.invoke("SerialPort.List").then((ports) => {
@@ -58,21 +55,21 @@ ipcRenderer.invoke("SerialPort.List").then((ports) => {
 });
 */
 // ZipTest
-const zip = new AdmZip("/Users/ltarantino/Documents/factory/pcbmf/test/zip/Gerber_PCB_2020-11-15_21-25-43_2020-11-21_00-18-45.zip");
+/* const zip = new AdmZip("/Users/ltarantino/Documents/factory/pcbmf/test/zip/Gerber_PCB_2020-11-15_21-25-43_2020-11-21_00-18-45.zip");
 const zipEntries = zip.getEntries();
 const layers = zipEntries.map(zipe => ({
     filename: zipe.name,
     gerber: zipe.getData()
-}));
+})); */
 
-pcbStackup(layers, {
+/* pcbStackup(layers, {
     useOutline: false
 }).then(stackup => {
     //    document.getElementById('topsvg').innerHTML = stackup.top.svg;
     //    document.getElementById('bottomsvg').innerHTML = stackup.bottom.svg;
     //    console.log(stackup.top.svg);
     //    console.log(stackup.bottom.svg);
-}).catch((err) => console.error(err));
+}).catch((err) => console.error(err)); */
 
 //const tight_path = path.join(__dirname, "node_modules","tightcnc","bin","tightcnc-server.js");
 
@@ -116,18 +113,7 @@ const appvue = new Vue({
     el: '#app',
     router,
     store,
-    //    data: {
-    //        message: "yamlstr"
-    //    },
-    template: `
-        <x-box vertical>
-        <statusbar/>
-        <router-view></router-view>
-        </x-box>
-    `,
-    components: {
-           statusbar,
-    }
+    render: h => h(app),
 });
 
 

@@ -1,4 +1,5 @@
 import { MenuItem, remote } from "electron";
+import store from "../vue/store";
 
 export class ApplicationMenu {
 
@@ -27,7 +28,7 @@ export class ApplicationMenu {
             {
               label: 'File',
               submenu: [
-                { label: "Open Gerber Zip...", click:()=>console.log("Open File Clicked!")},
+                { label: "Open Gerber Zip...", click:()=>store.dispatch('openGerber')},
                 { type: 'separator' },  
                 isMac ? { role: 'close' } : { role: 'quit' }
               ]
