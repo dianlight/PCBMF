@@ -10,7 +10,10 @@
     <el-main>
       <router-view></router-view>
     </el-main>
-    <el-footer> </el-footer>
+    <el-footer>
+      <el-button>Back</el-button>
+      <el-button>Next</el-button>
+    </el-footer>
   </el-container>
 </template>
 

@@ -4,23 +4,82 @@
       <el-col :span="10">
         <el-card>
           <div slot="header" class="clearfix">
-            <span>Top View</span>
+            <span>Top View {{ useOutline }}</span>
           </div>
-          <div id="topsvg"></div>
+          <div class="boardview" v-html="topsvg"></div>
         </el-card>
         <el-card>
           <div slot="header" class="clearfix">
             <span>Bottom View</span>
           </div>
-          <div id="bottomsvg"></div>
+          <div class="boardview" v-html="bottomsvg"></div>
         </el-card>
       </el-col>
       <el-col :span="14">
-        <el-form ref="form" :model="form" label-width="120px">
-          <el-form-item label="Use Outline">
-            <el-switch v-model="form.useOutline"></el-switch>
-          </el-form-item>
-        </el-form>
+        <el-card>
+          <el-form ref="form" label-width="120px">
+            <el-form-item label="Use Outline">
+              <el-switch v-model="useOutline" @input="redrawpcb"></el-switch>
+            </el-form-item>
+            <!-- Gerber File List-->
+            <el-table
+              :data="layers"
+              stripe
+              border
+              size="mini"
+              fit
+              highlight-current-row
+              class="file-list"
+              row-class-name="file-listrow"
+              header-row-class-name="file-listrow"
+              cell-class-name="file-listcell"
+              row-key="filename"
+              @select="changeSelection"
+              @select-all="changeSelection"
+              ref="table"
+            >
+              <el-table-column label="" type="selection"> </el-table-column>
+              <el-table-column label="Filename" prop="filename">
+              </el-table-column>
+              <el-table-column label="Type">
+                <template slot-scope="scope">
+                  <el-select
+                    @change="redrawpcb"
+                    v-model="scope.row.type"
+                    placeholder="Select"
+                    size="mini"
+                  >
+                    <el-option
+                      v-for="item in types"
+                      :key="item"
+                      :label="item"
+                      :value="item"
+                    >
+                    </el-option>
+                  </el-select>
+                </template>
+              </el-table-column>
+              <el-table-column label="Side">
+                <template slot-scope="scope">
+                  <el-select
+                    @change="redrawpcb"
+                    v-model="scope.row.side"
+                    placeholder="Select"
+                    size="mini"
+                  >
+                    <el-option
+                      v-for="item in sides"
+                      :key="item"
+                      :label="item"
+                      :value="item"
+                    >
+                    </el-option>
+                  </el-select>
+                </template>
+              </el-table-column>
+            </el-table>
+          </el-form>
+        </el-card>
       </el-col>
     </el-row>
   </el-container>
@@ -30,72 +89,140 @@
 import Vue from "vue";
 import store from "../store";
 import pcbStackup from "pcb-stackup";
+import whatsThatGerber from "whats-that-gerber";
 import { mapGetters, mapState } from "vuex";
-import { mapFields } from 'vuex-map-fields';
+import { mapFields } from "vuex-map-fields";
+import { ElTable } from "element-ui/types/table";
+
+let svg_top: string, svg_bottom: string;
 
 export default Vue.extend({
   created() {
     if (!this.$store.state.layers) this.$router.push("/");
     else {
-      pcbStackup(this.$store.state.layers, {
-        useOutline: false,
+      //   console.log(this, this.$store.state.layers);
+      (this as any).redrawpcb();
+    }
+    this.$nextTick(() => {
+      console.log("[[[[[[[[[[[[[[[[[[[[[[[[", this.$store.state.layers);
+      (this.$store.state.layers as any[]).forEach((elem) => {
+        if (elem.enabled)
+          (this.$refs.table as ElTable).toggleRowSelection(elem);
+      });
+    });
+  },
+  methods: {
+    redrawpcb() {
+      const layers = JSON.parse(
+        JSON.stringify(
+          (this.$store.state.layers as any[]).filter((layer) => layer.enabled)
+        ),
+        (k, v) => {
+          if (
+            v !== null &&
+            typeof v === "object" &&
+            "type" in v &&
+            v.type === "Buffer" &&
+            "data" in v &&
+            Array.isArray(v.data)
+          ) {
+            return Buffer.from(v.data);
+          }
+          return v;
+        }
+      );
+      console.log("Redraw PCB:", this.$store.state.layers, layers);
+      pcbStackup(layers, {
+        useOutline: this.$store.state.config.useOutline,
+        attributes: {
+          width: "100%",
+        },
       })
         .then((stackup) => {
-          document.getElementById("topsvg").innerHTML = stackup.top.svg;
-          document.getElementById("bottomsvg").innerHTML = stackup.bottom.svg;
-          //    console.log(stackup.top.svg);
-          //    console.log(stackup.bottom.svg);
+          this.$data.svg.top = stackup.top.svg;
+          this.$data.svg.bottom = stackup.bottom.svg;
+          stackup.layers.forEach((layer) => store.commit("updateLayer", layer));
         })
         .catch((err) => console.error(err));
-    }
-  },
-  /*
-  data() {
-    return {
-      form: {
-        useOutline: false,
-      },
-    };
-  },
-  */
-  computed: {   
-    ...mapFields([
-      'config.useOutline'
-    ]),
-  },
-
-  /*{
-    ...mapGetters({
-      'form.useOutline': 'gerber.useOutline',
-    }),
-    "form": {
-      get() {
-        return {
-          useOutline: this.$store.state.gerber.useOutline
-        }
-      },
-      set(value:any){
-        console.log("Set Received!",value);
-        this.$store.commit('update_gerber_useOutline',value.useOutline);
-      }
-    }
-  }*/
-  /*  
-  data() {
-    return {
-      form: {
-        useOutline: this.$store.state.gerber.useOutline,
-      }
-    }
-  }, 
-  methods: {
-    openGerberZip() {
-      this.$store.dispatch("openGerber");
+    },
+    changeSelection(selection: any[], row: any) {
+      row.enabled = selection.includes(row);
+      store.commit("updateLayer", row);
+      (this as any).redrawpcb();
+      /*
+      console.log(this.$data.tableData);
+      (this.$data.tableData as any[]).forEach( (elem)=>{
+        elem.import = selection.findIndex( (srow)=> srow.filename === elem.filename) != -1;
+      });
+      */
+      //store.commit('updateField',{path:'layers',value:this.$data.tableData});
+      /*
+      console.log("Change selection:",selection,row);
+      (this.$store.state.layers as any[]).forEach( (elem)=>{
+        elem.import = selection.findIndex( (srow)=> srow.filename === elem.filename) != -1;
+        console.log("File:",elem.filename,elem.import);
+      });
+      */
     },
   },
-*/
+  data() {
+    return {
+      svg: {
+        top: undefined,
+        bottom: undefined,
+      },
+      types: [
+        whatsThatGerber.TYPE_SOLDERMASK,
+        whatsThatGerber.TYPE_SILKSCREEN,
+        whatsThatGerber.TYPE_SOLDERPASTE,
+        whatsThatGerber.TYPE_DRILL,
+        whatsThatGerber.TYPE_OUTLINE,
+        whatsThatGerber.TYPE_DRAWING,
+      ],
+      sides: [
+        whatsThatGerber.SIDE_TOP,
+        whatsThatGerber.SIDE_BOTTOM,
+        whatsThatGerber.SIDE_INNER,
+        whatsThatGerber.SIDE_ALL,
+      ],
+    };
+  },
+  computed: {
+    ...mapFields(["config.useOutline", "layers"]),
+    bottomsvg() {
+      return this.$data.svg.bottom;
+    },
+    topsvg() {
+      return this.$data.svg.top;
+    },
+  },
 });
 </script>
 
-<style scoped>
+<style>
+.file-list {
+  width: unset;
+  border: 0px;
+  table-layout: unset;
+  border-collapse: collapse;
+}
+
+.file-listrow {
+  border: 0px;
+}
+
+.file-listcell,
+table {
+  border: 0px;
+}
+
+.el-table__header {
+  border-collapse: collapse !important;
+}
+/*
+table.el-table__body {
+  table-layout: unset;
+  border-collapse: unset;
+
+}*/
 </style>
