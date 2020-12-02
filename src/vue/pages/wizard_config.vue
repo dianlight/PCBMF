@@ -4,13 +4,23 @@
       <el-col :span="10">
         <el-card>
           <div slot="header" class="clearfix">
-            <span>Top View {{ useOutline }}</span>
+            Top Layer:
+            <el-switch
+              active-text="Include"
+              inactive-text="Ignore"
+              v-model="useTop"
+            ></el-switch>
           </div>
           <div class="boardview" v-html="topsvg"></div>
         </el-card>
         <el-card>
           <div slot="header" class="clearfix">
-            <span>Bottom View</span>
+            Bottom Layer:
+            <el-switch
+              active-text="Include"
+              inactive-text="Ignore"
+              v-model="useBottom"
+            ></el-switch>
           </div>
           <div class="boardview" v-html="bottomsvg"></div>
         </el-card>
@@ -18,7 +28,22 @@
       <el-col :span="14">
         <el-card>
           <el-form ref="form" label-width="120px">
-            <el-form-item label="Use Outline">
+            <el-form-item label="PCB blank type">
+              <el-select
+                v-model="blankType"
+                placeholder="Select"
+                size="mini"
+              >
+                <el-option
+                  v-for="item in pbc_blank_types"
+                  :key="item"
+                  :label="item"
+                  :value="item"
+                >
+                </el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="Use PCB Outline">
               <el-switch v-model="useOutline" @input="redrawpcb"></el-switch>
             </el-form-item>
             <!-- Gerber File List-->
@@ -104,7 +129,7 @@ export default Vue.extend({
       (this as any).redrawpcb();
     }
     this.$nextTick(() => {
-      console.log("[[[[[[[[[[[[[[[[[[[[[[[[", this.$store.state.layers);
+      //     console.log("[[[[[[[[[[[[[[[[[[[[[[[[", this.$store.state.layers);
       (this.$store.state.layers as any[]).forEach((elem) => {
         if (elem.enabled)
           (this.$refs.table as ElTable).toggleRowSelection(elem);
@@ -167,6 +192,8 @@ export default Vue.extend({
   },
   data() {
     return {
+      useBottom: true,
+      useTop: true,
       svg: {
         top: undefined,
         bottom: undefined,
@@ -178,6 +205,7 @@ export default Vue.extend({
         whatsThatGerber.TYPE_DRILL,
         whatsThatGerber.TYPE_OUTLINE,
         whatsThatGerber.TYPE_DRAWING,
+        whatsThatGerber.TYPE_COPPER,
       ],
       sides: [
         whatsThatGerber.SIDE_TOP,
@@ -188,7 +216,7 @@ export default Vue.extend({
     };
   },
   computed: {
-    ...mapFields(["config.useOutline", "layers"]),
+    ...mapFields(["config.useOutline","config.pcb.blankType", "layers"]),
     bottomsvg() {
       return this.$data.svg.bottom;
     },

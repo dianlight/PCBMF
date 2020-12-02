@@ -1,3 +1,4 @@
+import router from "../vue/router";
 import { MenuItem, remote } from "electron";
 import store from "../vue/store";
 
@@ -15,6 +16,8 @@ export class ApplicationMenu {
               submenu: [
                 { role: 'about' },
                 { type: 'separator' },
+                { label: "Preferences...", click:()=>router.push('/preferencies')},
+                { type: 'separator' },  
                 { role: 'services' },
                 { type: 'separator' },
                 { role: 'hide' },
@@ -29,6 +32,11 @@ export class ApplicationMenu {
               label: 'File',
               submenu: [
                 { label: "Open Gerber Zip...", click:()=>store.dispatch('openGerber')},
+                ...(isMac ? [                   
+                ]:[
+                  { type: 'separator' },  
+                  { label: "Preferences...", click:()=>router.push('/preferencies')},
+                ]),
                 { type: 'separator' },  
                 isMac ? { role: 'close' } : { role: 'quit' }
               ]

@@ -2,9 +2,15 @@
   <el-container direction="vertical">
     <el-header>
       <el-steps :active="active" finish-status="success">
-        <el-step title="Base Config"></el-step>
-        <el-step title="Step 2"></el-step>
-        <el-step title="Step 3"></el-step>
+        <el-step title="Base config"></el-step>
+        <el-step title="Isolation"></el-step>
+        <el-step title="Drill"></el-step>
+        <el-step title="Outline"></el-step>
+        <el-step title="Copper thief"></el-step>    
+        <el-step title="Mask removal"></el-step>
+        <el-step title="Solder mask"></el-step>
+        <el-step title="Two Side"></el-step>
+        <el-step title="Done"></el-step>
       </el-steps>
     </el-header>
     <el-main>

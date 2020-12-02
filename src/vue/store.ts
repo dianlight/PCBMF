@@ -15,6 +15,9 @@ interface State {
     layers: { enabled:boolean, filename: string, gerber: Buffer, type: GerberType | undefined, side: GerberSide | undefined }[] | undefined,
     config: {
         useOutline: boolean;
+        pcb: {
+            blankType: string | undefined,
+        }
     }
 }
 
@@ -24,6 +27,9 @@ export default new Vuex.Store<State>({
         layers: undefined,
         config: {
             useOutline: true,
+            pcb: {
+                blankType: undefined
+            }
         }
     },
     plugins: [new VuexPersistence().plugin],
