@@ -26,10 +26,11 @@
  * ```
  */
 
-import { ipcRenderer } from "electron";
-import tableify from "tableify";
+//import { ipcRenderer } from "electron";
+//import tableify from "tableify";
 import './index.css';
 import Vue from "vue";
+import vueNcform from "@ncform/ncform";
 import { TightCNC } from "./tightcnc/ThightCNC";
 //import yaml from "yaml";
 import { ApplicationMenu } from "./os/ApplicationMenu";
@@ -39,8 +40,14 @@ import app from "./vue/components/app.vue";
 
 import ElementUI from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
+import ncformStdComps from '@ncform/ncform-theme-elementui';
+import axios from 'axios';
 
-Vue.use(ElementUI);
+const locale = require('element-ui/lib/locale/lang/en');
+
+Vue.use(ElementUI, {locale});
+Vue.use(vueNcform, {extComponents: ncformStdComps, lang: 'en'});
+(window as any).$http = Vue.prototype.$http = axios;
 
 /*
 ipcRenderer.invoke("SerialPort.List").then((ports) => {

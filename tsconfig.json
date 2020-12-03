@@ -15,13 +15,13 @@
     "paths": {
       "@/*": ["src/*"],
       "*": ["node_modules/*"]
-    }
+    },
   },
   "include": [
     "src/**/*"
   ],
   "files": [
-    "src/vue/vue-shims.d.ts"
+    "src/vue/vue-shims.d.ts",
   ],
   "exclude": ["node_modules"]
 }

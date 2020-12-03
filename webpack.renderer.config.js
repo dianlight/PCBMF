@@ -1,5 +1,7 @@
 const rules = require('./webpack.rules');
 const plugins = require('./webpack.plugins');
+const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
+
 
 rules.push({
     test: /\.css$/,
@@ -14,8 +16,8 @@ module.exports = {
     resolve: {
         alias: {
             'vue$': 'vue/dist/vue.esm.js',
-            '@': './src'
         },
+        plugins: [new TsconfigPathsPlugin({})],
         extensions: ['.js', '.ts', '.jsx', '.tsx', '.css', '.vue']
     },
 };

@@ -5,11 +5,9 @@ import SerialPort from "serialport";
 import { fork, spawn, ChildProcess } from "child_process";
 import yaml from "yaml";
 import fs from "fs";
-import Config from "electron-config";
-
+import FSStore from "@/fsstore";
 declare const MAIN_WINDOW_WEBPACK_ENTRY: any;
 
-const config = new Config();
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) { // eslint-disable-line global-require
@@ -31,8 +29,7 @@ if (require('electron-squirrel-startup')) { // eslint-disable-line global-requir
   console.error(err.message);
 }); */
 
-
-const createWindow = (): void => {
+async function createWindow() {
   let opts = {
     height: 600,
     width: 800,
@@ -44,7 +41,10 @@ const createWindow = (): void => {
       //      preload: path.join(__dirname, 'preload.js')
     }
   }
-  Object.assign(opts, config.get('winBounds'))
+
+
+  Object.assign(opts, await FSStore.get('winBounds'));
+  console.log("winBounds:",opts);
   // Create the browser window.
   const mainWindow = new BrowserWindow(opts);
 
@@ -61,7 +61,7 @@ const createWindow = (): void => {
 
   // save window size and position
   mainWindow.on('close', () => {
-    config.set('winBounds', mainWindow.getBounds())
+    FSStore.set('winBounds', mainWindow.getBounds())
   })
 };
 

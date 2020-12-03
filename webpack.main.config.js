@@ -1,4 +1,6 @@
 const CopyPlugin = require("copy-webpack-plugin");
+const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
+
 
 module.exports = {
     /**
@@ -13,15 +15,13 @@ module.exports = {
     plugins: [
         new CopyPlugin({
             patterns: [
-                { from: "src/preload.js" },
+                //               { from: "src/preload.js" },
                 { from: "node_modules/tightcnc", to: "node_modules/tightcnc" }
             ],
         }),
     ],
     resolve: {
+        plugins: [new TsconfigPathsPlugin({})],
         extensions: ['.js', '.ts', '.jsx', '.tsx', '.css', '.json'],
-        alias: {
-            '@': './src'
-        }
     },
 };
