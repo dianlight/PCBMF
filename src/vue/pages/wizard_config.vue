@@ -29,15 +29,11 @@
         <el-card>
           <el-form ref="form" label-width="120px">
             <el-form-item label="PCB blank type">
-              <el-select
-                v-model="blankType"
-                placeholder="Select"
-                size="mini"
-              >
+              <el-select v-model="blankType" placeholder="Select" size="mini">
                 <el-option
-                  v-for="item in pbc_blank_types"
-                  :key="item"
-                  :label="item"
+                  v-for="item in pcbTypes"
+                  :key="item.name"
+                  :label="item.name"
                   :value="item"
                 >
                 </el-option>
@@ -60,7 +56,7 @@
               cell-class-name="file-listcell"
               row-key="filename"
               @select="changeSelection"
-              @select-all="changeSelection"
+              @select-all="changeSelectionAll"
               ref="table"
             >
               <el-table-column label="" type="selection"> </el-table-column>
@@ -115,13 +111,54 @@ import Vue from "vue";
 import store from "../store";
 import pcbStackup from "pcb-stackup";
 import whatsThatGerber from "whats-that-gerber";
-import { mapGetters, mapState } from "vuex";
+import { mapGetters, mapMutations, mapState } from "vuex";
 import { mapFields } from "vuex-map-fields";
 import { ElTable } from "element-ui/types/table";
+import FSStore from "@/fsstore";
+import Component from "vue-class-component";
+import { VModel } from "vue-property-decorator";
 
 let svg_top: string, svg_bottom: string;
 
-export default Vue.extend({
+@Component({
+  computed: {
+    ...mapFields(["config.useOutline", "config.pcb.blankType", "layers"]),
+  },
+})
+export default class WizardConfig extends Vue {
+  topsvg: string = null;
+  bottomsvg: string = null;
+  useBottom: boolean = true;
+  useTop: boolean = true;
+
+  pcbTypes: any[] = [];
+
+  types = [
+    whatsThatGerber.TYPE_SOLDERMASK,
+    whatsThatGerber.TYPE_SILKSCREEN,
+    whatsThatGerber.TYPE_SOLDERPASTE,
+    whatsThatGerber.TYPE_DRILL,
+    whatsThatGerber.TYPE_OUTLINE,
+    whatsThatGerber.TYPE_DRAWING,
+    whatsThatGerber.TYPE_COPPER,
+  ];
+
+  sides = [
+    whatsThatGerber.SIDE_TOP,
+    whatsThatGerber.SIDE_BOTTOM,
+    whatsThatGerber.SIDE_INNER,
+    whatsThatGerber.SIDE_ALL,
+  ];
+
+  mounted() {
+    new Promise((resolve) => {
+      FSStore.get("data.pcb.types", []).then((data) => {
+        console.log("---->", data);
+        this.pcbTypes = data;
+      });
+    });
+  }
+
   created() {
     if (!this.$store.state.layers) this.$router.push("/");
     else {
@@ -135,99 +172,59 @@ export default Vue.extend({
           (this.$refs.table as ElTable).toggleRowSelection(elem);
       });
     });
-  },
-  methods: {
-    redrawpcb() {
-      const layers = JSON.parse(
-        JSON.stringify(
-          (this.$store.state.layers as any[]).filter((layer) => layer.enabled)
-        ),
-        (k, v) => {
-          if (
-            v !== null &&
-            typeof v === "object" &&
-            "type" in v &&
-            v.type === "Buffer" &&
-            "data" in v &&
-            Array.isArray(v.data)
-          ) {
-            return Buffer.from(v.data);
-          }
-          return v;
+  }
+
+  redrawpcb() {
+    const layers = JSON.parse(
+      JSON.stringify(
+        (this.$store.state.layers as any[]).filter((layer) => layer.enabled)
+      ),
+      (k, v) => {
+        if (
+          v !== null &&
+          typeof v === "object" &&
+          "type" in v &&
+          v.type === "Buffer" &&
+          "data" in v &&
+          Array.isArray(v.data)
+        ) {
+          return Buffer.from(v.data);
         }
-      );
-      console.log("Redraw PCB:", this.$store.state.layers, layers);
-      pcbStackup(layers, {
-        useOutline: this.$store.state.config.useOutline,
-        attributes: {
-          width: "100%",
-        },
-      })
-        .then((stackup) => {
-          this.$data.svg.top = stackup.top.svg;
-          this.$data.svg.bottom = stackup.bottom.svg;
-          stackup.layers.forEach((layer) => store.commit("updateLayer", layer));
-        })
-        .catch((err) => console.error(err));
-    },
-    changeSelection(selection: any[], row: any) {
-      row.enabled = selection.includes(row);
-      store.commit("updateLayer", row);
-      (this as any).redrawpcb();
-      /*
-      console.log(this.$data.tableData);
-      (this.$data.tableData as any[]).forEach( (elem)=>{
-        elem.import = selection.findIndex( (srow)=> srow.filename === elem.filename) != -1;
-      });
-      */
-      //store.commit('updateField',{path:'layers',value:this.$data.tableData});
-      /*
-      console.log("Change selection:",selection,row);
-      (this.$store.state.layers as any[]).forEach( (elem)=>{
-        elem.import = selection.findIndex( (srow)=> srow.filename === elem.filename) != -1;
-        console.log("File:",elem.filename,elem.import);
-      });
-      */
-    },
-  },
-  data() {
-    return {
-      useBottom: true,
-      useTop: true,
-      svg: {
-        top: undefined,
-        bottom: undefined,
+        return v;
+      }
+    );
+    console.log("Redraw PCB:", this.$store.state.layers, layers);
+    pcbStackup(layers, {
+      useOutline: this.$store.state.config.useOutline,
+      attributes: {
+        width: "100%",
       },
-      types: [
-        whatsThatGerber.TYPE_SOLDERMASK,
-        whatsThatGerber.TYPE_SILKSCREEN,
-        whatsThatGerber.TYPE_SOLDERPASTE,
-        whatsThatGerber.TYPE_DRILL,
-        whatsThatGerber.TYPE_OUTLINE,
-        whatsThatGerber.TYPE_DRAWING,
-        whatsThatGerber.TYPE_COPPER,
-      ],
-      sides: [
-        whatsThatGerber.SIDE_TOP,
-        whatsThatGerber.SIDE_BOTTOM,
-        whatsThatGerber.SIDE_INNER,
-        whatsThatGerber.SIDE_ALL,
-      ],
-    };
-  },
-  computed: {
-    ...mapFields(["config.useOutline","config.pcb.blankType", "layers"]),
-    bottomsvg() {
-      return this.$data.svg.bottom;
-    },
-    topsvg() {
-      return this.$data.svg.top;
-    },
-  },
-});
+    })
+      .then((stackup) => {
+        this.topsvg = stackup.top.svg;
+        this.bottomsvg = stackup.bottom.svg;
+        stackup.layers.forEach((layer) => store.commit("updateLayer", layer));
+      })
+      .catch((err) => console.error(err));
+  }
+
+  changeSelectionAll(selection: any[]) {
+    (this.$store.state.layers as any[]).forEach((layer) => {
+      layer.enabled = selection && selection.includes(layer);
+    });
+    (this as any).redrawpcb();
+  }
+
+  changeSelection(selection: any[], row: any) {
+    row.enabled = selection && selection.includes(row);
+    store.commit("updateLayer", row);
+    (this as any).redrawpcb();
+  }
+}
 </script>
 
 <style>
+/*
 .file-list {
   width: unset;
   border: 0px;
@@ -247,6 +244,7 @@ table {
 .el-table__header {
   border-collapse: collapse !important;
 }
+*/
 /*
 table.el-table__body {
   table-layout: unset;
