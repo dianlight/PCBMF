@@ -6,15 +6,23 @@
     }
   },
   "properties": {
+    "new":{
+      "type": "boolean",
+      "default": true,
+      "ui": {
+        "hidden": true
+      }
+    },
     "name": {
       "type": "string",
       "rules": {
         "required": {
           "value": true,
-          "errMsg": "The nambe is required!"
+          "errMsg": "Required"
         }
       },
       "ui": {
+        "disabled": "dx: !{{$root.new}}",
         "widgetConfig": {
           "size": "mini"
         }
@@ -26,8 +34,8 @@
       "ui": {
         "widget": "switch",
         "widgetConfig": {
-          "activeValue": "1",
-          "inactiveValue": "2",
+          "activeValue": 2,
+          "inactiveValue": 1,
           "size": "mini"
         }
       }

@@ -44,7 +44,7 @@ async function createWindow() {
 
 
   Object.assign(opts, await FSStore.get('winBounds'));
-  console.log("winBounds:",opts);
+  //console.log("winBounds:",opts);
   // Create the browser window.
   const mainWindow = new BrowserWindow(opts);
 
