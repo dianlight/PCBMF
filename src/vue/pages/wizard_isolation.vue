@@ -4,7 +4,7 @@
       <el-col :span="10">
         <el-form>
           <div class="clearfix">
-            <el-form-item label="Top Layer">
+            <el-form-item label="**Top Layer">
             <el-switch
               active-text="Include"
               inactive-text="Ignore"
@@ -14,7 +14,7 @@
           </div>
           <div class="boardview" v-html="topsvg"></div>
           <div class="clearfix">
-           <el-form-item label="Bottom Layer">
+           <el-form-item label="**Bottom Layer">
             <el-switch
               active-text="Include"
               inactive-text="Ignore"
@@ -123,7 +123,7 @@ let svg_top: string, svg_bottom: string;
     ...mapFields(["config.useOutline", "config.pcb.blankType", "layers"]),
   },
 })
-export default class WizardConfig extends Vue {
+export default class WizardIsolation extends Vue {
   topsvg: string = null;
   bottomsvg: string = null;
   useBottom: boolean = true;

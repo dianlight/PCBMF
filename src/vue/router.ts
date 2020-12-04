@@ -4,6 +4,7 @@ import home from "./pages/home.vue";
 import wizard from "./pages/wizard.vue";
 import wizard_config from "./pages/wizard_config.vue";
 import preferencies from "./pages/preferencies.vue";
+import wizard_isolation from "@/vue/pages/wizard_isolation.vue";
 
 Vue.use(VueRouter);
 
@@ -15,6 +16,12 @@ export default new VueRouter({
             {
                 path: 'config',
                 component: wizard_config,
+                meta: { step: 0 }
+            },
+            {
+                path: 'isolation',
+                component: wizard_isolation,
+                meta: { step: 1 }
             }
         ] },
     ]
