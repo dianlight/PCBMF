@@ -12,7 +12,8 @@
             ></el-switch>
             </el-form-item>
           </div>
-          <div class="boardview" v-html="topsvg"></div>
+           <svg-viewer class="boardview" :data="topsvg"></svg-viewer>
+          <!--<div class="boardview" v-html="topsvg"></div>-->
           <div class="clearfix">
            <el-form-item label="Bottom Layer">
             <el-switch
@@ -22,7 +23,8 @@
             ></el-switch>
            </el-form-item>
           </div>
-          <div class="boardview" v-html="bottomsvg"></div>
+          <!--div class="boardview" v-html="bottomsvg"></div-->
+          <svg-viewer class="boardview" :data="bottomsvg"></svg-viewer>
         </el-form>  
       </el-col>
       <el-col :span="14">       
@@ -37,6 +39,10 @@
                 >
                 </el-option>
               </el-select>
+            </el-form-item>
+            <el-form-item label="PCB Size">
+              <el-input-number size="mini" v-model="width"></el-input-number> x 
+              <el-input-number size="mini" v-model="height"></el-input-number>
             </el-form-item>
             <el-form-item label="Use PCB Outline">
               <el-switch v-model="useOutline" @input="redrawpcb"></el-switch>
@@ -115,12 +121,16 @@ import { ElTable } from "element-ui/types/table";
 import FSStore from "@/fsstore";
 import Component from "vue-class-component";
 import { VModel } from "vue-property-decorator";
+import SvgViewer from "@/vue/components/svgviewer.vue";
 
 let svg_top: string, svg_bottom: string;
 
 @Component({
+  components: {
+    SvgViewer
+  },  
   computed: {
-    ...mapFields(["config.useOutline", "config.pcb.blankType", "layers"]),
+    ...mapFields(["config.useOutline", "config.pcb.blankType", "layers","config.pcb.width","config.pcb.height"]),
   },
 })
 export default class WizardConfig extends Vue {
@@ -191,7 +201,7 @@ export default class WizardConfig extends Vue {
         return v;
       }
     );
-    console.log("Redraw PCB:", this.$store.state.layers, layers);
+    //console.log("Redraw PCB:", this.$store.state.layers, layers);
     pcbStackup(layers, {
       useOutline: this.$store.state.config.useOutline,
       attributes: {
@@ -201,6 +211,8 @@ export default class WizardConfig extends Vue {
       .then((stackup) => {
         this.topsvg = stackup.top.svg;
         this.bottomsvg = stackup.bottom.svg;
+        this.$store.state.config.pcb.height = stackup.top.height;
+        this.$store.state.config.pcb.width = stackup.top.width;
         stackup.layers.forEach((layer) => store.commit("updateLayer", layer));
       })
       .catch((err) => console.error(err));

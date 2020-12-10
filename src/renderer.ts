@@ -42,11 +42,14 @@ import ElementUI from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
 import ncformStdComps from '@ncform/ncform-theme-elementui';
 import axios from 'axios';
+import ThreeDViewer from "vue-3d-viewer";
 
 const locale = require('element-ui/lib/locale/lang/en');
 
 Vue.use(ElementUI, {locale});
 Vue.use(vueNcform, {extComponents: ncformStdComps, lang: 'en'});
+Vue.use(ThreeDViewer);
+
 (window as any).$http = Vue.prototype.$http = axios;
 
 /*

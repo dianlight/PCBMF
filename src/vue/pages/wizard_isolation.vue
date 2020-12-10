@@ -1,32 +1,44 @@
 <template>
   <el-container direction="vertical">
-    <el-row>
+    <el-row v-for="copper in coppers" :key="copper.filename">
       <el-col :span="10">
+        {{ copper.filename }} {{copper.side}}
+        <el-tabs type="border-card">
+          <el-tab-pane label="SVG">
+            <svg-viewer :data="svgs[copper.filename]"></svg-viewer>
+          </el-tab-pane>
+          <el-tab-pane label="GCODE">
+            <g-code :gcgrid="true" :width="width" :height="height" ></g-code>
+          </el-tab-pane>
+        </el-tabs>
+        <!--
         <el-form>
           <div class="clearfix">
-            <el-form-item label="**Top Layer">
+            <el-form-item label="Top Layer">
             <el-switch
-              active-text="Include"
-              inactive-text="Ignore"
+              active-text="SVG"
+              inactive-text="GCODE"
               v-model="useTop"
             ></el-switch>
             </el-form-item>
           </div>
           <div class="boardview" v-html="topsvg"></div>
           <div class="clearfix">
-           <el-form-item label="**Bottom Layer">
+           <el-form-item label="Bottom Layer">
             <el-switch
-              active-text="Include"
-              inactive-text="Ignore"
+              active-text="SVG"
+              inactive-text="GCODE"
               v-model="useBottom"
             ></el-switch>
            </el-form-item>
           </div>
           <div class="boardview" v-html="bottomsvg"></div>
-        </el-form>  
+        </el-form> 
+        --> 
       </el-col>
       <el-col :span="14">       
           <el-form ref="form" label-width="120px">
+            <!--
             <el-form-item label="PCB blank type">
               <el-select v-model="blankType" placeholder="Select" size="mini">
                 <el-option
@@ -38,76 +50,38 @@
                 </el-option>
               </el-select>
             </el-form-item>
+            -->
+            <el-form-item label="PCB Size">
+              <el-input-number size="mini" v-model="width"></el-input-number> x 
+              <el-input-number size="mini" v-model="height"></el-input-number>
+            </el-form-item>
             <el-form-item label="Use PCB Outline">
               <el-switch v-model="useOutline" @input="redrawpcb"></el-switch>
             </el-form-item>
-            <!-- Gerber File List-->
-            <el-table
-              :data="layers"
-              stripe
-              border
-              size="mini"
-              fit
-              highlight-current-row
-              class="file-list"
-              row-class-name="file-listrow"
-              header-row-class-name="file-listrow"
-              cell-class-name="file-listcell"
-              row-key="filename"
-              @select="changeSelection"
-              @select-all="changeSelectionAll"
-              ref="table"
-            >
-              <el-table-column label="" type="selection"> </el-table-column>
-              <el-table-column label="Filename" prop="filename">
-              </el-table-column>
-              <el-table-column label="Type">
-                <template slot-scope="scope">
-                  <el-select
-                    @change="redrawpcb"
-                    v-model="scope.row.type"
-                    placeholder="Select"
-                    size="mini"
-                  >
-                    <el-option
-                      v-for="item in types"
-                      :key="item"
-                      :label="item"
-                      :value="item"
-                    >
-                    </el-option>
-                  </el-select>
-                </template>
-              </el-table-column>
-              <el-table-column label="Side">
-                <template slot-scope="scope">
-                  <el-select
-                    @change="redrawpcb"
-                    v-model="scope.row.side"
-                    placeholder="Select"
-                    size="mini"
-                  >
-                    <el-option
-                      v-for="item in sides"
-                      :key="item"
-                      :label="item"
-                      :value="item"
-                    >
-                    </el-option>
-                  </el-select>
-                </template>
-              </el-table-column>
-            </el-table>
           </el-form>     
       </el-col>
     </el-row>
   </el-container>
 </template>
+<!--
+</template>
+<template>
+  <el-row type="flex">
+    <el-col :span="12">
+      <g-code :gcgrid="true" :width="width" :height="height" ></g-code>
+    </el-col>
+    <el-col :span="12">
+      dddd
+    </el-col>
+  </el-row>
+</template>
+-->
 
 <script lang="ts">
 import Vue from "vue";
 import store from "../store";
-import pcbStackup from "pcb-stackup";
+//import pcbStackup from "pcb-stackup";
+import gerberToSvg from "gerber-to-svg";
 import whatsThatGerber from "whats-that-gerber";
 import { mapGetters, mapMutations, mapState } from "vuex";
 import { mapFields } from "vuex-map-fields";
@@ -115,15 +89,86 @@ import { ElTable } from "element-ui/types/table";
 import FSStore from "@/fsstore";
 import Component from "vue-class-component";
 import { VModel } from "vue-property-decorator";
+import GCode from "@/vue/components/gcode.vue";
+import SvgViewer from "@/vue/components/svgviewer.vue";
+import fs from "fs";
+import { PcbLayers } from "@/models/pcblayer";
+import { GerberSide, GerberType } from 'whats-that-gerber'
+import spo from "svg-path-outline";
 
 let svg_top: string, svg_bottom: string;
 
+interface IDictionary {
+     [index: string]: string;
+}
+
 @Component({
-  computed: {
-    ...mapFields(["config.useOutline", "config.pcb.blankType", "layers"]),
+  components: {
+    GCode, SvgViewer
   },
+  computed: {
+    ...mapFields(["config.useOutline", "config.pcb.blankType", "layers","config.pcb.width","config.pcb.height"]),
+  },  
 })
 export default class WizardIsolation extends Vue {
+
+  coppers: PcbLayers[] = [];
+  svgs: IDictionary = {};
+
+  distance: number = 0.1;
+  joints: 0|1|2 = 0; // 0=round, 1=miter, 2=blevel
+  bezierAcc: number = 0.5;
+  inside: boolean = false;
+  outside: boolean = true;
+  tagName: 'path'|'poligon'|'polyline' = 'path';
+  
+  data(){
+    return {
+    accepts: false,
+    drawer: false,
+    progress: {
+      value: 0,
+      visible: false
+    },
+    viewer: {
+      plane: {
+        X: 0,
+        Y: 0
+      },
+      extension: 'gcode',
+      file: new ArrayBuffer(0),
+      position: {
+        X: 5,
+        Y: 0,
+        Z: -5
+      },
+      rotation: {
+        X: -90,
+        Y: 0,
+        Z: 180
+      },
+      scale: {
+        X: 0.1,
+        Y: 0.1,
+        Z: 0.1
+      },
+      theme: {
+        background: '#dfe4ed',
+        plane: '#ffffff',
+        primary: '#4287f',
+        secondary: '#0a2f6b'
+      }
+    }
+  }}
+
+
+  mounted() {
+    this.coppers = (this.$store.state.layers as PcbLayers[]).filter(
+       (layer) => layer.type === whatsThatGerber.TYPE_COPPER && layer.enabled);
+    this.coppers.forEach( (copper)=>this.redrawpcb(copper));   
+  }
+
+  /*
   topsvg: string = null;
   bottomsvg: string = null;
   useBottom: boolean = true;
@@ -156,8 +201,11 @@ export default class WizardIsolation extends Vue {
       });
     });
   }
+  */
 
   created() {
+    console.log(this.svgs);
+    /*
     if (!this.$store.state.layers) this.$router.push("/");
     else {
       //   console.log(this, this.$store.state.layers);
@@ -170,12 +218,13 @@ export default class WizardIsolation extends Vue {
           (this.$refs.table as ElTable).toggleRowSelection(elem);
       });
     });
+    */
   }
 
-  redrawpcb() {
-    const layers = JSON.parse(
+  redrawpcb(layer: PcbLayers) {
+    const _layer = JSON.parse(
       JSON.stringify(
-        (this.$store.state.layers as any[]).filter((layer) => layer.enabled)
+        layer
       ),
       (k, v) => {
         if (
@@ -191,62 +240,67 @@ export default class WizardIsolation extends Vue {
         return v;
       }
     );
-    console.log("Redraw PCB:", this.$store.state.layers, layers);
-    pcbStackup(layers, {
-      useOutline: this.$store.state.config.useOutline,
+    console.log("C-Rendering: ",_layer);
+
+    gerberToSvg(_layer.gerber, {
+      filetype: 'gerber',
+      optimizePaths: true,
+      plotAsOutline: false,
       attributes: {
         width: "100%",
       },
-    })
-      .then((stackup) => {
-        this.topsvg = stackup.top.svg;
-        this.bottomsvg = stackup.bottom.svg;
-        stackup.layers.forEach((layer) => store.commit("updateLayer", layer));
-      })
-      .catch((err) => console.error(err));
-  }
+    },(error, svg) => {
+      //  console.log("Rendering: ",layer.filename);
+      //  if( layer.side === whatsThatGerber.SIDE_BOTTOM){
+      //    this.svgs[layer.filename] = stackup.bottom.svg;
+      //  } else {
+      //    this.svgs[layer.filename] = stackup.top.svg;
+      //  }
+        if(error) console.error(error);
+        this.svgs[layer.filename] = svg;
+        // Regenerate Outline
+        /*
+        var outline = spo(this.svgs[layer.filename],this.distance, {
+          joints:this.joints, //: 0|1|2 = 0; // 0=round, 1=miter, 2=blevel
+          bezierAcc:this.bezierAcc, //: number = 0.5;
+          inside:this.inside, //: boolean = false;
+          outside:this.outside, //: boolean = true;
+          tagName:this.tagName, //: 'pa)
+        });
+        */
 
-  changeSelectionAll(selection: any[]) {
-    (this.$store.state.layers as any[]).forEach((layer) => {
-      layer.enabled = selection && selection.includes(layer);
-    });
-    (this as any).redrawpcb();
-  }
-
-  changeSelection(selection: any[], row: any) {
-    row.enabled = selection && selection.includes(row);
-    store.commit("updateLayer", row);
-    (this as any).redrawpcb();
+        this.$forceUpdate();
+      });
+  //  .catch((err) => console.error(err));
   }
 }
 </script>
 
-<style>
+<style scoped>
 /*
-.file-list {
-  width: unset;
-  border: 0px;
-  table-layout: unset;
-  border-collapse: collapse;
+:root {
+  overflow-y: auto;
 }
-
-.file-listrow {
-  border: 0px;
+.emulate-root {
+  background: var(--foreground);
+  display: flex;
+  height: 100%;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
 }
-
-.file-listcell,
-table {
-  border: 0px;
+.menu-icon {
+  left: 5px;
+  position: absolute !important;
+  top: 5px;
+  z-index: 5;
 }
-
-.el-table__header {
-  border-collapse: collapse !important;
+.v-list {
+  max-height: 80vh;
+}
+.v-navigation-drawer {
+  z-index: 10;
 }
 */
-/*
-table.el-table__body {
-  table-layout: unset;
-  border-collapse: unset;
-
-}*/
 </style>

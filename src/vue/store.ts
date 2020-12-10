@@ -5,30 +5,35 @@ import router from "./router";
 import AdmZip from "adm-zip";
 import { getField, updateField } from 'vuex-map-fields';
 import VuexPersistence from 'vuex-persist';
-import { GerberSide, GerberType } from 'whats-that-gerber'
+import { PcbLayers } from "@/models/pcblayer";
 
 
 Vue.use(Vuex);
 
 interface State {
     currentFile: string | undefined,
-    layers: { enabled:boolean, filename: string, gerber: Buffer, type: GerberType | undefined, side: GerberSide | undefined }[] | undefined,
+    layers: PcbLayers[] | undefined,
     config: {
         useOutline: boolean;
         pcb: {
             blankType: string | undefined,
+            height: number | undefined,
+            width: number | undefined
         }
     }
 }
 
 export default new Vuex.Store<State>({
-    state: {
+    state:
+    {
         currentFile: undefined,
         layers: undefined,
         config: {
             useOutline: true,
             pcb: {
-                blankType: undefined
+                blankType: undefined,
+                height: undefined,
+                width: undefined
             }
         }
     },

@@ -24,7 +24,7 @@
       <el-row type="flex" justify="end">
         <el-col :span="4">
         <el-button-group>
-          <el-button @click="nextPage(-1)" :disabled="active == 0">Back</el-button>
+          <el-button @click="nextPage(-1)" :disabled="active == 1">Back</el-button>
           <el-button @click="nextPage(+1)" :disabled="active == 9">Next</el-button>
         </el-button-group>
         </el-col>
@@ -46,8 +46,13 @@ export default class Wizard extends Vue {
 
   nextPage(inc:number){
     this.active+=inc;
+    console.log("New Active:",inc);
     this.$router.options.routes.find( (route)=> route.path === '/wizard/').children.forEach( (route) => {
-      if(route.meta.step == this.active)this.$router.push(route.path);
+      console.log(route.meta.step == this.active,route.meta.step,this.active);
+      if(route.meta.step == this.active-1){
+               console.log("Visualize Path:", route.path);
+               this.$router.push(route.path);
+      }
     });
   }
 
