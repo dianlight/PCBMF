@@ -12,7 +12,7 @@
             ></el-switch>
             </el-form-item>
           </div>
-           <svg-viewer class="boardview" :data="topsvg"></svg-viewer>
+           <svg-viewer _class="boardview" id="topview" :data="topsvg"></svg-viewer>
           <!--<div class="boardview" v-html="topsvg"></div>-->
           <div class="clearfix">
            <el-form-item label="Bottom Layer">
@@ -24,7 +24,7 @@
            </el-form-item>
           </div>
           <!--div class="boardview" v-html="bottomsvg"></div-->
-          <svg-viewer class="boardview" :data="bottomsvg"></svg-viewer>
+          <svg-viewer _class="boardview" :data="bottomsvg"></svg-viewer>
         </el-form>  
       </el-col>
       <el-col :span="14">       

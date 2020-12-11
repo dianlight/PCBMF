@@ -1,86 +1,56 @@
 <template>
-  <el-container direction="vertical">
+  <el-container
+    direction="vertical"
+    v-loading="loading"
+    element-loading-text="Loading..."
+    element-loading-spinner="el-icon-loading"
+    element-loading-background="rgba(0, 0, 0, 0.8)"
+  >
     <el-row v-for="copper in coppers" :key="copper.filename">
-      <el-col :span="10">
+      <el-col :span="18">
         {{ copper.filename }} {{ copper.side }}
+        {{ options[copper.filename].renderTime }}
         <el-tabs type="border-card">
           <el-tab-pane label="SVG">
-            <svg-viewer :data="svgs[copper.filename]"></svg-viewer>
+            <svg-viewer
+              :panzoom="true"
+              _class="fullframe"
+              :data="svgs[copper.filename]"
+            ></svg-viewer>
           </el-tab-pane>
           <el-tab-pane label="GCODE">
             <g-code :gcgrid="true" :width="width" :height="height"></g-code>
           </el-tab-pane>
         </el-tabs>
-        <!--
-        <el-form>
-          <div class="clearfix">
-            <el-form-item label="Top Layer">
-            <el-switch
-              active-text="SVG"
-              inactive-text="GCODE"
-              v-model="useTop"
-            ></el-switch>
-            </el-form-item>
-          </div>
-          <div class="boardview" v-html="topsvg"></div>
-          <div class="clearfix">
-           <el-form-item label="Bottom Layer">
-            <el-switch
-              active-text="SVG"
-              inactive-text="GCODE"
-              v-model="useBottom"
-            ></el-switch>
-           </el-form-item>
-          </div>
-          <div class="boardview" v-html="bottomsvg"></div>
-        </el-form> 
-        -->
       </el-col>
-      <el-col :span="14">
+      <el-col :span="6">
         <el-form ref="form" label-width="120px">
-          <!--
-            <el-form-item label="PCB blank type">
-              <el-select v-model="blankType" placeholder="Select" size="mini">
-                <el-option
-                  v-for="item in pcbTypes"
-                  :key="item.name"
-                  :label="item.name"
-                  :value="item"
-                >
-                </el-option>
-              </el-select>
-            </el-form-item>
-            -->
-          <!--
-          <el-form-item label="PCB Size">
-            <el-input-number size="mini" v-model="width"></el-input-number> x
-            <el-input-number size="mini" v-model="height"></el-input-number>
-          </el-form-item>
-          -->
-          <el-form-item label="Show Outline">
+          <el-form-item label="Show Border">
             <el-switch
               v-model="options[copper.filename].showOutline"
-              @input="redrawpcb(copper)"
+              @input="redrawpcb(copper,options[copper.filename])"
             ></el-switch>
+          </el-form-item>
+          <el-form-item label="Use Fill Elements">
+            <el-switch
+              v-model="options[copper.filename].useFill"
+              @input="redrawpcb(copper,options[copper.filename])"
+            ></el-switch>
+          </el-form-item>
+          <el-form-item label="Fill Elements Outline">
+            <el-input-number size="mini" v-model="options[copper.filename].useFillPitch"
+              :min="0.0001" 
+              :max="1" 
+              :precision="4"
+              :step="0.001"
+              :disabled="!options[copper.filename].useFill"
+              @change="redrawpcb(copper,options[copper.filename])"></el-input-number>
           </el-form-item>
         </el-form>
       </el-col>
     </el-row>
   </el-container>
 </template>
-<!--
-</template>
-<template>
-  <el-row type="flex">
-    <el-col :span="12">
-      <g-code :gcgrid="true" :width="width" :height="height" ></g-code>
-    </el-col>
-    <el-col :span="12">
-      dddd
-    </el-col>
-  </el-row>
-</template>
--->
 
 <script lang="ts">
 import Vue from "vue";
@@ -103,19 +73,20 @@ import makerjs from "makerjs";
 import { Duplex } from "stream";
 import gerberParser from "gerber-parser";
 import gerberPlotter from "gerber-plotter";
+import colornames from "colornames";
 import {
   IPlotterData,
   IPlotterDataCircle,
   IPlotterDataFill,
   IPlotterDataLine,
   IPlotterDataPad,
+  IPlotterDataPolarity,
   IPlotterDataRect,
   IPlotterDataShape,
   IPlotterDataSize,
   IPlotterDataStroke,
   IPlotterDataTypes,
 } from "@/models/plotterData";
-//import spo from "svg-path-outline";
 
 let svg_top: string, svg_bottom: string;
 
@@ -127,6 +98,15 @@ interface IShapeDictionary {
   [index: number]: makerjs.IModel;
 }
 
+
+interface Options {
+    showOutline: boolean;
+    renderTime: number;
+    useFill: boolean;
+    useFillPitch: number;  
+}
+
+
 @Component({
   components: {
     GCode,
@@ -134,8 +114,6 @@ interface IShapeDictionary {
   },
   computed: {
     ...mapFields([
-      //      "config.useOutline",
-      //      "config.pcb.blankType",
       "layers",
       "config.pcb.width",
       "config.pcb.height",
@@ -145,61 +123,9 @@ interface IShapeDictionary {
 export default class WizardIsolation extends Vue {
   coppers: PcbLayers[] = [];
   svgs: IDictionary<String> = {};
+  loading: boolean = true;
 
-  options: IDictionary<{
-    showOutline: boolean;
-  }> = {};
-
-  /*
-  distance: number = 0.1;
-  joints: 0 | 1 | 2 = 0; // 0=round, 1=miter, 2=blevel
-  bezierAcc: number = 0.5;
-  inside: boolean = false;
-  outside: boolean = true;
-  tagName: "path" | "poligon" | "polyline" = "path";
-*/
-
-  /*
-  data() {
-    return {
-      accepts: false,
-      drawer: false,
-      progress: {
-        value: 0,
-        visible: false,
-      },
-      viewer: {
-        plane: {
-          X: 0,
-          Y: 0,
-        },
-        extension: "gcode",
-        file: new ArrayBuffer(0),
-        position: {
-          X: 5,
-          Y: 0,
-          Z: -5,
-        },
-        rotation: {
-          X: -90,
-          Y: 0,
-          Z: 180,
-        },
-        scale: {
-          X: 0.1,
-          Y: 0.1,
-          Z: 0.1,
-        },
-        theme: {
-          background: "#dfe4ed",
-          plane: "#ffffff",
-          primary: "#4287f",
-          secondary: "#0a2f6b",
-        },
-      },
-    };
-  }
-  */
+  options: IDictionary<Options> = {};
 
   mounted() {
     this.coppers = (this.$store.state.layers as PcbLayers[]).filter(
@@ -207,165 +133,133 @@ export default class WizardIsolation extends Vue {
     );
     this.coppers.forEach((copper) => {
       this.options[copper.filename] = {
-        showOutline: true,
+        showOutline: false,
+        renderTime: 0,
+        useFill: false,
+        useFillPitch: 0.01,    
       };
-      this.redrawpcb(copper);
+      this.redrawpcb(copper,this.options[copper.filename]);
     });
-  }
-
-  /*
-  topsvg: string = null;
-  bottomsvg: string = null;
-  useBottom: boolean = true;
-  useTop: boolean = true;
-
-  pcbTypes: any[] = [];
-
-  types = [
-    whatsThatGerber.TYPE_SOLDERMASK,
-    whatsThatGerber.TYPE_SILKSCREEN,
-    whatsThatGerber.TYPE_SOLDERPASTE,
-    whatsThatGerber.TYPE_DRILL,
-    whatsThatGerber.TYPE_OUTLINE,
-    whatsThatGerber.TYPE_DRAWING,
-    whatsThatGerber.TYPE_COPPER,
-  ];
-
-  sides = [
-    whatsThatGerber.SIDE_TOP,
-    whatsThatGerber.SIDE_BOTTOM,
-    whatsThatGerber.SIDE_INNER,
-    whatsThatGerber.SIDE_ALL,
-  ];
-
-  mounted() {
-    new Promise((resolve) => {
-      FSStore.get("data.pcb.types", []).then((data) => {
-        console.log("---->", data);
-        this.pcbTypes = data;
-      });
-    });
-  }
-  */
-
-  created() {
-    // console.log(this.svgs);
-    /*
-    if (!this.$store.state.layers) this.$router.push("/");
-    else {
-      //   console.log(this, this.$store.state.layers);
-      (this as any).redrawpcb();
-    }
-    this.$nextTick(() => {
-      //     console.log("[[[[[[[[[[[[[[[[[[[[[[[[", this.$store.state.layers);
-      (this.$store.state.layers as any[]).forEach((elem) => {
-        if (elem.enabled)
-          (this.$refs.table as ElTable).toggleRowSelection(elem);
-      });
-    });
-    */
   }
 
   shapes: IShapeDictionary = {};
+  cindex: number = 0;
 
   iPlotterToModel(
-    pindex: string,
+    model: makerjs.IModel,
     obj: IPlotterData,
-    layer: PcbLayers
+    options: Options
   ): makerjs.IModel | void {
-    let index = 0;
     switch (obj.type) {
       case IPlotterDataTypes.POLARITY:
         // Unknown?!?!?
         break;
       case IPlotterDataTypes.LINE:
         const line = obj as IPlotterDataLine;
-        return { paths: { l: new makerjs.paths.Line(line.start, line.end) } };
+        makerjs.model.addPath(
+          model,
+          new makerjs.paths.Line(line.start, line.end),
+          "l_" + this.cindex++
+        );
         break;
       case IPlotterDataTypes.RECT:
         const rect = obj as IPlotterDataRect;
         if (rect.r > 0) {
-          return makerjs.model.move(
-            new makerjs.models.RoundRectangle(rect.width, rect.height, rect.r),
-            [rect.cx - rect.width / 2, rect.cy - rect.height / 2]
+          makerjs.model.addModel(
+            model,
+            makerjs.model.move(
+              new makerjs.models.RoundRectangle(
+                rect.width,
+                rect.height,
+                rect.r
+              ),
+              [rect.cx - rect.width / 2, rect.cy - rect.height / 2]
+            ),
+            "rr_" + this.cindex++
           );
         } else {
-          return makerjs.model.move(
-            new makerjs.models.Rectangle(rect.width, rect.height),
-            [rect.cx - rect.width / 2, rect.cy - rect.height / 2]
+          makerjs.model.addModel(
+            model,
+            makerjs.model.move(
+              new makerjs.models.Rectangle(rect.width, rect.height),
+              [rect.cx - rect.width / 2, rect.cy - rect.height / 2]
+            ),
+            "rq_" + this.cindex++
           );
         }
         break;
       case IPlotterDataTypes.PAD:
         const pad = obj as IPlotterDataPad;
-//        if (!this.shapes[pad.tool])
-//          console.log(pad.tool, "--->", this.shapes[pad.tool]);
-        return makerjs.model.move(makerjs.model.clone(this.shapes[pad.tool]), [
-          pad.x,
-          pad.y,
-        ]);
+        makerjs.model.addModel(
+          model,
+          makerjs.model.move(makerjs.model.clone(this.shapes[pad.tool]), [
+            pad.x,
+            pad.y,
+          ]),
+          "pad_" + this.cindex++
+        );
         break;
       case IPlotterDataTypes.CIRCLE:
         const circle = obj as IPlotterDataCircle;
-        return {
-          paths: {
-            c: new makerjs.paths.Circle([circle.cx, circle.cy], circle.r),
-          },
-        };
+        makerjs.model.addPath(
+          model,
+          new makerjs.paths.Circle([circle.cx, circle.cy], circle.r),
+          "c_" + this.cindex++
+        );
         break;
       case IPlotterDataTypes.STROKE:
         const stroke = obj as IPlotterDataStroke;
-        let submodel: makerjs.IModel = { models: {} };
+        let submodel: makerjs.IModel = { paths: {}, models: {} };
         stroke.path.forEach((data: IPlotterData) => {
-          const lindex = pindex + "_s" + index++;
-          const subdata = this.iPlotterToModel(lindex, data, layer);
-          if (subdata)
-            submodel.models[lindex] = makerjs.model.outline(
-              subdata,
-              stroke.width / 2
-            );
+          this.iPlotterToModel(submodel, data, options);
         });
-        if (submodel !== {}) return submodel;
+        if (submodel !== {}) {
+          makerjs.model.addModel(
+            model,
+            makerjs.model.outline(submodel, stroke.width / 2),
+            "stroke_" + this.cindex++
+          );
+        }
         break;
       case IPlotterDataTypes.FILL:
         const fill = obj as IPlotterDataFill;
-        let submodel_f: makerjs.IModel = { models: {} };
+        let submodel_f: makerjs.IModel = { paths: {}, models: {}, notes: "fill" };
         fill.path.forEach((data: IPlotterData) => {
-          const lindex = pindex + "_f" + index++;
-          const subdata = this.iPlotterToModel(lindex, data, layer);
-          if (subdata) submodel_f.models[lindex] = subdata;
+          this.iPlotterToModel(submodel_f, data, options);
         });
-        if (submodel_f !== {}) return submodel_f;
+        if (submodel_f !== {} && options.useFill) {
+          // Check chain
+          const chain = makerjs.model.findSingleChain(submodel_f);
+          console.log("Fill Chain is:",chain.endless);
+          makerjs.model.addModel(model, makerjs.model.outline(submodel_f,options.useFillPitch,1,false), "fill_" + this.cindex++);
+        }
         break;
       case IPlotterDataTypes.SHAPE:
         // Definisce un Tool!
         const shape = obj as IPlotterDataShape;
-        let submodel_s: makerjs.IModel = { models: {} };
+        let submodel_s: makerjs.IModel = { paths: {}, models: {} };
         shape.shape.forEach((data: IPlotterData) => {
-          const lindex = pindex + "_xs" + index++;
-          const subdata = this.iPlotterToModel(lindex, data, layer);
-          if (subdata) submodel_s.models[lindex] = subdata;
+          this.iPlotterToModel(submodel_s, data, options);
         });
         if (submodel_s !== {}) this.shapes[shape.tool] = submodel_s;
         break;
       case IPlotterDataTypes.SIZE:
-        if (this.options[layer.filename].showOutline) {
-          //     console.log(pindex, obj);
-          const size = obj as IPlotterDataSize;
-          let submodel_sx: makerjs.IModel = makerjs.model.layer(
-            makerjs.model.move(
-              new makerjs.models.Rectangle(size.box[2], size.box[3]),
-              [size.box[0], size.box[1]]
-            ),
-            "red"
-          );
-          submodel_sx.units =
-            size.units === "mm"
-              ? makerjs.unitType.Millimeter
-              : makerjs.unitType.Inch;
-          console.log(submodel_sx);
-          return submodel_sx;
-        }
+        //     console.log(pindex, obj);
+        const size = obj as IPlotterDataSize;
+        let submodel_sx: makerjs.IModel = makerjs.model.layer(
+          makerjs.model.move(
+            new makerjs.models.Rectangle(size.box[2], size.box[3]),
+            [size.box[0], size.box[1]]
+          ),
+          "red"
+        );
+        submodel_sx.units =
+          size.units === "mm"
+            ? makerjs.unitType.Millimeter
+            : makerjs.unitType.Inch;
+        // console.log(submodel_sx);
+        submodel_sx.notes = "outline";
+        if(options.showOutline)makerjs.model.addModel(model, submodel_sx, "outline_"+this.cindex++);
         break;
       default:
         console.log(obj, JSON.stringify(obj));
@@ -373,68 +267,154 @@ export default class WizardIsolation extends Vue {
     }
   }
 
-  redrawpcb(layer: PcbLayers) {
-    const _layer = JSON.parse(JSON.stringify(layer), (k, v) => {
-      if (
-        v !== null &&
-        typeof v === "object" &&
-        "type" in v &&
-        v.type === "Buffer" &&
-        "data" in v &&
-        Array.isArray(v.data)
-      ) {
-        return Buffer.from(v.data);
-      }
-      return v;
-    });
-    console.log("C-Rendering: ", _layer);
+ redrawpcb(layer: PcbLayers) {
+    this.loading = true;
+    this.options[layer.filename].renderTime = 0;
+    this.$forceUpdate();
+  // return new Promise((resolve, reject) => {
+      const startTime = Date.now();
+      const _layer = JSON.parse(JSON.stringify(layer), (k, v) => {
+        if (
+          v !== null &&
+          typeof v === "object" &&
+          "type" in v &&
+          v.type === "Buffer" &&
+          "data" in v &&
+          Array.isArray(v.data)
+        ) {
+          return Buffer.from(v.data);
+        }
+        return v;
+      });
+      // console.log("C-Rendering: ", _layer);
 
-    const stream = new Duplex();
-    stream.push((_layer as PcbLayers).gerber);
-    stream.push(null);
+      const stream = new Duplex();
+      stream.push((_layer as PcbLayers).gerber);
+      stream.push(null);
 
-    var parser = gerberParser({
-      filetype: "gerber",
-    });
-    var plotter = gerberPlotter({
-      optimizePaths: false,
-      plotAsOutline: false, // or mm?!?!?
-    });
-
-    plotter.on("warning", function (w) {
-      console.warn("plotter warning at line " + w.line + ": " + w.message);
-    });
-
-    plotter.once("error", function (e) {
-      console.error("plotter error: " + e.message);
-    });
-
-    let model: makerjs.IModel = {
-      origin: [0, 0],
-      units: makerjs.unitType.Millimeter,
-      models: {},
-    };
-
-    let index = 0;
-    stream
-      .pipe(parser)
-      .pipe(plotter)
-      .on("error", (error) => console.error(error))
-      .on("data", (obj: IPlotterData) => {
-        // console.log(this.iPlotterToModel(obj));
-        const lindex = "m" + index++;
-        const submodel = this.iPlotterToModel(lindex, obj, layer);
-        if (submodel) model.models[lindex] = submodel;
-      })
-      .on("end", () => {
-        // console.log("->", model);
-        this.svgs[layer.filename] = makerjs.exporter.toSVG(model, {
-          units: makerjs.unitType.Millimeter,
-        });
-        this.$forceUpdate();
+      var parser = gerberParser({
+        filetype: "gerber",
+      });
+      var plotter = gerberPlotter({
+        optimizePaths: false,
+        plotAsOutline: false, // or mm?!?!?
       });
 
-    /*
+      plotter.on("warning", function (w) {
+        console.warn("plotter warning at line " + w.line + ": " + w.message);
+      });
+
+      plotter.once("error", function (e) {
+        console.error("plotter error: " + e.message);
+      });
+
+      let model: makerjs.IModel = {
+        origin: [0, 0],
+        units: makerjs.unitType.Millimeter,
+        models: {},
+      };
+
+      let index = 0;
+      stream
+        .pipe(parser)
+        .pipe(plotter)
+        .on("error", (error) => console.error(error))
+        .on("data", (obj: IPlotterData) => {
+          // console.log(this.iPlotterToModel(obj));
+          let submodel: makerjs.IModel = { paths: {}, models: {} };
+          this.iPlotterToModel(submodel, obj,this.options[layer.filename]);
+          const colors = [
+            "green",
+            "orange",
+            "red",
+            "gray",
+            "darkgreen",
+            "brown",
+            "blue",
+            "darkyellow",
+            "purple",
+          ];
+
+          if (submodel) {
+            if (index < 10000) {
+              //   console.log("Submodel",JSON.stringify(submodel), colornames.all()[index].value);
+              // TMP
+              /*
+              submodel.layer = colornames.all()[index].value;
+              makerjs.model.addModel(model, submodel, "data_" + index, true);
+              */
+              /*
+   if(submodel.notes === "outline"){
+         console.log(submodel.notes);
+          if(submodel.notes==="outline" && this.options[layer.filename].showOutline){
+            makerjs.model.addModel(model, submodel, "data_"+index, true);
+          }
+       } else {
+         */
+            submodel.layer = colors[index % colors.length];
+            model = makerjs.model.combineUnion(model,submodel);
+            /*
+       }
+*/
+            }
+            index++;
+            //          makerjs.model.addModel(model,makerjs.model.outline(submodel,0.1,0),lindex, true);
+          }
+
+          //        else if( submodel) model = makerjs.model.combine(model,submodel);
+
+          //        if(submodel){
+          //          const chains: makerjs.IChainsMap = makerjs.model.findChains(submodel,{
+          //          byLayers: true,
+          //          unifyBeziers: true,
+          //          contain: true,
+          //        }) as makerjs.IChainsMap;
+          //        console.log(chains);
+          //        Object.entries(chains).forEach( (chain, indexm, carray) => {
+          //         model.models[lindex+"_"+indexm] = makerjs.chain.toNewModel(chain[1],false);
+          //       });
+
+          //       }
+        })
+        .on("end", () => {
+          // console.log("->", model);
+
+          //model.models['cut']=makerjs.model.outline(makerjs.model.clone(model),0.1,0,false,{});
+          // Combine Models.
+
+      /*    
+        Object.entries(model.models).reduce((prev, current, index, xmodel) => {
+          return [
+            "hg_" + index,
+            makerjs.model.combineUnion(prev[1], current[1]),
+          ];
+        });
+*/
+
+          
+
+
+          //console.log(newmodel);
+          /*
+        this.svgs[layer.filename] = makerjs.exporter.toSVG(makerjs.model.outline(model,0.01,0), {
+          units: makerjs.unitType.Millimeter,
+        });
+        */
+
+          makerjs.model.originate(model);
+          makerjs.model.simplify(model);
+
+          (this.svgs[layer.filename] = makerjs.exporter.toSVG(model)),
+            {
+              units: makerjs.unitType.Millimeter,
+            };
+          this.options[layer.filename].renderTime = Date.now() - startTime;
+          this.loading = false;
+          this.$forceUpdate();
+    //      resolve();
+    //    });
+
+      /*
     gerberToSvg(_layer.gerber, {
       filetype: 'gerber',
       optimizePaths: true,
@@ -448,11 +428,16 @@ export default class WizardIsolation extends Vue {
         this.$forceUpdate();
       });
 */
+    });
   }
 }
 </script>
 
-<style scoped>
+<style>
+.fullframe svg {
+  height: 100%;
+  width: 100%;
+}
 /*
 :root {
   overflow-y: auto;
