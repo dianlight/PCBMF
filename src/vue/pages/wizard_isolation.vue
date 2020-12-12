@@ -1,15 +1,16 @@
 <template>
   <el-container
     direction="vertical"
-    v-loading="loading"
-    element-loading-text="Loading..."
-    element-loading-spinner="el-icon-loading"
-    element-loading-background="rgba(0, 0, 0, 0.8)"
   >
-    <el-row v-for="copper in coppers" :key="copper.filename">
+    <el-row v-for="copper in coppers" :key="copper.filename"
+            v-loading="options[copper.filename].busy"
+            element-loading-text="Processing..."
+            element-loading-spinner="el-icon-loading"
+            element-loading-background="rgba(0, 0, 0, 0.8)"
+    >
       <el-col :span="18">
-        {{ copper.filename }} {{ copper.side }}
-        {{ options[copper.filename].renderTime }}
+        {{ copper.filename }} Layer:{{ copper.side }}
+        {{ options[copper.filename].renderTime }}ms
         <el-tabs type="border-card">
           <el-tab-pane label="SVG">
             <svg-viewer
@@ -90,6 +91,8 @@ import {
   IPlotterDataStroke,
   IPlotterDataTypes,
 } from "@/models/plotterData";
+import { IWorkerData, IWorkerDataType } from "@/models/workerData";
+import PlotterWorker from "worker-loader!../../workers/plotterDataToModel.worker";
 
 let svg_top: string, svg_bottom: string;
 
@@ -97,15 +100,16 @@ interface IDictionary<T> {
   [index: string]: T;
 }
 
-interface IShapeDictionary {
+/* interface IShapeDictionary {
   [index: number]: makerjs.IModel;
-}
+} */
 
 interface Options {
   showOutline: boolean;
   renderTime: number;
   useFill: boolean;
   useFillPitch: number;
+  busy: boolean;
 }
 
 @Component({
@@ -120,7 +124,6 @@ interface Options {
 export default class WizardIsolation extends Vue {
   coppers: PcbLayers[] = [];
   svgs: IDictionary<String> = {};
-  loading: boolean = true;
 
   options: IDictionary<Options> = {};
 
@@ -135,12 +138,13 @@ export default class WizardIsolation extends Vue {
         renderTime: 0,
         useFill: false,
         useFillPitch: 0.01,
+        busy: true,
       };
       this.redrawpcb(copper);
     });
   }
 
-  shapes: IShapeDictionary = {};
+  /* shapes: IShapeDictionary = {};
   cindex: number = 0;
 
   iPlotterToModel(
@@ -283,10 +287,10 @@ export default class WizardIsolation extends Vue {
         console.log(obj, JSON.stringify(obj));
         break;
     }
-  }
+  } */
 
   redrawpcb(layer: PcbLayers) {
-    this.loading = true;
+    this.options[layer.filename].busy = true;
     this.options[layer.filename].renderTime = 0;
     this.$forceUpdate();
     // return new Promise((resolve, reject) => {
@@ -329,15 +333,32 @@ export default class WizardIsolation extends Vue {
     let model: makerjs.IModel = {
       origin: [0, 0],
       units: makerjs.unitType.Millimeter,
-      models: {},
     };
 
     let index = 0;
+    const plotterWorker = new PlotterWorker();
+
+    plotterWorker.postMessage({ type: IWorkerDataType.START, data: this.options[layer.filename] });
+    plotterWorker.onmessage = (event) => { 
+        console.log("From Render Warker!",event);
+        const data = event.data as IWorkerData<string>;
+          if(data.type === IWorkerDataType.END){
+          this.svgs[layer.filename] = (event.data as IWorkerData<string>).data;
+          this.options[layer.filename].renderTime = Date.now() - startTime;
+          this.options[layer.filename].busy = false;
+          this.$forceUpdate();
+        }
+      };
+
     stream
       .pipe(parser)
       .pipe(plotter)
       .on("error", (error) => console.error(error))
       .on("data", (obj: IPlotterData) => {
+
+        plotterWorker.postMessage({ type: IWorkerDataType.CHUNK, data: obj});
+
+/*
         // console.log(this.iPlotterToModel(obj));
         let submodel: makerjs.IModel={};
         this.iPlotterToModel(submodel, obj, this.options[layer.filename]);
@@ -357,10 +378,10 @@ export default class WizardIsolation extends Vue {
           if (index < 10000) {
             //   console.log("Submodel",JSON.stringify(submodel), colornames.all()[index].value);
             // TMP
-            /*
+            / *
               submodel.layer = colornames.all()[index].value;
               makerjs.model.addModel(model, submodel, "data_" + index, true);
-              */
+              * /
 
             if (submodel.notes !== undefined) {
             //  console.log("-->", JSON.stringify(submodel.notes));
@@ -376,6 +397,7 @@ export default class WizardIsolation extends Vue {
           index++;
           //          makerjs.model.addModel(model,makerjs.model.outline(submodel,0.1,0),lindex, true);
         }
+        */
 
         //        else if( submodel) model = makerjs.model.combine(model,submodel);
 
@@ -393,27 +415,9 @@ export default class WizardIsolation extends Vue {
         //       }
       })
       .on("end", () => {
-        // console.log("->", model);
-
-        //model.models['cut']=makerjs.model.outline(makerjs.model.clone(model),0.1,0,false,{});
-        // Combine Models.
-
-        /*    
-        Object.entries(model.models).reduce((prev, current, index, xmodel) => {
-          return [
-            "hg_" + index,
-            makerjs.model.combineUnion(prev[1], current[1]),
-          ];
-        });
-*/
-
-        //console.log(newmodel);
-        /*
-        this.svgs[layer.filename] = makerjs.exporter.toSVG(makerjs.model.outline(model,0.01,0), {
-          units: makerjs.unitType.Millimeter,
-        });
-        */
-
+        plotterWorker.postMessage({ type: IWorkerDataType.END});
+      
+/*
         makerjs.model.originate(model);
         makerjs.model.simplify(model);
 
@@ -424,9 +428,7 @@ export default class WizardIsolation extends Vue {
         this.options[layer.filename].renderTime = Date.now() - startTime;
         this.loading = false;
         this.$forceUpdate();
-        //      resolve();
-        //    });
-
+*/        
         /*
     gerberToSvg(_layer.gerber, {
       filetype: 'gerber',
