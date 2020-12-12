@@ -16,8 +16,8 @@ export default class SvgViewer extends Vue {
 
   @Prop({ type: String, default: "" }) readonly _class!: string;
   @PropSync("data", { type: String, default: "Loading..." })
-  readonly svgdata: string;
-  @Prop({ type: Boolean, default: false }) readonly panzoom: boolean;
+  readonly svgdata: string|undefined;
+  @Prop({ type: Boolean, default: false }) readonly panzoom: boolean|undefined;
 
   updated() {
     this.$nextTick(() => {

@@ -44,8 +44,8 @@ const motionColor = {
 })
 export default class GCode extends Vue {
   @Prop({ type: Boolean, default: "true" }) readonly gcgrid!: boolean;
-  @Prop({ type: Number }) readonly width: number = 100;
-  @Prop({ type: Number }) readonly height: number = 100;
+  @Prop({ type: Number }) readonly width: number|undefined;
+  @Prop({ type: Number }) readonly height: number|undefined;
 //  @Prop({ type: ArrayBuffer}) readonly gcode: ArrayBuffer;
 //  @Prop({ type: Color, default: new THREE.Color("white")}) readonly moveColor: THREE.Color;
 //  @Prop({ type: Color, default: new THREE.Color("yellow")}) readonly isolationColor: THREE.Color;
