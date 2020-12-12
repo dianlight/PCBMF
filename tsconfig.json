@@ -1,7 +1,10 @@
 {
   "compilerOptions": {
+    "strict": true,
+    "target": "ES2019",
+
     "allowJs": true,
-    "module": "commonjs",
+    "module": "ESNext",
     "skipLibCheck": true,
     "esModuleInterop": true,
     "noImplicitAny": true,

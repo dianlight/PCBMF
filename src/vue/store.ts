@@ -59,7 +59,7 @@ export default new Vuex.Store<State>({
             //console.log(state.layers);
         },
         updateLayer(state, layer: any) {
-            let clayer = state.layers.find(clayer => clayer.filename === layer.filename);
+            let clayer = state!.layers?.find(clayer => clayer.filename === layer.filename);
             if(clayer){
                 clayer.enabled = layer.enabled;
                 clayer.side = layer.side;

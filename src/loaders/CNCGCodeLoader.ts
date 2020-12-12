@@ -10,8 +10,6 @@ import {
 	Loader
 } from 'three';
 
-//type Index_Numbers = 'x'|'y'|'z'|'e'|'f'
-//type Index_Boolean = 'extruding'|'relative'
 export interface GCodeState {
  [index:string] : any,	
  x?: number, y?: number, z?: number, e?: number, f?: number, extruding?: boolean, relative?: boolean 
@@ -59,7 +57,7 @@ export class CNCGCodeLoader extends Loader {
 		let state:GCodeState = { x: 0, y: 0, z: 0, e: 0, f: 0, extruding: false, relative: false };
 		var layers:GCodeLayer[] = [];
 
-		var currentLayer:GCodeLayer = undefined;
+		var currentLayer:GCodeLayer|undefined = undefined;
 
 		var pathMaterial = new LineBasicMaterial( { color: 0xFFFF99 } );
 		pathMaterial.name = 'path';
@@ -78,13 +76,13 @@ export class CNCGCodeLoader extends Loader {
 				newLayer( p1 );
 			}
 
-	//		if(p1.z != p2.z)console.log(p1,p2);
+			if(p1.x && p1.y && p1.z && p2.x && p2.y && p2.z )
 			if ( line.extruding ) {
-				currentLayer.vertex.push( p1.x, p1.y, p1.z );
-				currentLayer.vertex.push( p2.x, p2.y, p2.z );
+				currentLayer?.vertex?.push( p1.x, p1.y, p1.z );
+				currentLayer?.vertex?.push( p2.x, p2.y, p2.z );
 			} else {
-				currentLayer.pathVertex.push( p1.x, p1.y, p1.z );
-				currentLayer.pathVertex.push( p2.x, p2.y, p2.z );
+				currentLayer?.pathVertex?.push( p1.x, p1.y, p1.z );
+				currentLayer?.pathVertex?.push( p2.x, p2.y, p2.z );
 			}
 		}
 
@@ -92,7 +90,9 @@ export class CNCGCodeLoader extends Loader {
 			return state.relative ? v2 : v2 - v1;
 		}
 
-		function absolute( v1:number, v2:number ) {
+		function absolute( v1:number|undefined, v2:number|undefined ) {
+			if(v1 === undefined)return v2;
+			if(v2 === undefined)return v1;
 			return state.relative ? v1 + v2 : v2;
 		}
 
@@ -171,7 +171,8 @@ export class CNCGCodeLoader extends Loader {
 
 		//console.info(state);
 
-		function addObject( vertex:number[], extruding:boolean ) {
+		function addObject( vertex:number[]|undefined, extruding:boolean ) {
+			if(vertex === undefined)return;
 			var geometry = new BufferGeometry();
 			geometry.setAttribute( 'position', new Float32BufferAttribute( vertex, 3 ) );
 
@@ -197,15 +198,15 @@ export class CNCGCodeLoader extends Loader {
 				var layerVertex = layer.vertex;
 				var layerPathVertex = layer.pathVertex;
 
-				for ( var j = 0; j < layerVertex.length; j ++ ) {
+				for ( var j = 0; j < layerVertex!.length; j ++ ) {
 
-					vertex.push( layerVertex[ j ] );
+					vertex.push( layerVertex![ j ] );
 
 				}
 
-				for ( var j = 0; j < layerPathVertex.length; j ++ ) {
+				for ( var j = 0; j < layerPathVertex!.length; j ++ ) {
 
-					pathVertex.push( layerPathVertex[ j ] );
+					pathVertex.push( layerPathVertex![ j ] );
 
 				}
 			}

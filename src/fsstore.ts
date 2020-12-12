@@ -3,7 +3,7 @@ import { ipcMain, ipcRenderer } from 'electron';
 import {isRenderer} from '@/os/isElectron';
 
 class fsstore {
-    private store: Store;
+    private store!: Store;
 
     constructor() {
         if (!isRenderer()) {

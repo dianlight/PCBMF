@@ -88,6 +88,7 @@ import {
   IPlotterDataTypes,
 } from "@/models/plotterData";
 
+
 let svg_top: string, svg_bottom: string;
 
 interface IDictionary<T> {
@@ -128,6 +129,8 @@ export default class WizardIsolation extends Vue {
   options: IDictionary<Options> = {};
 
   mounted() {
+ 
+    //
     this.coppers = (this.$store.state.layers as PcbLayers[]).filter(
       (layer) => layer.type === whatsThatGerber.TYPE_COPPER && layer.enabled
     );

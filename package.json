@@ -135,6 +135,7 @@
         "serialport": "^9.0.2",
         "three": "^0.123.0",
         "tightcnc": "^0.2.0",
+        "typed-web-workers": "^4.0.0",
         "update-electron-app": "^2.0.1",
         "vue": "^2.6.12",
         "vue-3d-viewer": "^1.0.6",
