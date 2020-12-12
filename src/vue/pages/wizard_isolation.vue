@@ -141,7 +141,7 @@ export default class WizardIsolation extends Vue {
         useFill: false,
         useFillPitch: 0.01,    
       };
-      this.redrawpcb(copper,this.options[copper.filename]);
+      this.redrawpcb(copper);
     });
   }
 

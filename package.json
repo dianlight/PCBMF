@@ -111,7 +111,8 @@
         "url-loader": "^4.1.1",
         "vue-devtools": "^5.1.4",
         "vue-loader": "^15.9.5",
-        "vue-template-compiler": "^2.6.12"
+        "vue-template-compiler": "^2.6.12",
+        "worker-loader": "^3.0.6"
     },
     "dependencies": {
         "@ncform/ncform": "^1.7.2",
@@ -125,7 +126,6 @@
         "electron-squirrel-startup": "^1.0.0",
         "electron-store": "^6.0.1",
         "element-ui": "^2.14.1",
-        "gcode-toolpath": "^2.2.0",
         "gerber-parser": "^4.2.2",
         "gerber-plotter": "^4.2.2",
         "gerber-to-svg": "^4.2.2",

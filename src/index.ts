@@ -19,6 +19,7 @@ if (require('electron-squirrel-startup')) { // eslint-disable-line global-requir
 //  logger: log
 //});
 
+
 /* SerialPort.list().then((ports) => {
   if (ports.length === 0) {
     console.info('No ports discovered');

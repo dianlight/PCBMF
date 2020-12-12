@@ -16,7 +16,6 @@
 
 <script lang="ts">
 //import colornames from "colornames";
-//import Toolpath from "gcode-toolpath";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 //import { GCodeLoader } from 'three/examples/jsm/loaders/GCodeLoader';
@@ -45,17 +44,17 @@ const motionColor = {
 })
 export default class GCode extends Vue {
   @Prop({ type: Boolean, default: "true" }) readonly gcgrid!: boolean;
-  @Prop({ type: Number }) readonly width: number;
-  @Prop({ type: Number }) readonly height: number;
+  @Prop({ type: Number }) readonly width: number = 100;
+  @Prop({ type: Number }) readonly height: number = 100;
 //  @Prop({ type: ArrayBuffer}) readonly gcode: ArrayBuffer;
 //  @Prop({ type: Color, default: new THREE.Color("white")}) readonly moveColor: THREE.Color;
 //  @Prop({ type: Color, default: new THREE.Color("yellow")}) readonly isolationColor: THREE.Color;
 
 
-  cube: THREE.Mesh = null;
-  renderer: THREE.WebGLRenderer = null;
-  scene: THREE.Scene = null;
-  camera: THREE.PerspectiveCamera = null;
+  cube: THREE.Mesh|null = null;
+  renderer: THREE.WebGLRenderer|null = null;
+  scene: THREE.Scene|null = null;
+  camera: THREE.PerspectiveCamera|null = null;
 
   init() {
     this.scene = new THREE.Scene();
@@ -138,7 +137,7 @@ this.scene.add( helper );
       (object) => {
      //   console.log("Caricato file GCODE");
         object.position.set(0, 0, 0);
-        this.scene.add(object);
+        this.scene!.add(object);
         //        controls.target.copy(object.position);
         //        this.camera.lookAt(new THREE.Vector3(1,0,-1));
         //        controls.target.x = this.$store.state.config.pcb.width/-2;
@@ -169,12 +168,12 @@ this.scene.add( helper );
   resize(event: Event) {
     //  console.log("State",state,this,this.$refs);
 
-    this.camera.aspect =
+    this.camera!.aspect =
       (this.$refs.container as HTMLElement).clientWidth /
       (this.$refs.container as HTMLElement).clientHeight;
-    this.camera.updateProjectionMatrix();
+    this.camera!.updateProjectionMatrix();
 
-    this.renderer.setSize(
+    this.renderer!.setSize(
       (this.$refs.container as HTMLElement).clientWidth,
       (this.$refs.container as HTMLElement).clientHeight
     );
@@ -183,7 +182,8 @@ this.scene.add( helper );
   }
 
   render3d() {
-    this.renderer.render(this.scene, this.camera);
+    if(this.scene && this.camera)
+      this.renderer!.render(this.scene, this.camera);
   }
 
   animate() {
