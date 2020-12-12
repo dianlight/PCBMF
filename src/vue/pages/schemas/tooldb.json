@@ -1,0 +1,94 @@
+{
+  "type": "object",
+  "ui": {
+    "widgetConfig": {
+      "layout": "h"
+    }
+  },
+  "properties": {
+    "new":{
+      "type": "boolean",
+      "default": true,
+      "ui": {
+        "hidden": true
+      }
+    },
+    "name": {
+      "type": "string",
+      "rules": {
+        "required": {
+          "value": true,
+          "errMsg": "Required"
+        }
+      },
+      "ui": {
+        "label": "Name",
+        "disabled": "dx: !{{$root.new}}",
+        "widgetConfig": {
+          "size": "mini"
+        }
+      }
+    },
+    "size": {
+      "type": "integer",
+      "default": 3,
+      "ui": {
+        "label": "Size (mm)",
+        "placeholder": "mm",
+        "widget": "input-number",
+        "widgetConfig": {
+          "min": 0.01,
+          "max": 500,
+          "size": "mini",
+          "step": 0.1
+        }
+      }
+    },
+  "type": {
+    "type": "string",
+    "rules": {
+        "required": {
+          "value": true,
+          "errMsg": "Required"
+        }
+      },    
+    "ui": {
+      "label": "Type",
+      "widget": "select",
+      "widgetConfig": {
+        "placeholder": "select your choice",
+        "enumSource": [
+          {
+            "value": "V-Shape",
+            "label": "V-Shape"
+          },
+          {
+            "value": "Drill",
+            "label": "Drill"
+          },
+          {
+            "value": "Mill",
+            "label": "Mill"
+          }
+        ]
+      }
+    }
+  },
+    "angle": {
+      "type": "integer",
+      "default": 30,
+      "ui": {
+        "label": "Angle (°deg)",
+        "hidden": "dx: {{$root.type}} != 'V-Shape'",
+        "placeholder": "deg°",
+        "widget": "input-number",
+        "widgetConfig": {
+          "min": 10,
+          "max": 100,
+          "size": "mini",
+          "step": 1
+        }
+      }
+    }
+  }
+}

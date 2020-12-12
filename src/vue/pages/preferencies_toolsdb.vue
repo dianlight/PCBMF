@@ -1,18 +1,18 @@
 <template>
   <div>
     <el-table
-      :data="pcbTypes"
+      :data="toolTypes"
       style="width: 100%"
       size="small"
       stripe
       fit
-      empty-text="No PCB defined!"
+      empty-text="No Tools defined!"
     >
       <el-table-column fixed prop="name" label="Name" width="200">
       </el-table-column>
-      <el-table-column prop="sides" label="Sides"> </el-table-column>
-      <el-table-column prop="width" label="Width (mm)"> </el-table-column>
-      <el-table-column prop="height" label="Height (mm)"></el-table-column>
+      <el-table-column prop="size" label="Size (mm)"> </el-table-column>
+      <el-table-column prop="type" label="Type"> </el-table-column>
+      <el-table-column prop="angle" label="Angle (deg°)"></el-table-column>
       <el-table-column fixed="right" label="Operations">
         <template #header>
           <el-button
@@ -50,9 +50,9 @@
     >
       <span>Information about your blank PCBs</span>
       <ncform
-        :form-schema="pcbTypeInsertSchema"
-        form-name="pcbTypeForm"
-        v-model="pcbTypeInsertSchema.value"
+        :form-schema="toolTypeSchema"
+        form-name="toolTypeForm"
+        v-model="toolTypeSchema.value"
         @submit="submit()"
       ></ncform>
       <span slot="footer" class="dialog-footer">
@@ -65,8 +65,8 @@
           size="small"
           round
           v-text="
-            $data.pcbTypeInsertSchema.value &&
-            !$data.pcbTypeInsertSchema.value.new
+            $data.toolTypeSchema.value &&
+            !$data.toolTypeSchema.value.new
               ? 'Save'
               : 'Add'
           "
@@ -82,20 +82,22 @@ import { Component, Prop, PropSync, VModel, Vue } from "vue-property-decorator";
 import FSStore from "@/fsstore";
 import { PropType } from "vue";
 
-@Component
-export default class PreferenciesPcbDB extends Vue {
+@Component({
+  name:'ToolsDB'
+})
+export default class ToolsDB extends Vue {
   newDialogVisible: boolean = false;
   //editDialogVisible: boolean = false;
   @VModel() isFormDirty: boolean|undefined;
 
-  private pcbTypeInsertSchema = require("@/vue/pages/schemas/pcbdb_insert.json");
+  private toolTypeSchema = require("@/vue/pages/schemas/tooldb.json");
 
   //@VModel()
-  pcbTypes: any[] = [];
+  toolTypes: any[] = [];
 
   created() {
-    FSStore.get("data.pcb.types", []).then((data) => {
-      this.pcbTypes = data;
+    FSStore.get("data.tool.types", []).then((data) => {
+      this.toolTypes = data;
       //      console.log("---->", data);
     });
   }
@@ -109,27 +111,27 @@ export default class PreferenciesPcbDB extends Vue {
   }
 
   private submit() {
-    (this as any).$ncformValidate("pcbTypeForm").then((data: any) => {
+    (this as any).$ncformValidate("toolTypeForm").then((data: any) => {
       if (data.result) {
-        if (this.pcbTypeInsertSchema.value.new) {
+        if (this.toolTypeSchema.value.new) {
           //  console.log("Add(+)",this.pcbTypeInsertSchema.value);
-          this.$data.pcbTypeInsertSchema.value.new = false;
-          this.$data.pcbTypes.push(this.pcbTypeInsertSchema.value);
+          this.$data.toolTypeSchema.value.new = false;
+          this.$data.toolTypes.push(this.toolTypeSchema.value);
         } else {
           //   console.log("Edit(+)", this.pcbTypeInsertSchema.value);
-          const index = (this.$data.pcbTypes as []).findIndex(
-            (pcbType: any) =>
-              pcbType.name === this.pcbTypeInsertSchema.value.name
+          const index = (this.$data.toolTypes as []).findIndex(
+            (toolType: any) =>
+              toolType.name === this.toolTypeSchema.value.name
           );
           //  console.log("-->", index, this.$data.pcbTypes[index]);
           Object.assign(
-            this.$data.pcbTypes[index],
-            this.$data.pcbTypeInsertSchema.value
+            this.$data.toolTypes[index],
+            this.$data.toolTypeSchema.value
           );
         }
-        FSStore.set("data.pcb.types", this.$data.pcbTypes);
+        FSStore.set("data.tool.types", this.$data.toolTypes);
         this.$data.newDialogVisible = false;
-        this.pcbTypeInsertSchema.value = {};
+        this.toolTypeSchema.value = {};
       } else {
         console.error("Invalid!!", data);
       }
@@ -138,30 +140,24 @@ export default class PreferenciesPcbDB extends Vue {
 
   private remove(index: number, row: any) {
     //   console.log(index, row);
-    this.$data.pcbTypes.splice(index, 1);
-    FSStore.set("data.pcb.types", this.$data.pcbTypes);
+    this.$data.toolTypes.splice(index, 1);
+    FSStore.set("data.tool.types", this.$data.toolTypes);
   }
 
   private insert() {
     //  console.log("Insert new!");
-    this.pcbTypeInsertSchema.value = {};
-    this.$data.pcbTypeInsertSchema.value.new = true;
+    this.toolTypeSchema.value = {};
+    this.$data.toolTypeSchema.value.new = true;
     this.$data.newDialogVisible = true;
   }
 
   private edit(index: number, row: any) {
     //  console.log(index, row);
-    this.pcbTypeInsertSchema.value = {};
-    Object.assign(this.$data.pcbTypeInsertSchema.value, row);
-    this.$data.pcbTypeInsertSchema.value.new = false;
+    this.toolTypeSchema.value = {};
+    Object.assign(this.$data.toolTypeSchema.value, row);
+    this.$data.toolTypeSchema.value.new = false;
     this.$data.newDialogVisible = true;
   }
-
-  /*
-  $$nextTick() {
-    console.log("------------------------");
-  }
-  */
 }
 </script>
 
