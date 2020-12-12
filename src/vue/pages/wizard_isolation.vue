@@ -92,7 +92,8 @@ import {
   IPlotterDataTypes,
 } from "@/models/plotterData";
 import { IWorkerData, IWorkerDataType } from "@/models/workerData";
-import PlotterWorker from "worker-loader!../../workers/plotterDataToModel.worker";
+//import PlotterWorker from "worker-loader!../../workers/plotterDataToModel.worker";
+import PlotterWorker from "_/workers/plotterDataToModel.worker";
 
 let svg_top: string, svg_bottom: string;
 

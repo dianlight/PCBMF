@@ -43,7 +43,7 @@ import 'element-ui/lib/theme-chalk/index.css';
 import ncformStdComps from '@ncform/ncform-theme-elementui';
 import axios from 'axios';
 //import ThreeDViewer from "vue-3d-viewer";
-import Worker from "worker-loader!./workers/test.worker";
+//import Worker from "worker-loader!./workers/test.worker";
 
 
 const locale = require('element-ui/lib/locale/lang/en');
@@ -53,6 +53,7 @@ Vue.use(vueNcform, {extComponents: ncformStdComps, lang: 'en'});
 //Vue.use(ThreeDViewer);
 
 // Worker Test
+/*
 const worker = new Worker();
 
 worker.postMessage({ a: 1 });
@@ -60,7 +61,7 @@ worker.onmessage = (event) => { console.log("From Warker!",event)};
 
 
 (window as any).$http = Vue.prototype.$http = axios;
-
+*/
 /*
 ipcRenderer.invoke("SerialPort.List").then((ports) => {
     document.getElementById('error').textContent = ''

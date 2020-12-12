@@ -24,7 +24,7 @@
     "src/**/*"
   ],
   "files": [
-    "src/vue/vue-shims.d.ts",
+    "src/typings/vue-shims.d.ts",
   ],
   "exclude": ["node_modules"]
 }

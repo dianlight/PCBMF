@@ -1,7 +1,6 @@
 import { IPlotterData, IPlotterDataCircle, IPlotterDataFill, IPlotterDataLine, IPlotterDataPad, IPlotterDataRect, IPlotterDataShape, IPlotterDataSize, IPlotterDataStroke, IPlotterDataTypes } from "@/models/plotterData";
 import makerjs from "makerjs";
 import { IWorkerData, IWorkerDataType } from "@/models/workerData";
-import { Switch } from "element-ui";
 
 interface IShapeDictionary {
     [index: number]: makerjs.IModel;

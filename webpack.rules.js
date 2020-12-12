@@ -18,6 +18,14 @@ module.exports = [
         },
     },
     {
+        test: /\.worker\.ts$/i,
+        use: [
+          {
+            loader: "worker-loader",
+          }
+        ]   
+    },      
+    {
         test: /\.tsx?$/,
         exclude: /(node_modules|\.webpack)/,
         use: {
@@ -40,5 +48,5 @@ module.exports = [
                 limit: 10000
             }
         }]
-    },
+    }, 
 ];
