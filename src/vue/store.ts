@@ -6,33 +6,12 @@ import AdmZip from "adm-zip";
 import { getField, updateField } from 'vuex-map-fields';
 import VuexPersistence from 'vuex-persist';
 import { PcbLayers } from "@/models/pcblayer";
+import { IProject } from "@/models/project";
 
 
 Vue.use(Vuex);
 
-interface IDictionary<T> {
-    [index: string]: T;
-  }
-
-interface State {
-    currentFile: string | undefined,
-    layers: PcbLayers[] | undefined,
-    config: {
-        useOutline: boolean;
-        pcb: {
-            blankType: string | undefined,
-            height: number | undefined,
-            width: number | undefined
-        },
-        isolation: {
-            toolType: IDictionary<any> | undefined,
-            dthickness: IDictionary<number> | undefined,
-            doutline: IDictionary<number> | undefined,
-        }
-    }
-}
-
-export default new Vuex.Store<State>({
+export default new Vuex.Store<IProject>({
     state:
     {
         currentFile: undefined,
@@ -47,7 +26,8 @@ export default new Vuex.Store<State>({
             isolation: {
                 toolType: {},
                 dthickness: {},
-                doutline: {}
+                doutline: {},
+                json: undefined
             }
         }
     },

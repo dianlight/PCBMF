@@ -269,9 +269,10 @@ export default class WizardIsolation extends Vue {
     });
     plotterWorker.onmessage = (event) => {
       console.log("From Render Warker!", event);
-      const data = event.data as IWorkerData<string>;
+      const data = event.data as IWorkerData<{svg:string,json:string}>;
       if (data.type === IWorkerDataType.END) {
-        this.svgs[layer.filename] = (event.data as IWorkerData<string>).data;
+        this.svgs[layer.filename] = (event.data as IWorkerData<{svg:string,json:string}>).data.svg;
+        this.$store.state.isol
         this.options[layer.filename].renderTime = Date.now() - startTime;
         this.options[layer.filename].busy = false;
         this.$forceUpdate();
@@ -301,5 +302,6 @@ export default class WizardIsolation extends Vue {
 svg #outline {
   stroke: red;
   stroke-width: var(--isolation-width);
+  stroke-linecap: round;
 }
 </style>

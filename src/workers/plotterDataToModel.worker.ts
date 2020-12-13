@@ -21,9 +21,6 @@ interface Options {
     let options: Options;
     let gmodel: makerjs.IModel = {}
 
-    // Post data to parent thread
-    //ctx.postMessage({ foo: "foo" });
-
     let shapes: IShapeDictionary = {};
     let cindex: number = 0;
 
@@ -187,19 +184,6 @@ interface Options {
             case IWorkerDataType.CHUNK:
                 let submodel: makerjs.IModel = {};
                 iPlotterToModel(submodel, data.data as IPlotterData, options);
-                /*
-                const colors = [
-                    "green",
-                    "orange",
-                    "red",
-                    "gray",
-                    "darkgreen",
-                    "brown",
-                    "blue",
-                    "darkyellow",
-                    "purple",
-                ];
-                */
                 if (Object.keys(submodel).length != 0 && submodel !== {}) {
                     if (submodel.notes !== undefined) {
                         //  console.log("-->", JSON.stringify(submodel.notes));
@@ -208,7 +192,6 @@ interface Options {
                         }
                     } else {
                         //  console.log(JSON.stringify(submodel));
-                        //  submodel.layer = colors[index % colors.length];
                         gmodel = makerjs.model.combineUnion(gmodel, submodel);
                     }
                 }
@@ -226,7 +209,10 @@ interface Options {
                   {
                     units: makerjs.unitType.Millimeter,
                 });
-                ctx.postMessage({ type: IWorkerDataType.END, data: svg });
+                const json = makerjs.exporter.toJson(outline,{accuracy:4});
+                ctx.postMessage({ type: IWorkerDataType.END, data: {svg:svg,json:json} });
+
+                
                 break;
             default:
                 console.error("Unknown worker command!", data);
