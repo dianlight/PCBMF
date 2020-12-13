@@ -10,6 +10,10 @@ import { PcbLayers } from "@/models/pcblayer";
 
 Vue.use(Vuex);
 
+interface IDictionary<T> {
+    [index: string]: T;
+  }
+
 interface State {
     currentFile: string | undefined,
     layers: PcbLayers[] | undefined,
@@ -19,6 +23,11 @@ interface State {
             blankType: string | undefined,
             height: number | undefined,
             width: number | undefined
+        },
+        isolation: {
+            toolType: IDictionary<any> | undefined,
+            dthickness: IDictionary<number> | undefined,
+            doutline: IDictionary<number> | undefined,
         }
     }
 }
@@ -34,6 +43,11 @@ export default new Vuex.Store<State>({
                 blankType: undefined,
                 height: undefined,
                 width: undefined
+            },
+            isolation: {
+                toolType: {},
+                dthickness: {},
+                doutline: {}
             }
         }
     },

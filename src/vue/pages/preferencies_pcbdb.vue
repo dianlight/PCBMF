@@ -13,6 +13,8 @@
       <el-table-column prop="sides" label="Sides"> </el-table-column>
       <el-table-column prop="width" label="Width (mm)"> </el-table-column>
       <el-table-column prop="height" label="Height (mm)"></el-table-column>
+      <el-table-column prop="cthickness" label="Copper Thickness (mm)"></el-table-column>
+      <el-table-column prop="bthickness" label="Board Tickness (mm)"></el-table-column>
       <el-table-column fixed="right" label="Operations">
         <template #header>
           <el-button
@@ -50,9 +52,9 @@
     >
       <span>Information about your blank PCBs</span>
       <ncform
-        :form-schema="pcbTypeInsertSchema"
+        :form-schema="pcbTypeSchema"
         form-name="pcbTypeForm"
-        v-model="pcbTypeInsertSchema.value"
+        v-model="pcbTypeSchema.value"
         @submit="submit()"
       ></ncform>
       <span slot="footer" class="dialog-footer">
@@ -65,8 +67,8 @@
           size="small"
           round
           v-text="
-            $data.pcbTypeInsertSchema.value &&
-            !$data.pcbTypeInsertSchema.value.new
+            $data.pcbTypeSchema.value &&
+            !$data.pcbTypeSchema.value.new
               ? 'Save'
               : 'Add'
           "
@@ -88,7 +90,7 @@ export default class PreferenciesPcbDB extends Vue {
   //editDialogVisible: boolean = false;
   @VModel() isFormDirty: boolean|undefined;
 
-  private pcbTypeInsertSchema = require("@/vue/pages/schemas/pcbdb_insert.json");
+  private pcbTypeSchema = require("@/vue/pages/schemas/pcbdb.json");
 
   //@VModel()
   pcbTypes: any[] = [];
@@ -100,9 +102,9 @@ export default class PreferenciesPcbDB extends Vue {
     });
   }
 
-  private count() {
-    return FSStore.get("Prova", "Non trovato");
-  }
+//  private count() {
+//    return FSStore.get("Prova", "Non trovato");
+//  }
 
   private deleteRow(index: number, rows: any) {
     rows.splice(index, 1);
@@ -111,25 +113,25 @@ export default class PreferenciesPcbDB extends Vue {
   private submit() {
     (this as any).$ncformValidate("pcbTypeForm").then((data: any) => {
       if (data.result) {
-        if (this.pcbTypeInsertSchema.value.new) {
-          //  console.log("Add(+)",this.pcbTypeInsertSchema.value);
-          this.$data.pcbTypeInsertSchema.value.new = false;
-          this.$data.pcbTypes.push(this.pcbTypeInsertSchema.value);
+        if (this.pcbTypeSchema.value.new) {
+          //  console.log("Add(+)",this.pcbTypeSchema.value);
+          this.$data.pcbTypeSchema.value.new = false;
+          this.$data.pcbTypes.push(this.pcbTypeSchema.value);
         } else {
-          //   console.log("Edit(+)", this.pcbTypeInsertSchema.value);
+          //   console.log("Edit(+)", this.pcbTypeSchema.value);
           const index = (this.$data.pcbTypes as []).findIndex(
             (pcbType: any) =>
-              pcbType.name === this.pcbTypeInsertSchema.value.name
+              pcbType.name === this.pcbTypeSchema.value.name
           );
           //  console.log("-->", index, this.$data.pcbTypes[index]);
           Object.assign(
             this.$data.pcbTypes[index],
-            this.$data.pcbTypeInsertSchema.value
+            this.$data.pcbTypeSchema.value
           );
         }
         FSStore.set("data.pcb.types", this.$data.pcbTypes);
         this.$data.newDialogVisible = false;
-        this.pcbTypeInsertSchema.value = {};
+        this.pcbTypeSchema.value = {};
       } else {
         console.error("Invalid!!", data);
       }
@@ -144,16 +146,16 @@ export default class PreferenciesPcbDB extends Vue {
 
   private insert() {
     //  console.log("Insert new!");
-    this.pcbTypeInsertSchema.value = {};
-    this.$data.pcbTypeInsertSchema.value.new = true;
+    this.pcbTypeSchema.value = {};
+    this.$data.pcbTypeSchema.value.new = true;
     this.$data.newDialogVisible = true;
   }
 
   private edit(index: number, row: any) {
     //  console.log(index, row);
-    this.pcbTypeInsertSchema.value = {};
-    Object.assign(this.$data.pcbTypeInsertSchema.value, row);
-    this.$data.pcbTypeInsertSchema.value.new = false;
+    this.pcbTypeSchema.value = {};
+    Object.assign(this.$data.pcbTypeSchema.value, row);
+    this.$data.pcbTypeSchema.value.new = false;
     this.$data.newDialogVisible = true;
   }
 

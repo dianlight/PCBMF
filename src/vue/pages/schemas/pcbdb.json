@@ -2,7 +2,8 @@
   "type": "object",
   "ui": {
     "widgetConfig": {
-      "layout": "h"
+      "layout": "h",
+      "labelWidth": "150px"
     }
   },
   "properties": {
@@ -22,6 +23,7 @@
         }
       },
       "ui": {
+        "label": "Name",
         "disabled": "dx: !{{$root.new}}",
         "widgetConfig": {
           "size": "mini"
@@ -29,14 +31,16 @@
       }
     },
     "sides": {
-      "label": "Two side",
       "type": "integer",
       "ui": {
+        "label": "Two side",
         "widget": "switch",
         "widgetConfig": {
           "activeValue": 2,
           "inactiveValue": 1,
-          "size": "mini"
+          "size": "mini",
+          "activeIconClass": "el-icon-d-caret",
+          "inactiveIconClass": "el-icon-caret-top"
         }
       }
     },
@@ -44,6 +48,7 @@
       "type": "integer",
       "default": 100,
       "ui": {
+        "label": "Width (mm)",
         "placeholder": "mm",
         "widget": "input-number",
         "widgetConfig": {
@@ -58,11 +63,43 @@
       "type": "integer",
       "default": 70,
       "ui": {
+        "label": "Height (mm)",
         "placeholder": "mm",
         "widget": "input-number",
         "widgetConfig": {
           "min": 1,
           "max": 500,
+          "size": "mini",
+          "step": 0.1
+        }
+      }
+    },
+    "cthickness": {
+      "type": "integer",
+      "default": 1.0,
+      "ui": {
+        "label": "Copper Tickness (mm)",
+        "placeholder": "mm",
+        "widget": "input-number",
+        "widgetConfig": {
+          "min": 0.1,
+          "max": 500,
+          "size": "mini",
+          "step": 0.1,
+          "decimal": 2
+        }
+      }
+    },
+    "bthickness": {
+      "type": "integer",
+      "default": 1.6,
+      "ui": {
+        "label": "Board Tickness (mm)",
+        "placeholder": "mm",
+        "widget": "input-number",
+        "widgetConfig": {
+          "min": 0.1,
+          "max": 10,
           "size": "mini",
           "step": 0.1
         }

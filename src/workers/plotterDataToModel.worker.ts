@@ -11,6 +11,7 @@ interface Options {
     renderTime: number;
     useFill: boolean;
     useFillPitch: number;
+    outlineTick: number;
 }
 
 
@@ -172,7 +173,7 @@ interface Options {
 
     // Respond to message from parent thread
     ctx.addEventListener("message", (event) => {
-        console.log("From main", event)
+       // console.log("From main", event)
         const data = event.data as IWorkerData<IPlotterData | Options>;
         switch (data.type) {
             case IWorkerDataType.ABORT:
@@ -215,6 +216,11 @@ interface Options {
             case IWorkerDataType.END:
                 makerjs.model.originate(gmodel);
                 makerjs.model.simplify(gmodel);
+
+                console.log("Apply outline:",options.outlineTick);
+                const outline = makerjs.model.outline(gmodel,options.outlineTick/2,0,false);
+                outline.layer="outline";
+                makerjs.model.addModel(gmodel,outline,"isolation",true);
         
                 const svg = makerjs.exporter.toSVG(gmodel,
                   {

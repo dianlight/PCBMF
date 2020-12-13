@@ -30,7 +30,7 @@
       <el-col :span="14">       
           <el-form ref="form" label-width="120px">
             <el-form-item label="PCB blank type">
-              <el-select v-model="blankType" placeholder="Select" size="mini">
+              <el-select v-model="blankType" value-key="name" placeholder="Select" size="mini">
                 <el-option
                   v-for="item in pcbTypes"
                   :key="item.name"
@@ -134,8 +134,8 @@ let svg_top: string, svg_bottom: string;
   },
 })
 export default class WizardConfig extends Vue {
-  topsvg: string = null;
-  bottomsvg: string = null;
+  topsvg: string|null = null;
+  bottomsvg: string|null = null;
   useBottom: boolean = true;
   useTop: boolean = true;
 
