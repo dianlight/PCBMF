@@ -78,9 +78,9 @@
               :min="0"
               :max="5"
               :precision="4"
-              :step="0.001"
-              :disabled="Object.keys(toolType).length == 0 || !toolType[copper.filename].name || toolType[copper.filename].type === 'V-Shape'"
-              @change="redrawpcb(copper)"
+              :step="0.1"
+              :disabled="Object.keys(toolType).length == 0 || !toolType[copper.filename].name"
+              @change="changeThickness(copper)"
             ></el-input-number>
           </el-form-item>          
           <el-form-item label="Isolation width">
@@ -91,7 +91,7 @@
               :max="5"
               :precision="4"
               :step="0.001"
-              :disabled="Object.keys(toolType).length == 0 || !toolType[copper.filename].name || toolType[copper.filename].type !== 'V-Shape'"
+              :disabled="true"
               @change="redrawpcb(copper)"
             ></el-input-number>
           </el-form-item>          
@@ -123,6 +123,7 @@ import { Duplex } from "stream";
 import gerberParser from "gerber-parser";
 import gerberPlotter from "gerber-plotter";
 import colornames from "colornames";
+import * as Trigonomerty from "@/utils/trigonometry";
 import {
   IPlotterData,
   IPlotterDataCircle,
@@ -138,6 +139,8 @@ import {
 } from "@/models/plotterData";
 import { IWorkerData, IWorkerDataType } from "@/models/workerData";
 import PlotterWorker from "_/workers/plotterDataToModel.worker";
+import { IProject } from "@/models/project";
+import { Store } from "vuex";
 
 let svg_top: string, svg_bottom: string;
 
@@ -204,13 +207,31 @@ export default class WizardIsolation extends Vue {
     });   
   }
 
+  changeThickness(layer: PcbLayers){
+    if(this.$store && this.$store.state){
+      const state = (this.$store as Store<IProject>).state; 
+      const tool = state!.config!.isolation!.toolType![layer.filename];
+      if(tool && tool.type === 'V-Shape'){
+//        console.log("Calcolating Tichness!");
+        state!.config!.isolation!.doutline![layer.filename] = Trigonomerty.getTipDiamaterForVTool(
+          tool.size, 
+          tool.angle, 
+          state!.config!.isolation!.dthickness![layer.filename]
+          );
+      } else {
+        console.log("Fixed size tool",tool);
+        state!.config!.isolation!.doutline![layer.filename] = tool.size;
+      }
+      this.redrawpcb(layer);
+    }
+  }
 
   toolChange(layer: PcbLayers) {
-    const tool = this.$store.state.config.isolation.toolType[layer.filename];
-  //  console.log(tool);
-    // FIXME: Implement tool.size calculation for V-Shape tool
-    this.$store.state.config.isolation.dthickness[layer.filename] = 0.0;
-    this.$store.state.config.isolation.doutline[layer.filename] = tool.size;
+    const state = (this.$store as Store<IProject>).state;
+    const tool = state!.config!.isolation!.toolType![layer.filename];
+    if(!tool.dthickness)tool.dthickness={};
+    tool.dthickness[layer.filename] = state!.config!.pcb!.blankType.cthickness;
+    this.changeThickness(layer);
   }
 
   redrawpcb(layer: PcbLayers) {
@@ -268,7 +289,7 @@ export default class WizardIsolation extends Vue {
       data: this.options[layer.filename],
     });
     plotterWorker.onmessage = (event) => {
-      console.log("From Render Warker!", event);
+    //  console.log("From Render Warker!", event);
       const data = event.data as IWorkerData<{svg:string,json:string}>;
       if (data.type === IWorkerDataType.END) {
         this.svgs[layer.filename] = (event.data as IWorkerData<{svg:string,json:string}>).data.svg;

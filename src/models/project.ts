@@ -7,7 +7,7 @@ export interface IProject {
     config: {
         useOutline: boolean;
         pcb: {
-            blankType: string | undefined,
+            blankType: any | undefined,
             height: number | undefined,
             width: number | undefined
         },

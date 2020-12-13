@@ -202,14 +202,17 @@ interface Options {
 
                 console.log("Apply outline:",options.outlineTick);
                 const outline = makerjs.model.outline(gmodel,options.outlineTick/2,0,false);
-                outline.layer="outline";
-                makerjs.model.addModel(gmodel,outline,"isolation",true);
+                let json = {};
+                if(outline){
+                    outline.layer="outline";
+                    makerjs.model.addModel(gmodel,outline,"isolation",true);
+                    json = makerjs.exporter.toJson(outline,{accuracy:4});
+                }
         
                 const svg = makerjs.exporter.toSVG(gmodel,
                   {
                     units: makerjs.unitType.Millimeter,
                 });
-                const json = makerjs.exporter.toJson(outline,{accuracy:4});
                 ctx.postMessage({ type: IWorkerDataType.END, data: {svg:svg,json:json} });
 
                 

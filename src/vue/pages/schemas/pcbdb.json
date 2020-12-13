@@ -76,17 +76,17 @@
     },
     "cthickness": {
       "type": "integer",
-      "default": 1.0,
+      "default": 0.095,
       "ui": {
         "label": "Copper Tickness (mm)",
         "placeholder": "mm",
         "widget": "input-number",
         "widgetConfig": {
-          "min": 0.1,
+          "min": 0.001,
           "max": 500,
           "size": "mini",
-          "step": 0.1,
-          "decimal": 2
+          "step": 0.01,
+          "decimal": 4
         }
       }
     },
