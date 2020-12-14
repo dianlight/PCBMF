@@ -45,7 +45,7 @@
               <el-input-number size="mini" v-model="height"></el-input-number>
             </el-form-item>
             <el-form-item label="Use PCB Outline">
-              <el-switch v-model="useOutline" @input="redrawpcb"></el-switch>
+              <el-switch size="mini" v-model="useOutline" @input="redrawpcb"></el-switch>
             </el-form-item>
             <!-- Gerber File List-->
             <el-table
@@ -183,6 +183,7 @@ export default class WizardConfig extends Vue {
   }
 
   redrawpcb() {
+    
     const layers = JSON.parse(
       JSON.stringify(
         (this.$store.state.layers as any[]).filter((layer) => layer.enabled)
@@ -201,6 +202,7 @@ export default class WizardConfig extends Vue {
         return v;
       }
     );
+    
     //console.log("Redraw PCB:", this.$store.state.layers, layers);
     pcbStackup(layers, {
       useOutline: this.$store.state.config.useOutline,
@@ -211,11 +213,12 @@ export default class WizardConfig extends Vue {
       .then((stackup) => {
         this.topsvg = stackup.top.svg;
         this.bottomsvg = stackup.bottom.svg;
-        this.$store.state.config.pcb.height = stackup.top.height;
-        this.$store.state.config.pcb.width = stackup.top.width;
+        store.commit("updateField",{ path:'config.pcb.height', value: stackup.top.height });
+        store.commit("updateField",{ path:'config.pcb.width', value: stackup.top.width });
         stackup.layers.forEach((layer) => store.commit("updateLayer", layer));
       })
       .catch((err) => console.error(err));
+    
   }
 
   changeSelectionAll(selection: any[]) {

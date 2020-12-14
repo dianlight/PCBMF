@@ -1,3 +1,5 @@
+import { Pcbdb } from "@/typings/pcbdb";
+import { Tooldb } from "@/typings/tooldb";
 import { IDictionary } from "./dictionary";
 import { PcbLayers } from "./pcblayer";
 
@@ -7,12 +9,12 @@ export interface IProject {
     config: {
         useOutline: boolean;
         pcb: {
-            blankType: any | undefined,
+            blankType: Pcbdb | undefined,
             height: number | undefined,
             width: number | undefined
         },
         isolation: {
-            toolType: IDictionary<any> | undefined,
+            toolType: IDictionary<Tooldb> | undefined,
             dthickness: IDictionary<number> | undefined,
             doutline: IDictionary<number> | undefined,
             json: IDictionary<string> | undefined,

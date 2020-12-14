@@ -148,7 +148,6 @@
         "typed-web-workers": "^4.0.0",
         "update-electron-app": "^2.0.1",
         "vue": "^2.6.12",
-        "vue-3d-viewer": "^1.0.6",
         "vue-class-component": "^7.2.6",
         "vue-property-decorator": "^9.1.2",
         "vue-router": "^3.4.9",

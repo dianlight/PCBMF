@@ -108,7 +108,7 @@ import store from "../store";
 import gerberToSvg from "gerber-to-svg";
 import whatsThatGerber from "whats-that-gerber";
 import { mapGetters, mapMutations, mapState } from "vuex";
-import { mapFields } from "vuex-map-fields";
+import { mapFields, mapMultiRowFields } from "vuex-map-fields";
 import { ElTable } from "element-ui/types/table";
 import FSStore from "@/fsstore";
 import Component from "vue-class-component";
@@ -171,6 +171,8 @@ interface Options {
       "config.isolation.dthickness",
       "config.isolation.doutline",
     ]),
+//    ...mapMultiRowFields([     
+//    ])
   },
 })
 export default class WizardIsolation extends Vue {
@@ -214,13 +216,13 @@ export default class WizardIsolation extends Vue {
       if(tool && tool.type === 'V-Shape'){
 //        console.log("Calcolating Tichness!");
         state!.config!.isolation!.doutline![layer.filename] = Trigonomerty.getTipDiamaterForVTool(
-          tool.size, 
-          tool.angle, 
+          tool.size as number, 
+          tool.angle as number, 
           state!.config!.isolation!.dthickness![layer.filename]
           );
       } else {
         console.log("Fixed size tool",tool);
-        state!.config!.isolation!.doutline![layer.filename] = tool.size;
+        state!.config!.isolation!.doutline![layer.filename] = tool.size as number;
       }
       this.redrawpcb(layer);
     }
@@ -228,10 +230,14 @@ export default class WizardIsolation extends Vue {
 
   toolChange(layer: PcbLayers) {
     const state = (this.$store as Store<IProject>).state;
-    const tool = state!.config!.isolation!.toolType![layer.filename];
-    if(!tool.dthickness)tool.dthickness={};
-    tool.dthickness[layer.filename] = state!.config!.pcb!.blankType.cthickness;
-    this.changeThickness(layer);
+    if(state && state.config && state.config.pcb && state.config.pcb.blankType){
+      const isolation = state!.config!.isolation;
+      if(!isolation.dthickness)isolation.dthickness={};
+      isolation.dthickness[layer.filename] = state!.config!.pcb!.blankType.cthickness as number;
+      this.changeThickness(layer);
+    } else {
+      console.error("Error instate object",state);
+    }
   }
 
   redrawpcb(layer: PcbLayers) {

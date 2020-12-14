@@ -42,6 +42,12 @@
           "size": "mini",
           "step": 0.1
         }
+      },
+      "rules": {
+        "required": {
+          "value": "true",
+          "errMsg": "Size is required"
+        }
       }
     },
   "type": {

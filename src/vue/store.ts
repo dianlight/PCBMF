@@ -11,6 +11,13 @@ import { IProject } from "@/models/project";
 
 Vue.use(Vuex);
 
+const vuexPersist = new VuexPersistence<any>({
+    strictMode: true, // This **MUST** be set to true
+    storage: sessionStorage,
+//    reducer: (state) => ({ dog: state.dog }),
+//    filter: (mutation) => mutation.type === 'dogBark'
+});
+
 export default new Vuex.Store<IProject>({
     state:
     {
@@ -31,12 +38,13 @@ export default new Vuex.Store<IProject>({
             }
         }
     },
-    plugins: [new VuexPersistence().plugin],
+    plugins: [vuexPersist.plugin],
     strict: process.env.NODE_ENV !== 'production',
     getters: {
         getField
     },
     mutations: {
+        RESTORE_MUTATION: vuexPersist.RESTORE_MUTATION,
         updateField,
         openGerber(state, filePath: string) {
             state.currentFile = filePath;
