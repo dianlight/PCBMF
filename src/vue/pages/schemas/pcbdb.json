@@ -19,7 +19,7 @@
       "rules": {
         "required": {
           "value": true,
-          "errMsg": "Required"
+          "errMsg": "Name Required"
         }
       },
       "ui": {
