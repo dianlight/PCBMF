@@ -1,0 +1,141 @@
+{
+    "type": "object",
+    "properties": {
+        "choice": {
+            "type": "string",
+            "value": 1,
+            "ui": {
+                "required": true,
+                "readonly": true,
+                "label": "Dialect",
+                "widget": "select",
+                "widgetConfig": {
+                    "size": "mini",
+                    "placeholder": "select your choice",
+                    "enumSource": [
+                        {
+                            "value": 1,
+                            "label": "GRBL 1.1"
+                        },
+                        {
+                            "value": 2,
+                            "label": "GRBL 0.9"
+                        },
+                        {
+                            "value": 3,
+                            "label": "TinyG"
+                        }
+                    ]
+                },
+                "help": {
+                    "show": true,
+                    "text": "!",
+                    "content": "Only GRBL 1.1 firmware - See documentation"
+                }
+            },
+            "rules": {
+                "required": {
+                    "value": true,
+                    "errMsg": "it is required!"
+                }
+            }
+        },
+        "home": {
+            "type": "boolean",
+            "ui": {
+                "columns": 5,
+                "label": "Homing",
+                "help": {
+                    "show": true,
+                    "text": "?",
+                    "content": "Send home before start job"
+                },
+                "widgetConfig": {
+                    "size": "mini"
+                }
+            },
+            "rules": {
+                "required": {
+                    "value": true,
+                    "errMsg": "it is required!"
+                }
+            }
+        },
+        "feedrate": {
+            "type": "integer",
+            "default": 50,
+            "ui": {
+                "columns": 7,
+                "label": "Max Feedrate",
+                "help": {
+                    "show": true,
+                    "text": "?",
+                    "content": "Max machine feedrate"
+                },
+                "widgetConfig": {
+                    "size": "mini"
+                }
+            },
+            "rules": {
+                "required": {
+                    "value": true,
+                    "errMsg": "it is required!"
+                }
+            }
+        },
+        "linenumber": {
+            "type": "boolean",
+            "ui": {
+                "columns": 5,
+                "label": "Line Number",
+                "help": {
+                    "show": true,
+                    "text": "?",
+                    "content": "Add line number to GCODE"
+                },
+                "widgetConfig": {
+                    "size": "mini"
+                }
+            }
+        },
+        "platewidth": {
+            "type": "integer",
+            "ui": {
+                "columns": 3,
+                "label": "Plate Width",
+                "placeholder": "Working Plate Witdh",
+                "help": {
+                    "show": true,
+                    "text": "?",
+                    "content": "Only for model check"
+                },
+                "widgetConfig": {
+                    "size": "mini"
+                }
+            }
+        },
+        "plateheight": {
+            "type": "integer",
+            "ui": {
+                "columns": 3,
+                "showLabel": true,
+                "label": "Height",
+                "placeholder": "Working Plate Height",
+                "help": {
+                    "show": true,
+                    "text": "?",
+                    "content": "Only for model check"
+                },
+                "widgetConfig": {
+                    "size": "mini"
+                }
+            }
+        }
+    },
+    "ui": {
+        "widgetConfig": {
+            "layout": "h",
+            "labelWidth": "10em"
+        }
+    }
+}
