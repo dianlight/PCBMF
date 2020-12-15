@@ -143,3 +143,9 @@ ipcMain.handle('StartTightCNC', (event, ...args) => {
   return tightcnc.pid;
 });
 
+/**
+ * Save a TMP file.
+ */
+ipcMain.handle('saveTempFile', (event, ...args) => {
+
+});

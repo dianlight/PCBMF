@@ -5,9 +5,9 @@
     </el-main>
     <el-footer>
       <el-button-group>
-        <el-button type="primary" icon="el-icon-edit"></el-button>
-        <el-button type="primary" icon="el-icon-share"></el-button>
-        <el-button type="primary" icon="el-icon-delete"></el-button>
+        <el-button size="mini" type="primary" icon="el-icon-edit"></el-button>
+        <el-button size="mini" type="primary" icon="el-icon-share"></el-button>
+        <el-button size="mini" type="primary" icon="el-icon-delete"></el-button>
       </el-button-group>
       {{ camera ? JSON.stringify(camera.position) : "" }}
     </el-footer>
@@ -22,7 +22,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { CNCGCodeLoader } from "@/loaders/CNCGCodeLoader";
 import Component from "vue-class-component";
 import Vue from "vue";
-import { Prop } from "vue-property-decorator";
+import { Prop, PropSync, Watch } from "vue-property-decorator";
 import { Color, Vector3 } from "three";
 //import log from 'app/lib/log';
 //import Vue from "vue/types/umd";
@@ -44,54 +44,109 @@ const motionColor = {
 })
 export default class GCode extends Vue {
   @Prop({ type: Boolean, default: "true" }) readonly gcgrid!: boolean;
-  @Prop({ type: Number }) readonly width: number|undefined;
-  @Prop({ type: Number }) readonly height: number|undefined;
-//  @Prop({ type: ArrayBuffer}) readonly gcode: ArrayBuffer;
-//  @Prop({ type: Color, default: new THREE.Color("white")}) readonly moveColor: THREE.Color;
-//  @Prop({ type: Color, default: new THREE.Color("yellow")}) readonly isolationColor: THREE.Color;
+  @Prop({ type: Number }) readonly width: number | undefined;
+  @Prop({ type: Number }) readonly height: number | undefined;
+//  @Prop({ type: String, required: true }) readonly data: string | undefined;
+  @PropSync("data",{ type: String, required: true }) readonly gcodedata: string | undefined;
+  @Prop({ type: Color, default: () => new THREE.Color("red") })
+  readonly moveColor!: THREE.Color;
+  @Prop({ type: Color, default: () => new THREE.Color("green") })
+  readonly cutColor!: THREE.Color;
+
+  cube: THREE.Mesh | null = null;
+  renderer: THREE.WebGLRenderer | null = null;
+  scene: THREE.Scene | null = null;
+  camera: THREE.PerspectiveCamera | null = null;
+  controls: OrbitControls | null = null;
+  reload: boolean = true;
+
+  @Watch("gcodedata") gcodeChange(newData: string, oldData: string) {
+    if (newData != oldData) {
+      this.reload = true;
+    }
+  }
 
 
-  cube: THREE.Mesh|null = null;
-  renderer: THREE.WebGLRenderer|null = null;
-  scene: THREE.Scene|null = null;
-  camera: THREE.PerspectiveCamera|null = null;
+  updated() {
+     if(this.gcodedata && this.reload){
+       this.reload = false;
+      // Load GCode
+      const loader = new CNCGCodeLoader();
+      //    loader.load("https://threejs.org/examples/models/gcode/benchy.gcode",(object)=>{
+      loader.load(
+        this.gcodedata,
+        {
+          cutColor: this.cutColor,
+          moveColor: this.moveColor,
+        },
+        //   "/test/gcode/Gerber_TopLayer.GTL_iso_combined_cnc.nc",
+        (object) => {
+          //   console.log("Caricato file GCODE");
+          object.position.set(0, 0, 0);
+          this.scene!.clear();
+
+          const addLight = (x:number,y:number,z:number) => {
+            const color = 0xFFFFFF;
+            const intensity = 1;
+            const light = new THREE.DirectionalLight(color, intensity);
+            light.position.set(x,y,z);
+            this.scene!.add(light);
+          }
+          addLight(-1, 2, 4);
+          addLight( 1, -1, -2);
+
+          if (this.gcgrid) {
+            const axesHelper = new THREE.AxesHelper(5);
+            this.scene!.add(axesHelper);
+
+            const gridHelper = new THREE.GridHelper(
+              this.width! > this.height!
+                ? this.width! * 1.2
+                : this.height! * 1.2,
+              10
+            );
+            gridHelper.rotateX(Math.PI / 2);
+            //      gridHelper.rotateOnAxis()
+            gridHelper.position.y = this.height! / 2;
+            gridHelper.position.x = this.width! / 2;
+            gridHelper.position.z = 0;
+            this.scene!.add(gridHelper);
+
+            this.scene!.add(object);
+            this.controls?.update();
+            this.render3d();
+          }
+        }
+      );
+    }
+  }
 
   init() {
     this.scene = new THREE.Scene();
+    this.scene.background = new THREE.Color("white");
 
     // Optional Grid
+      /*
     if (this.gcgrid) {
       const axesHelper = new THREE.AxesHelper(5);
       this.scene.add(axesHelper);
-
-/*
-      const dir = new THREE.Vector3(0, 1, 0);
-      //normalize the direction vector (convert to vector of length 1)
-      dir.normalize();
-      const origin = new THREE.Vector3(0, 0, 0);
-      const length = 10;
-      const hex = 0xffff00;
-      const arrowHelper = new THREE.ArrowHelper(dir, origin, length, hex);
-      this.scene.add(arrowHelper);
-*/
-
       const gridHelper = new THREE.GridHelper(
-        this.width > this.height ? this.width * 1.2 : this.height * 1.2,
+        this.width! > this.height! ? this.width! * 1.2 : this.height! * 1.2,
         10
       );
-      gridHelper.rotateX(Math.PI/2);
+      gridHelper.rotateX(Math.PI / 2);
       //      gridHelper.rotateOnAxis()
-      gridHelper.position.y = this.height / 2;
-      gridHelper.position.x = this.width / 2;
+      gridHelper.position.y = this.height! / 2;
+      gridHelper.position.x = this.width! / 2;
       gridHelper.position.z = 0;
       this.scene.add(gridHelper);
-
+*/
       /*
 const plane = new THREE.Plane( new THREE.Vector3( 0, 0, 0 ), 0 );
 const helper = new THREE.PlaneHelper( plane, this.width > this.height?this.width*1.2:this.height*1.2, 0xffff00 );
 this.scene.add( helper );     
 */
-    }
+//    }
 
     this.camera = new THREE.PerspectiveCamera(
       50,
@@ -100,40 +155,42 @@ this.scene.add( helper );
       0.1,
       1000
     );
-    this.camera.position.x = this.width / 2;
-    this.camera.position.y = this.height / 2;
-    this.camera.position.z = this.width * 1.3;
+    this.camera.position.x = this.width! / 2;
+    this.camera.position.y = this.height! / 2;
+    this.camera.position.z = this.width! * 1.3;
     //  this.camera.lookAt(new Vector3(this.width/2,this.height/2,0));
     this.camera.updateProjectionMatrix();
 
     // WebGL
     this.renderer = new THREE.WebGLRenderer();
     this.renderer.setPixelRatio(window.devicePixelRatio);
-//    console.log(
-//      (this.$refs.container as HTMLElement).clientWidth,
-//      (this.$refs.container as HTMLElement).clientHeight
-//    );
+    //    console.log(
+    //      (this.$refs.container as HTMLElement).clientWidth,
+    //      (this.$refs.container as HTMLElement).clientHeight
+    //    );
     this.renderer.setSize(
       (this.$refs.container as HTMLElement).clientWidth,
       (this.$refs.container as HTMLElement).clientHeight
     );
     (this.$refs.container as HTMLElement).appendChild(this.renderer.domElement);
 
-    const controls = new OrbitControls(this.camera, this.renderer.domElement);
-    controls.addEventListener("change", this.render3d); // use if there is no animation loop
-    controls.minDistance = 0.1;
-    controls.maxDistance = 500;
-    controls.enablePan = true;
-    controls.target.x = this.width / 2;
-    controls.target.y = this.height / 2;
-    controls.target.z = 0.0;
+    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+    this.controls.addEventListener("change", this.render3d); // use if there is no animation loop
+    this.controls.minDistance = 0.1;
+    this.controls.maxDistance = 500;
+    this.controls.enablePan = true;
+    this.controls.target.x = this.width! / 2;
+    this.controls.target.y = this.height! / 2;
+    this.controls.target.z = 0.0;
 
     // Load GCode
+    /*
 
     const loader = new CNCGCodeLoader();
     //    loader.load("https://threejs.org/examples/models/gcode/benchy.gcode",(object)=>{
     loader.load(
-      "/test/gcode/Gerber_TopLayer.GTL_iso_combined_cnc.nc",
+      this.$props.data,
+   //   "/test/gcode/Gerber_TopLayer.GTL_iso_combined_cnc.nc",
       (object) => {
      //   console.log("Caricato file GCODE");
         object.position.set(0, 0, 0);
@@ -147,7 +204,7 @@ this.scene.add( helper );
         this.render3d();
       }
     );
-
+*/
     /*
     const geometry = new THREE.BoxGeometry(1, 1, 1);
     const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
@@ -182,7 +239,7 @@ this.scene.add( helper );
   }
 
   render3d() {
-    if(this.scene && this.camera)
+    if (this.scene && this.camera)
       this.renderer!.render(this.scene, this.camera);
   }
 

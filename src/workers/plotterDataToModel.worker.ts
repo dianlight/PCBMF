@@ -1,6 +1,11 @@
 import { IPlotterData, IPlotterDataCircle, IPlotterDataFill, IPlotterDataLine, IPlotterDataPad, IPlotterDataRect, IPlotterDataShape, IPlotterDataSize, IPlotterDataStroke, IPlotterDataTypes } from "@/models/plotterData";
-import makerjs from "makerjs";
+import makerjs, { IPath, IPathMap, isPath, isPathCircle } from "makerjs";
 import { IWorkerData, IWorkerDataType } from "@/models/workerData";
+//import { GCode } from '@oneisland/gcode';
+import { GCodeParser } from '@/parsers/gcodeparser';
+import fs from "fs";
+import path from "path";
+import temp from "temp";
 
 interface IShapeDictionary {
     [index: number]: makerjs.IModel;
@@ -202,20 +207,102 @@ interface Options {
 
                 console.log("Apply outline:",options.outlineTick);
                 const outline = makerjs.model.outline(gmodel,options.outlineTick/2,0,false);
-                let json = {};
+               // let json = {};
+                let gcode:String = "";
                 if(outline){
                     outline.layer="outline";
                     makerjs.model.addModel(gmodel,outline,"isolation",true);
-                    json = makerjs.exporter.toJson(outline,{accuracy:4});
+                   // json = makerjs.exporter.toJson(outline,{accuracy:4});
+
+                    // Generate GCODE
+                    
+                    const code = new GCodeParser({
+                        // Define the script name
+                        name: '123',
+                        // Define the scale to use (default is mm)
+                        unit: 'mm',
+                        // Define the starting x and y position
+                        start: {x:0, y:0},
+                        finish: {x:0, y:0}, // FIXME: Config Parking 
+                        positioning: 'relative',
+                        feedrate: 50, // FIXME: From config or tool?
+                        lines: false, // FIXME: From config
+                        // Set the clearance height to 10cm
+                        clearance: 10, // FIXME: From config travel height
+                      });
+                    const cut_deep = 1; // FIXME: From model cut deep  
+                   // let position = [0,0,-cut_deep];
+                    makerjs.model.walk(outline, {
+                        beforeChildWalk: (wp):boolean=>{
+                           // console.log(wp);
+                            if(wp.childModel.paths){
+                                Object.entries(wp.childModel.paths).forEach( (path)=>{
+                                if(makerjs.isPathLine(path[1])){
+                                    const pathLine = path[1] as unknown as makerjs.IPathLine;
+                                    code.feedRapid({
+                                        x: pathLine.origin[0],
+                                        y: pathLine.origin[1],
+                                    });
+                                    code.feedLinear({
+                                        x: pathLine.end[0],
+                                        y: pathLine.end[1],
+                                        z: -cut_deep
+                                    });
+                                } else if(makerjs.isPathArc(path[1])){
+                                    const pathArc = path[1] as unknown as makerjs.IPathArc;
+                                    const cord = new makerjs.paths.Chord(pathArc);
+                                    // Find Matching Path from 2 points.
+                                    code.feedRapid({
+                                        x: cord.origin[0],
+                                        y: cord.origin[1],                                            
+                                    });
+                                    code.feedArch({
+                                        x: cord.end[0],
+                                        y: cord.end[1], 
+                                        i:cord.origin[0]-pathArc.origin[0],
+                                        j:cord.origin[1]-pathArc.origin[0],
+                                    })
+                                } else if(makerjs.isPathCircle(path[1])){
+                                    // TODO: Please implements
+                                } else if(makerjs.isPathArcInBezierCurve(path[1])){
+                                    // TODO: Please implements
+                                } else {
+                                    console.warn("Unknown path type", path);
+                                }
+                                });
+
+                            } else {
+                                console.error("Empty Paths for ",wp);
+                            }
+                            return false;
+                        }
+                    });
+                    /*
+                    temp.track();
+                    temp.open('gcode',(err,info)=>{
+                        if(!err){
+                            console.log("Tmp file:",info.path);
+                            fs.write(info.fd, String(code), (err)=> {
+                                console.log("Write Error->",err);
+                            });
+                            fs.close(info.fd, (err)=>{
+                                console.log("Close Error->",err);
+                            });
+                        } else {
+                            console.error("Open Error->",err);
+                        }
+                    });
+                    */
+                    gcode = String(code);
+                    //console.log(String(code));
+                    // END
                 }
         
                 const svg = makerjs.exporter.toSVG(gmodel,
                   {
                     units: makerjs.unitType.Millimeter,
                 });
-                ctx.postMessage({ type: IWorkerDataType.END, data: {svg:svg,json:json} });
-
-                
+                ctx.postMessage({ type: IWorkerDataType.END, data: {svg:svg,gcode:gcode} });        
                 break;
             default:
                 console.error("Unknown worker command!", data);

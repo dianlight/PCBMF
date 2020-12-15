@@ -29,7 +29,11 @@
             ></svg-viewer>
           </el-tab-pane>
           <el-tab-pane label="GCODE">
-            <g-code :gcgrid="true" :width="width" :height="height"></g-code>
+            <g-code 
+            :data="gcodes[copper.filename]"
+            :gcgrid="true" 
+            :width="width" 
+            :height="height"></g-code>
           </el-tab-pane>
         </el-tabs>
       </el-col>
@@ -142,8 +146,6 @@ import PlotterWorker from "_/workers/plotterDataToModel.worker";
 import { IProject } from "@/models/project";
 import { Store } from "vuex";
 
-let svg_top: string, svg_bottom: string;
-
 interface IDictionary<T> {
   [index: string]: T;
 }
@@ -178,6 +180,7 @@ interface Options {
 export default class WizardIsolation extends Vue {
   coppers: PcbLayers[] = [];
   svgs: IDictionary<String> = {};
+  gcodes: IDictionary<String> = {};
 
   toolTypes: any[] = [];
   options: IDictionary<Options> = {};
@@ -297,9 +300,10 @@ export default class WizardIsolation extends Vue {
     });
     plotterWorker.onmessage = (event) => {
     //  console.log("From Render Warker!", event);
-      const data = event.data as IWorkerData<{svg:string,json:string}>;
+      const data = event.data as IWorkerData<{svg:string,gcode:string}>;
       if (data.type === IWorkerDataType.END) {
-        this.svgs[layer.filename] = (event.data as IWorkerData<{svg:string,json:string}>).data.svg;
+        this.svgs[layer.filename] = (event.data as IWorkerData<{svg:string,gcode:string}>).data.svg;
+        this.gcodes[layer.filename] = (event.data as IWorkerData<{svg:string,gcode:string}>).data.gcode;
         this.options[layer.filename].renderTime = Date.now() - startTime;
         this.options[layer.filename].busy = false;
         this.$forceUpdate();

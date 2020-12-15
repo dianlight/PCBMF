@@ -1,3 +1,4 @@
+import { TouchBarScrubber } from 'electron';
 import {
 	LoadingManager,
 	BufferGeometry,
@@ -7,12 +8,14 @@ import {
 	Group,
 	LineBasicMaterial,
 	LineSegments,
-	Loader
+	Loader,
+	Color,
+	MeshPhongMaterial
 } from 'three';
 
 export interface GCodeState {
  [index:string] : any,	
- x?: number, y?: number, z?: number, e?: number, f?: number, extruding?: boolean, relative?: boolean 
+ x?: number, y?: number, z?: number, e?: number, f?: number, relative?: boolean 
 }
 
 export interface GCodeLayer {
@@ -23,6 +26,8 @@ export interface GCodeLayer {
 export class CNCGCodeLoader extends Loader {
 
 	splitLayer: boolean;
+	cutColor: THREE.Color = new Color(0xFFFF99);
+	moveColor: THREE.Color = new Color(0x00FF00);
 
 	constructor(manager?: LoadingManager) {
 		super();
@@ -30,10 +35,17 @@ export class CNCGCodeLoader extends Loader {
 		this.splitLayer = false;
 	}
 
-	load(url: string, onLoad: (object: Group) => void, onProgress?: (event: ProgressEvent) => void, onError?: (event: ErrorEvent) => void): void {
+	load(data: string, options: {
+		cutColor: THREE.Color,
+		moveColor: THREE.Color,
+	}, onLoad: (object: Group) => void, onProgress?: (event: ProgressEvent) => void, onError?: (event: ErrorEvent) => void): void {
 
+		this.cutColor = options.cutColor;
+		this.moveColor = options.moveColor;
 		var scope = this;
+		onLoad(scope.parse(data));
 
+/*
 		var loader = new FileLoader(scope.manager);
 		loader.setPath(scope.path);
 		loader.setRequestHeader(scope.requestHeader);
@@ -50,19 +62,25 @@ export class CNCGCodeLoader extends Loader {
 				scope.manager.itemError(url);
 			}
 		}, onProgress, onError);
-	}
+*/		
+	}	
 
 	parse(data: string): Group {
 
-		let state:GCodeState = { x: 0, y: 0, z: 0, e: 0, f: 0, extruding: false, relative: false };
+		let state:GCodeState = { x: 0, y: 0, z: 0, e: 0, f: 0, relative: false };
 		var layers:GCodeLayer[] = [];
 
 		var currentLayer:GCodeLayer|undefined = undefined;
 
-		var pathMaterial = new LineBasicMaterial( { color: 0xFFFF99 } );
+		//var pathMaterial = new LineBasicMaterial( { color: 0xFFFF99 } );
+		const pathMaterial = new MeshPhongMaterial({
+			color: this.moveColor,
+			opacity: 0.5,
+			transparent: true,
+		  });
 		pathMaterial.name = 'path';
 
-		var extrudingMaterial = new LineBasicMaterial( { color: 0x00FF00 } );
+		var extrudingMaterial = new LineBasicMaterial( { color: this.cutColor } );
 		extrudingMaterial.name = 'extruded';
 
 		function newLayer( line:GCodeState ) {
@@ -77,7 +95,7 @@ export class CNCGCodeLoader extends Loader {
 			}
 
 			if(p1.x && p1.y && p1.z && p2.x && p2.y && p2.z )
-			if ( line.extruding ) {
+			if ( p1.z < 0 && p2.z < 0 ) {
 				currentLayer?.vertex?.push( p1.x, p1.y, p1.z );
 				currentLayer?.vertex?.push( p2.x, p2.y, p2.z );
 			} else {
@@ -86,9 +104,11 @@ export class CNCGCodeLoader extends Loader {
 			}
 		}
 
+		/*
 		function delta( v1:number, v2:number ) {
 			return state.relative ? v2 : v2 - v1;
 		}
+		*/
 
 		function absolute( v1:number|undefined, v2:number|undefined ) {
 			if(v1 === undefined)return v2;
@@ -121,7 +141,7 @@ export class CNCGCodeLoader extends Loader {
 			//Process commands
 			if (cmd[0]==='(' || cmd === '') {
 				// Comment or empty line
-			} else if ( cmd === 'G0' || cmd === 'G1' ) {
+			} else if ( cmd === 'G0' || cmd === 'G1' || cmd === 'G00' || cmd === 'G01' ) {
 				//G0/G1 – Linear Movement
 			//	console.debug("->",args);
 				var line:GCodeState = {
@@ -147,7 +167,7 @@ export class CNCGCodeLoader extends Loader {
 			*/	
 				addSegment( state, line );
 				state = line;
-			} else if ( cmd === 'G2' || cmd === 'G3' ) {
+			} else if ( cmd === 'G2' || cmd === 'G3' || cmd === 'G02' || cmd === 'G03' ) {
 				//G2/G3 - Arc Movement ( G2 clock wise and G3 counter clock wise )
 				console.warn( 'THREE.GCodeLoader: Arc command not supported' );
 			} else if ( cmd === 'G90' ) {
