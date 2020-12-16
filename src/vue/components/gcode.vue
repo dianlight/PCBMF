@@ -18,26 +18,11 @@
 //import colornames from "colornames";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-//import { GCodeLoader } from 'three/examples/jsm/loaders/GCodeLoader';
-import { CNCGCodeLoader } from "@/loaders/CNCGCodeLoader";
 import Component from "vue-class-component";
 import Vue from "vue";
 import { Prop, PropSync, Watch } from "vue-property-decorator";
-import { Color, Vector3 } from "three";
-//import log from 'app/lib/log';
-//import Vue from "vue/types/umd";
-
-/*
-const defaultColor = new THREE.Color(colornames("lightgrey"));
-*/
-/*
-const motionColor = {
-  G0: new THREE.Color(colornames("green")),
-  G1: new THREE.Color(colornames("blue")),
-  G2: new THREE.Color(colornames("deepskyblue")),
-  G3: new THREE.Color(colornames("deepskyblue")),
-};
-*/
+import { BufferGeometry, Color, Float32BufferAttribute, Group, LineBasicMaterial, LineSegments, MeshPhongMaterial, Vector3 } from "three";
+import Toolpath, { Modal, Position } from "gcode-toolpath";
 
 @Component({
   name: "GCode",
@@ -46,7 +31,6 @@ export default class GCode extends Vue {
   @Prop({ type: Boolean, default: "true" }) readonly gcgrid!: boolean;
   @Prop({ type: Number }) readonly width: number | undefined;
   @Prop({ type: Number }) readonly height: number | undefined;
-//  @Prop({ type: String, required: true }) readonly data: string | undefined;
   @PropSync("data",{ type: String, required: true }) readonly gcodedata: string | undefined;
   @Prop({ type: Color, default: () => new THREE.Color("red") })
   readonly moveColor!: THREE.Color;
@@ -60,28 +44,81 @@ export default class GCode extends Vue {
   controls: OrbitControls | null = null;
   reload: boolean = true;
 
+
   @Watch("gcodedata") gcodeChange(newData: string, oldData: string) {
     if (newData != oldData) {
       this.reload = true;
     }
   }
 
+  ready(){
+     console.log("READY EVENT!");
+  }
+
 
   updated() {
+     console.log("GCODE UPDATE EVENT!");
      if(this.gcodedata && this.reload){
-       this.reload = false;
-      // Load GCode
-      const loader = new CNCGCodeLoader();
-      //    loader.load("https://threejs.org/examples/models/gcode/benchy.gcode",(object)=>{
-      loader.load(
-        this.gcodedata,
-        {
-          cutColor: this.cutColor,
-          moveColor: this.moveColor,
+      this.reload = false;
+
+      //var pathMaterial = new LineBasicMaterial( { color: 0xFFFF99 } );
+      const pathMaterial = new MeshPhongMaterial({
+        color: this.moveColor,
+        opacity: 0.5,
+        transparent: true,
+        });
+      pathMaterial.name = 'path';
+
+      var extrudingMaterial = new LineBasicMaterial( { color: this.cutColor } );
+      extrudingMaterial.name = 'extruded';
+
+      var currentLayer:{
+        vertex:any[],
+        pathVertex:any[]
+      } = {
+        vertex:[],
+        pathVertex:[]
+      }; 
+
+      const object = new Group();
+		  object.name = 'gcode';
+
+      const addObject = (name:string,  vertex:number[]|undefined, extruding:boolean ) => {
+        if(vertex === undefined)return;
+        var geometry = new BufferGeometry();
+        geometry.setAttribute( 'position', new Float32BufferAttribute( vertex, 3 ) );
+
+        var segments = new LineSegments( geometry, extruding ? extrudingMaterial : pathMaterial );
+        segments.name = name;
+        object.add( segments );
+      }
+
+      const toolPath = new Toolpath({
+        "position": [0,0,0],
+        "modal": {
+          distance: 'G90',
         },
-        //   "/test/gcode/Gerber_TopLayer.GTL_iso_combined_cnc.nc",
-        (object) => {
-          //   console.log("Caricato file GCODE");
+        "addLine": (modal:Modal,p1:Position,p2:Position)=>{
+          console.log(p1,p2);
+          if ( p1.z < 0 && p2.z < 0 ) {
+            currentLayer?.vertex?.push( p1.x, p1.y, p1.z );
+            currentLayer?.vertex?.push( p2.x, p2.y, p2.z );
+          } else {
+            currentLayer?.pathVertex?.push( p1.x, p1.y, p1.z );
+            currentLayer?.pathVertex?.push( p2.x, p2.y, p2.z );
+          }
+        },
+        "addArcCurve": (modal:Modal,start:Position,end:Position,center:Position)=>{
+          console.warn("Arc unsupported",modal,start,end,center);
+        }
+      });
+
+      toolPath.loadFromString(this.gcodedata,(err,data)=>{
+        console.log(err,data);
+
+          addObject("cut_layer",currentLayer.vertex,true);
+          addObject("path_layer",currentLayer.pathVertex,false);
+
           object.position.set(0, 0, 0);
           this.scene!.clear();
 
@@ -116,8 +153,7 @@ export default class GCode extends Vue {
             this.controls?.update();
             this.render3d();
           }
-        }
-      );
+      });
     }
   }
 
@@ -125,22 +161,6 @@ export default class GCode extends Vue {
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color("white");
 
-    // Optional Grid
-      /*
-    if (this.gcgrid) {
-      const axesHelper = new THREE.AxesHelper(5);
-      this.scene.add(axesHelper);
-      const gridHelper = new THREE.GridHelper(
-        this.width! > this.height! ? this.width! * 1.2 : this.height! * 1.2,
-        10
-      );
-      gridHelper.rotateX(Math.PI / 2);
-      //      gridHelper.rotateOnAxis()
-      gridHelper.position.y = this.height! / 2;
-      gridHelper.position.x = this.width! / 2;
-      gridHelper.position.z = 0;
-      this.scene.add(gridHelper);
-*/
       /*
 const plane = new THREE.Plane( new THREE.Vector3( 0, 0, 0 ), 0 );
 const helper = new THREE.PlaneHelper( plane, this.width > this.height?this.width*1.2:this.height*1.2, 0xffff00 );
@@ -183,43 +203,7 @@ this.scene.add( helper );
     this.controls.target.y = this.height! / 2;
     this.controls.target.z = 0.0;
 
-    // Load GCode
-    /*
-
-    const loader = new CNCGCodeLoader();
-    //    loader.load("https://threejs.org/examples/models/gcode/benchy.gcode",(object)=>{
-    loader.load(
-      this.$props.data,
-   //   "/test/gcode/Gerber_TopLayer.GTL_iso_combined_cnc.nc",
-      (object) => {
-     //   console.log("Caricato file GCODE");
-        object.position.set(0, 0, 0);
-        this.scene!.add(object);
-        //        controls.target.copy(object.position);
-        //        this.camera.lookAt(new THREE.Vector3(1,0,-1));
-        //        controls.target.x = this.$store.state.config.pcb.width/-2;
-        //        this.camera.translateX(-50);
-        //       this.camera.translateZ(100);
-        controls.update();
-        this.render3d();
-      }
-    );
-*/
-    /*
-    const geometry = new THREE.BoxGeometry(1, 1, 1);
-    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-    this.cube = new THREE.Mesh(geometry, material);
-    this.scene.add(this.cube);
-    */
-
     window.addEventListener("resize", this.resize, false);
-
-    //    this.camera.position.z = 5;
-    //    this.camera.position.x = 0;
-    //    this.camera.position.z = 0;
-    //    this.render3d();
-
-    //  const animate = function () {};
   }
 
   resize(event: Event) {
@@ -241,6 +225,7 @@ this.scene.add( helper );
   render3d() {
     if (this.scene && this.camera)
       this.renderer!.render(this.scene, this.camera);
+    this.$forceUpdate();  
   }
 
   animate() {

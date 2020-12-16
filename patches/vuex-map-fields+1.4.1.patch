@@ -16,3 +16,15 @@ index 0000000..ae6f2c1
 +
 +export function updateField(state: any, _ref3: any): any;
 +
+diff --git a/node_modules/vuex-map-fields/package.json b/node_modules/vuex-map-fields/package.json
+index b800317..5577ff8 100644
+--- a/node_modules/vuex-map-fields/package.json
++++ b/node_modules/vuex-map-fields/package.json
+@@ -49,6 +49,7 @@
+   },
+   "main": "dist/index.js",
+   "module": "dist/index.esm.js",
++  "typings": "dist/index.d.ts",
+   "repository": {
+     "type": "git",
+     "url": "https://github.com/maoberlehner/vuex-map-fields"

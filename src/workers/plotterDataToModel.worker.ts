@@ -1,11 +1,10 @@
 import { IPlotterData, IPlotterDataCircle, IPlotterDataFill, IPlotterDataLine, IPlotterDataPad, IPlotterDataRect, IPlotterDataShape, IPlotterDataSize, IPlotterDataStroke, IPlotterDataTypes } from "@/models/plotterData";
 import makerjs, { IPath, IPathMap, isPath, isPathCircle } from "makerjs";
 import { IWorkerData, IWorkerDataType } from "@/models/workerData";
-//import { GCode } from '@oneisland/gcode';
 import { GCodeParser } from '@/parsers/gcodeparser';
-import fs from "fs";
-import path from "path";
-import temp from "temp";
+//import fs from "fs";
+//import path from "path";
+//import temp from "temp";
 
 interface IShapeDictionary {
     [index: number]: makerjs.IModel;
@@ -224,7 +223,7 @@ interface Options {
                         // Define the starting x and y position
                         start: {x:0, y:0},
                         finish: {x:0, y:0}, // FIXME: Config Parking 
-                        positioning: 'relative',
+                        positioning: 'absolute',
                         feedrate: 50, // FIXME: From config or tool?
                         lines: false, // FIXME: From config
                         // Set the clearance height to 10cm
@@ -277,27 +276,10 @@ interface Options {
                             return false;
                         }
                     });
-                    /*
-                    temp.track();
-                    temp.open('gcode',(err,info)=>{
-                        if(!err){
-                            console.log("Tmp file:",info.path);
-                            fs.write(info.fd, String(code), (err)=> {
-                                console.log("Write Error->",err);
-                            });
-                            fs.close(info.fd, (err)=>{
-                                console.log("Close Error->",err);
-                            });
-                        } else {
-                            console.error("Open Error->",err);
-                        }
-                    });
-                    */
                     gcode = String(code);
                     //console.log(String(code));
                     // END
-                }
-        
+                }        
                 const svg = makerjs.exporter.toSVG(gmodel,
                   {
                     units: makerjs.unitType.Millimeter,

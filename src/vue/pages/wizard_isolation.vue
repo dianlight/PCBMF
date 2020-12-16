@@ -20,7 +20,7 @@
         </h4>
 
         <el-tabs type="border-card">
-          <el-tab-pane label="SVG">
+          <el-tab-pane label="Model">
             <svg-viewer
               :panzoom="true"
               _class="fullframe"
@@ -28,12 +28,16 @@
               :style="{'--isolation-width': (doutline[copper.filename]*2)+'mm' }"
             ></svg-viewer>
           </el-tab-pane>
-          <el-tab-pane label="GCODE">
+          <el-tab-pane label="Work (3d)">
             <g-code 
             :data="gcodes[copper.filename]"
             :gcgrid="true" 
             :width="width" 
             :height="height"></g-code>
+          </el-tab-pane>
+          <el-tab-pane label="Gcode">
+             <highlightjs autodetect :code="gcodes[copper.filename]"/>
+             <code>{{gcodes[copper.filename]}}</code>
           </el-tab-pane>
         </el-tabs>
       </el-col>
