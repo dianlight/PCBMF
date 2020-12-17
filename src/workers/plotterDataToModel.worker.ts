@@ -214,7 +214,7 @@ interface Options {
                    // json = makerjs.exporter.toJson(outline,{accuracy:4});
 
                     // Generate GCODE
-                    
+                    const arcprecision = 60; // FIXME: from config
                     const code = new GCodeParser({
                         // Define the script name
                         name: '123',
@@ -228,9 +228,34 @@ interface Options {
                         lines: false, // FIXME: From config
                         // Set the clearance height to 10cm
                         clearance: 10, // FIXME: From config travel height
+                        precision: 4 // FIXME: From config
                       });
                     const cut_deep = 1; // FIXME: From model cut deep  
-                   // let position = [0,0,-cut_deep];
+                    
+                    function orderPath(cpoints:makerjs.IPoint[]) {
+
+                        function isEqual(value:any, other:any):boolean {
+                            return JSON.stringify(value) == JSON.stringify(other);
+                        }
+
+                        const state = code.getState();
+                         
+                        const near = makerjs.point.closest(
+                            [state.position.x as number,state.position.y as number,state.position.z as number]
+                            ,cpoints);
+                        
+
+                        if(isEqual(cpoints[0],near)){
+                            return cpoints;
+                        } else if(isEqual(cpoints[cpoints.length-1],near)){
+                            return cpoints.reverse();
+                        } else {
+                            // FIXME: Find the new start!
+                            return cpoints;
+                        }
+                    }
+
+
                     makerjs.model.walk(outline, {
                         beforeChildWalk: (wp):boolean=>{
                            // console.log(wp);
@@ -238,17 +263,33 @@ interface Options {
                                 Object.entries(wp.childModel.paths).forEach( (path)=>{
                                 if(makerjs.isPathLine(path[1])){
                                     const pathLine = path[1] as unknown as makerjs.IPathLine;
+                                    const opoints = orderPath([pathLine.origin,pathLine.end]);
                                     code.feedRapid({
-                                        x: pathLine.origin[0],
-                                        y: pathLine.origin[1],
+                                        x: opoints[0][0],
+                                        y: opoints[0][1],
                                     });
                                     code.feedLinear({
-                                        x: pathLine.end[0],
-                                        y: pathLine.end[1],
+                                        x: opoints[1][0],
+                                        y: opoints[1][1],
                                         z: -cut_deep
                                     });
-                                } else if(makerjs.isPathArc(path[1])){
-                                    const pathArc = path[1] as unknown as makerjs.IPathArc;
+                                } else if(makerjs.isPathArc(path[1]) || makerjs.isPathCircle(path[1]) || makerjs.isPathArcInBezierCurve(path[1])){
+                                   // const pathArc = path[1] as unknown as makerjs.IPathArc;
+                                    const points = makerjs.path.toPoints(path[1],arcprecision);
+                                    const opoints = orderPath(points);
+                                    code.feedRapid({
+                                        x: opoints[0][0],
+                                        y: opoints[0][1],                                            
+                                    });
+                                    opoints.forEach( (point, index)=>{
+                                        if(index > 0)
+                                        code.feedLinear({
+                                            x: point[0],
+                                            y: point[1],
+                                            z: -cut_deep
+                                        })
+                                    });
+                                    /*
                                     const cord = new makerjs.paths.Chord(pathArc);
                                     // Find Matching Path from 2 points.
                                     code.feedRapid({
@@ -258,13 +299,17 @@ interface Options {
                                     code.feedArch({
                                         x: cord.end[0],
                                         y: cord.end[1], 
-                                        i:cord.origin[0]-pathArc.origin[0],
+                                        z: -cut_deep,
+                                        i:pathArc.origin[0]-cord.origin[0],
                                         j:cord.origin[1]-pathArc.origin[0],
                                     })
+                                    */
+                                   /*
                                 } else if(makerjs.isPathCircle(path[1])){
                                     // TODO: Please implements
                                 } else if(makerjs.isPathArcInBezierCurve(path[1])){
                                     // TODO: Please implements
+                                    */
                                 } else {
                                     console.warn("Unknown path type", path);
                                 }

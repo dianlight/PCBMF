@@ -31,7 +31,7 @@ export default class GCode extends Vue {
   @Prop({ type: Boolean, default: "true" }) readonly gcgrid!: boolean;
   @Prop({ type: Number }) readonly width: number | undefined;
   @Prop({ type: Number }) readonly height: number | undefined;
-  @PropSync("data",{ type: String, required: true }) readonly gcodedata: string | undefined;
+  @PropSync("data",{ type: String, required: true, default:"" }) readonly gcodedata: string | undefined;
   @Prop({ type: Color, default: () => new THREE.Color("red") })
   readonly moveColor!: THREE.Color;
   @Prop({ type: Color, default: () => new THREE.Color("green") })
@@ -47,13 +47,13 @@ export default class GCode extends Vue {
 
   @Watch("gcodedata") gcodeChange(newData: string, oldData: string) {
     if (newData != oldData) {
-      this.reload = true;
+      this.$data.reload = true;
     }
   }
 
-  ready(){
-     console.log("READY EVENT!");
-  }
+//  ready(){
+//     console.log("READY EVENT!");
+//  }
 
 
   updated() {
@@ -83,6 +83,7 @@ export default class GCode extends Vue {
       const object = new Group();
 		  object.name = 'gcode';
 
+
       const addObject = (name:string,  vertex:number[]|undefined, extruding:boolean ) => {
         if(vertex === undefined)return;
         var geometry = new BufferGeometry();
@@ -98,18 +99,35 @@ export default class GCode extends Vue {
         "modal": {
           distance: 'G90',
         },
-        "addLine": (modal:Modal,p1:Position,p2:Position)=>{
-          console.log(p1,p2);
-          if ( p1.z < 0 && p2.z < 0 ) {
-            currentLayer?.vertex?.push( p1.x, p1.y, p1.z );
-            currentLayer?.vertex?.push( p2.x, p2.y, p2.z );
+        "addLine": (modal,p1,p2)=>{
+        //  console.log("Line",p1,p2);
+          if ( (p1 as Position).z < 0 && (p2 as Position).z < 0 ) {
+            currentLayer?.vertex?.push( (p1 as Position).x, (p1 as Position).y, (p1 as Position).z );
+            currentLayer?.vertex?.push( (p2 as Position).x, (p2 as Position).y, (p2 as Position).z );
           } else {
-            currentLayer?.pathVertex?.push( p1.x, p1.y, p1.z );
-            currentLayer?.pathVertex?.push( p2.x, p2.y, p2.z );
+            currentLayer?.pathVertex?.push( (p1 as Position).x, (p1 as Position).y, (p1 as Position).z );
+            currentLayer?.pathVertex?.push( (p2 as Position).x, (p2 as Position).y, (p2 as Position).z );
           }
         },
-        "addArcCurve": (modal:Modal,start:Position,end:Position,center:Position)=>{
-          console.warn("Arc unsupported",modal,start,end,center);
+        "addArcCurve": (modal,start,end,center)=>{
+          console.warn("Arc not implemented",modal,start,end,center);
+          /*
+          const s = start as Position;
+          const e = end as Position;
+          const c = center as Position;
+          const curve = new THREE.QuadraticBezierCurve3(
+            new THREE.Vector3(s.x,s.y,s.z),
+            new THREE.Vector3(c.x,c.y,c.z),
+            new THREE.Vector3(e.x,e.y,e.z)
+          );
+          if ( (start as Position).z < 0 && (end as Position).z < 0 ) {
+            console.log("->",curve.getPoints());
+            currentLayer?.vertex?.push( curve.getPoints(10) );
+          } else {
+            console.log("->",curve.getPoints());
+            currentLayer?.pathVertex?.push( curve.getPoints(10) );
+          }
+          */
         }
       });
 

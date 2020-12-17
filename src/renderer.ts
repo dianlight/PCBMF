@@ -43,15 +43,19 @@ import 'element-ui/lib/theme-chalk/index.css';
 import ncformStdComps from '@ncform/ncform-theme-elementui';
 //import axios from 'axios';
 import hljs from "highlight.js";
+import "highlight.js/styles/github.css"
+//import gcode "highlight.js/lib/languages/gcode"; 
 //import ThreeDViewer from "vue-3d-viewer";
 //import Worker from "worker-loader!./workers/test.worker";
 
+hljs.registerLanguage("gcode",require("highlight.js/lib/languages/gcode"));
 
 const locale = require('element-ui/lib/locale/lang/en');
 
 Vue.use(ElementUI, {locale});
 Vue.use(vueNcform, {extComponents: ncformStdComps, lang: 'en'});
 Vue.use(hljs.vuePlugin);
+//(window as any).hljs = hljs;
 
 
 //Vue.use(ThreeDViewer);

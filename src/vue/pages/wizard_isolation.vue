@@ -36,8 +36,7 @@
             :height="height"></g-code>
           </el-tab-pane>
           <el-tab-pane label="Gcode">
-             <highlightjs autodetect :code="gcodes[copper.filename]"/>
-             <code>{{gcodes[copper.filename]}}</code>
+             <highlightjs  language="gcode" :code="gcodes[copper.filename]||'Loading...'"/>
           </el-tab-pane>
         </el-tabs>
       </el-col>
@@ -338,5 +337,9 @@ svg #outline {
   stroke: red;
   stroke-width: var(--isolation-width);
   stroke-linecap: round;
+}
+
+.hljs {
+  max-height: 40em;
 }
 </style>

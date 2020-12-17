@@ -116,12 +116,13 @@ import store from "../store";
 import pcbStackup from "pcb-stackup";
 import whatsThatGerber from "whats-that-gerber";
 import { mapGetters, mapMutations, mapState } from "vuex";
-import { mapFields } from "vuex-map-fields";
+import { mapFields, mapMultiRowFields } from "vuex-map-fields";
 import { ElTable } from "element-ui/types/table";
 import FSStore from "@/fsstore";
 import Component from "vue-class-component";
 import { VModel } from "vue-property-decorator";
 import SvgViewer from "@/vue/components/svgviewer.vue";
+import { PcbLayers } from "@/models/pcblayer";
 
 let svg_top: string, svg_bottom: string;
 
@@ -130,7 +131,8 @@ let svg_top: string, svg_bottom: string;
     SvgViewer
   },  
   computed: {
-    ...mapFields(["config.useOutline", "config.pcb.blankType", "layers","config.pcb.width","config.pcb.height"]),
+    ...mapFields(["config.useOutline","layers", "config.pcb.blankType","config.pcb.width","config.pcb.height"]),
+//    ...mapMultiRowFields(['layers'])
   },
 })
 export default class WizardConfig extends Vue {
@@ -161,7 +163,7 @@ export default class WizardConfig extends Vue {
   mounted() {
     new Promise((resolve) => {
       FSStore.get("data.pcb.types", []).then((data) => {
-        console.log("---->", data);
+  //      console.log("---->", data);
         this.pcbTypes = data;
       });
     });
@@ -221,17 +223,26 @@ export default class WizardConfig extends Vue {
     
   }
 
-  changeSelectionAll(selection: any[]) {
-    (this.$store.state.layers as any[]).forEach((layer) => {
-      layer.enabled = selection && selection.includes(layer);
+  changeSelectionAll(selection: PcbLayers[]) {
+//    console.log(selection.length, selection.map( (layer)=> layer.filename));
+    (this.$store.state.layers as PcbLayers[]).forEach((layer,index) => {
+  //    console.log(selection && selection.includes(layer),index,JSON.stringify(layer),JSON.stringify(selection));
+      store.commit("updateField",{ path:'layers['+index+'].enabled', value: selection && selection.findIndex( (clayer) => clayer.filename === layer.filename) >= 0 });
+//      layer.enabled = selection && selection.includes(layer);
     });
     (this as any).redrawpcb();
   }
 
-  changeSelection(selection: any[], row: any) {
-    row.enabled = selection && selection.includes(row);
-    store.commit("updateLayer", row);
-    (this as any).redrawpcb();
+  changeSelection(selection: PcbLayers[], row: PcbLayers) {
+   // row.enabled = selection && selection.includes(row);
+//    console.log((this.$store.state.layers as PcbLayers[]).length, selection.length, selection.map( (layer)=> layer.filename));
+
+//    console.log(row.enabled,selection && selection.findIndex( (layer) => layer.filename === row.filename) >= 0, selection[0].filename );
+
+    store.commit("updateField",{ path:'layers['+
+    (this.$store.state.layers as PcbLayers[]).findIndex( (layer) => layer.filename === row.filename) 
+    +'].enabled', value: selection && selection.findIndex( (layer) => layer.filename === row.filename) >= 0 });
+    (this as any).redrawpcb();  
   }
 }
 </script>

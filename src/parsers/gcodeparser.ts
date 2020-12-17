@@ -19,18 +19,21 @@ export interface IGCodeParserOptions {
     positioning: 'absolute'|'relative', 
     feedrate: number, 
     clearance: number, 
-    lines: boolean 
+    lines: boolean,
+    precision: number
+}
+
+export interface IGCodeState {
+  running: boolean
+  position: IGCodePosition
+  feedrate: number
 }
 
 export class GCodeParser {
 
     code:string[] = [];
     line:number;
-    state: {
-        running: boolean
-        position: IGCodePosition
-        feedrate: number
-    } = {
+    state: IGCodeState = {
         running: false,
         position: {
             x:Infinity,
@@ -51,7 +54,8 @@ export class GCodeParser {
         lines: true,
         positioning: 'relative',
         clearance: 10,
-        feedrate: 50
+        feedrate: 50,
+        precision: 4
     }) {
       this.options = options;  
   
@@ -104,6 +108,7 @@ export class GCodeParser {
   
       // Set the state to on
       this.state.running=true;
+      this.state.feedrate=this.options.feedrate;
   
       // Raise the mill above the clearance
       this.raiseMill();
@@ -147,43 +152,35 @@ export class GCodeParser {
       // Create a list of positions
       const positions:string[] = [];
   
-      /*
-      // Check if the position is a standard matrix [x, y, z] and convert to an object
-      if (Array.isArray(position)) position = { x: position[0], y: position[1], z: position[2] };
-  
-      // If there is an x coordinate then add it to the positions
-      if (position.x !== undefined) positions.push(`X${this.scale(position.x)}`);
-  
-      // If there is an y coordinate then add it to the positions
-      if (position.y !== undefined) positions.push(`Y${this.scale(position.y)}`);
-  
-      // If there is an z coordinate then add it to the positions
-      if (position.z !== undefined) positions.push(`Z${this.scale(position.z)}`);
-        */
       // Return the position words
-      if (position.x !== undefined) {
-          positions.push(`X${position.x}`);
+      if (position.x !== undefined && position.x != this.state.position.x) {
+          positions.push(`X${position.x.toFixed(this.options.precision)}`);
+          this.state.position.x = position.x;
       }
   
       // If there is an y coordinate then add it to the positions
-      if (position.y !== undefined){
-        positions.push(`Y${position.y}`);
+      if (position.y !== undefined && position.y != this.state.position.y){
+        positions.push(`Y${position.y.toFixed(this.options.precision)}`);
+        this.state.position.y = position.y;
       } 
   
       // If there is an z coordinate then add it to the positions
-      if (position.z !== undefined){
-        positions.push(`Z${position.z}`);
+      if (position.z !== undefined && position.z != this.state.position.z){
+        positions.push(`Z${position.z.toFixed(this.options.precision)}`);
+        this.state.position.z = position.z;
       } 
 
+      /* Missing target position calc!
       // If there is an i coordinate then add it to the positions
       if ((position as IGCodeArchPosition).i !== undefined){
-        positions.push(`I${(position as IGCodeArchPosition).i}`);
+        positions.push(`I${(position as IGCodeArchPosition).i.toFixed(this.options.precision)}`);
       } 
 
       // If there is an j coordinate then add it to the positions
       if ((position as IGCodeArchPosition).j !== undefined){
-        positions.push(`J${(position as IGCodeArchPosition).j}`);
+        positions.push(`J${(position as IGCodeArchPosition).j.toFixed(this.options.precision)}`);
       } 
+      */
 
       return positions.join(` `);
     }
@@ -197,8 +194,12 @@ export class GCodeParser {
     }
   
     // Derive the feedrate word from a feedrate (mm/minute)
-    feedrateCode(feedrate = 50) {
-  
+    feedrateCode(feedrate = 50):string {
+
+        if(feedrate == this.state.feedrate)return "";
+
+        this.state.feedrate = feedrate;
+
       // Return the feedrate word
 //      return this.opCode(`F`, this.scale(feedrate));
         return this.opCode(`F`, feedrate);
@@ -249,6 +250,7 @@ export class GCodeParser {
     // Motion in a specified way towards a point
     
     motion(code: string, position: IGCodePosition | IGCodeArchPosition, feedrate: number) {
+/*
       this.state.feedrate = feedrate;
       if(position.x)this.state.position.x = position.x;
       if(position.y)this.state.position.y = position.y;
@@ -261,8 +263,10 @@ export class GCodeParser {
         // FIXME: Need correct calc  
        // this.state.position.y += (position as IGCodeArchPosition).j;
       } 
+*/      
         // Add the code to the stack to feed to the specified position
-      this.add(`${this.opCode(`G`, code)} ${this.positionCode(position)} ${this.feedrateCode(feedrate)}`);
+      const param = `${this.positionCode(position)} ${this.feedrateCode(feedrate)}`.trim();  
+      if(param.length > 0)this.add(`${this.opCode(`G`, code)} ${param}`);
     }
     
   
@@ -274,7 +278,8 @@ export class GCodeParser {
         )return;
       
       if(!position.z && this.state.position.z != this.options.clearance){
-          this.raiseMill();
+        this.motion('00',{z: this.options.clearance},feedrate);
+        position.z = undefined;
       } else if(position.z && position.z != this.state.position.z){
         this.motion('00',{z: position.z},feedrate);
         position.z = undefined;
@@ -288,7 +293,7 @@ export class GCodeParser {
     feedLinear(position:IGCodePosition, feedrate:number = this.state.feedrate) {
       // Add the code to the stack to linearly to the specified position
       if(position.z && position.z != this.state.position.z){
-          this.motion('01',{z: position.z},feedrate);
+          this.motion('00',{z: position.z},feedrate);
           position.z = undefined;
       }
       this.motion(`01`, position, feedrate);
@@ -296,13 +301,24 @@ export class GCodeParser {
 
     // Feed linearly to a position at a specified feedrate
     feedArch(position:IGCodeArchPosition, feedrate:number = this.state.feedrate) {
+      console.warn("Arch not yet implemented!");
+      /*
         // check arch direction 02 = clock
+        if(position.z && position.z != this.state.position.z){
+          this.motion('00',{z: position.z},feedrate);
+          position.z = undefined;
+        }
         if( position.i > 0){
             this.motion(`03`, position, feedrate);
         } else {
             this.motion('02', position, feedrate);
         }
+        */
       }
+
+    getState():IGCodeState {
+      return this.state;
+    }  
       
     // Terminate our code and ensure everything is stopped
     terminate(force = false) {
