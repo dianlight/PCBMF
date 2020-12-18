@@ -32,7 +32,7 @@
               :style="{ '--isolation-width': isolation.doutline * 2 + 'mm' }"
             ></svg-viewer>
           </el-tab-pane>
-          <el-tab-pane label="Work (3d)" :disabled="!isolation.gcode">
+          <el-tab-pane label="Work (3d)" :disabled="!isolation.gcode" lazy>
             <g-code
               :data="isolation.gcode"
               :gcgrid="true"
