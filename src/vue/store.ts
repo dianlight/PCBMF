@@ -22,7 +22,7 @@ export default new Vuex.Store<IProject>({
     state:
     {
         currentFile: undefined,
-        layers: undefined,
+        layers: [],
         config: {
             useOutline: true,
             pcb: {
@@ -30,12 +30,7 @@ export default new Vuex.Store<IProject>({
                 height: undefined,
                 width: undefined
             },
-            isolation: {
-                toolType: {},
-                dthickness: {},
-                doutline: {},
-                json: undefined
-            }
+            isolations: [],
         }
     },
     plugins: [vuexPersist.plugin],
@@ -51,7 +46,9 @@ export default new Vuex.Store<IProject>({
 
             const zip = new AdmZip(filePath);
             const zipEntries = zip.getEntries();
-            state.layers = zipEntries.map(zipe => ({
+            state.layers = zipEntries.map((zipe,index) => ({
+                id: index,
+                name: zipe.name.replace(/[^a-zA-Z]/g, "_"),
                 enabled: true,
                 filename: zipe.name,
                 gerber: zipe.getData(),

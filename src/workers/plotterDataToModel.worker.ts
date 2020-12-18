@@ -10,9 +10,8 @@ interface IShapeDictionary {
     [index: number]: makerjs.IModel;
 }
 
-interface Options {
+export interface IPlotterOptions {
     showOutline: boolean;
-    renderTime: number;
     useFill: boolean;
     useFillPitch: number;
     outlineTick: number;
@@ -22,7 +21,7 @@ interface Options {
 {
     const ctx: Worker = self as any;
 
-    let options: Options;
+    let options: IPlotterOptions;
     let gmodel: makerjs.IModel = {}
 
     let shapes: IShapeDictionary = {};
@@ -31,7 +30,7 @@ interface Options {
     function iPlotterToModel(
         model: makerjs.IModel,
         obj: IPlotterData,
-        options: Options
+        options: IPlotterOptions
     ): void {
         switch (obj.type) {
             case IPlotterDataTypes.POLARITY:
@@ -175,12 +174,12 @@ interface Options {
     // Respond to message from parent thread
     ctx.addEventListener("message", (event) => {
        // console.log("From main", event)
-        const data = event.data as IWorkerData<IPlotterData | Options>;
+        const data = event.data as IWorkerData<IPlotterData | IPlotterOptions>;
         switch (data.type) {
             case IWorkerDataType.ABORT:
             case IWorkerDataType.START:
             case IWorkerDataType.RESET:
-                options = data.data as Options;
+                options = data.data as IPlotterOptions;
                 gmodel = {};
                 cindex = 0;
                 shapes = [];
@@ -204,8 +203,11 @@ interface Options {
                 makerjs.model.originate(gmodel);
                 makerjs.model.simplify(gmodel);
 
-                console.log("Apply outline:",options.outlineTick);
-                const outline = makerjs.model.outline(gmodel,options.outlineTick/2,0,false);
+                let outline = undefined;
+                if(options.outlineTick){
+                    console.log("Apply outline:",options.outlineTick);
+                    outline = makerjs.model.outline(gmodel,options.outlineTick/2,0,false);
+                }
                // let json = {};
                 let gcode:String = "";
                 if(outline){
@@ -214,7 +216,7 @@ interface Options {
                    // json = makerjs.exporter.toJson(outline,{accuracy:4});
 
                     // Generate GCODE
-                    const arcprecision = 60; // FIXME: from config
+                //    const arcprecision = .2; // FIXME: from config maximum lenght between points.
                     const code = new GCodeParser({
                         // Define the script name
                         name: '123',
@@ -228,14 +230,15 @@ interface Options {
                         lines: false, // FIXME: From config
                         // Set the clearance height to 10cm
                         clearance: 10, // FIXME: From config travel height
-                        precision: 4 // FIXME: From config
+                        precision: 3 // FIXME: From config
                       });
                     const cut_deep = 1; // FIXME: From model cut deep  
                     
                     function orderPath(cpoints:makerjs.IPoint[]) {
 
-                        function isEqual(value:any, other:any):boolean {
-                            return JSON.stringify(value) == JSON.stringify(other);
+                        function isEqual(value:makerjs.IPoint, other:makerjs.IPoint):boolean {
+                            return  value[0].toFixed(code.options.precision) == other[0].toFixed(code.options.precision) 
+                               && value[1].toFixed(code.options.precision) == other[1].toFixed(code.options.precision)
                         }
 
                         const state = code.getState();
@@ -273,9 +276,9 @@ interface Options {
                                         y: opoints[1][1],
                                         z: -cut_deep
                                     });
-                                } else if(makerjs.isPathArc(path[1]) || makerjs.isPathCircle(path[1]) || makerjs.isPathArcInBezierCurve(path[1])){
+                                } else if(makerjs.isPathArc(path[1]) || makerjs.isPathArcInBezierCurve(path[1])){
                                    // const pathArc = path[1] as unknown as makerjs.IPathArc;
-                                    const points = makerjs.path.toPoints(path[1],arcprecision);
+                                    const points = makerjs.path.toKeyPoints(path[1],1/(10*code.options.precision));
                                     const opoints = orderPath(points);
                                     code.feedRapid({
                                         x: opoints[0][0],
@@ -304,9 +307,29 @@ interface Options {
                                         j:cord.origin[1]-pathArc.origin[0],
                                     })
                                     */
-                                   /*
                                 } else if(makerjs.isPathCircle(path[1])){
-                                    // TODO: Please implements
+                                    const pathCircle = path[1] as unknown as makerjs.IPathCircle;
+                                    const segments = pathCircle.radius*2*Math.PI / (1/10*code.options.precision);
+                                    const points = makerjs.path.toPoints(pathCircle,segments);
+                                    const opoints = orderPath(points);
+                                    code.feedRapid({
+                                        x: opoints[0][0],
+                                        y: opoints[0][1],                                            
+                                    });
+                                    opoints.forEach( (point, index)=>{
+                                        if(index > 0)
+                                        code.feedLinear({
+                                            x: point[0],
+                                            y: point[1],
+                                            z: -cut_deep
+                                        })
+                                    });
+                                    code.feedLinear({
+                                        x: opoints[0][0],
+                                        y: opoints[0][1],  
+                                        z: -cut_deep                                          
+                                    });                                    
+                                /*
                                 } else if(makerjs.isPathArcInBezierCurve(path[1])){
                                     // TODO: Please implements
                                     */

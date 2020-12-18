@@ -59,7 +59,7 @@
               row-class-name="file-listrow"
               header-row-class-name="file-listrow"
               cell-class-name="file-listcell"
-              row-key="filename"
+              row-key="id"
               @select="changeSelection"
               @select-all="changeSelectionAll"
               ref="table"
@@ -224,10 +224,10 @@ export default class WizardConfig extends Vue {
   }
 
   changeSelectionAll(selection: PcbLayers[]) {
-//    console.log(selection.length, selection.map( (layer)=> layer.filename));
+//    console.log(selection.length, selection.map( (layer)=> layer.id));
     (this.$store.state.layers as PcbLayers[]).forEach((layer,index) => {
   //    console.log(selection && selection.includes(layer),index,JSON.stringify(layer),JSON.stringify(selection));
-      store.commit("updateField",{ path:'layers['+index+'].enabled', value: selection && selection.findIndex( (clayer) => clayer.filename === layer.filename) >= 0 });
+      store.commit("updateField",{ path:'layers['+index+'].enabled', value: selection && selection.findIndex( (clayer) => clayer.id === layer.id) >= 0 });
 //      layer.enabled = selection && selection.includes(layer);
     });
     (this as any).redrawpcb();
@@ -235,13 +235,13 @@ export default class WizardConfig extends Vue {
 
   changeSelection(selection: PcbLayers[], row: PcbLayers) {
    // row.enabled = selection && selection.includes(row);
-//    console.log((this.$store.state.layers as PcbLayers[]).length, selection.length, selection.map( (layer)=> layer.filename));
+//    console.log((this.$store.state.layers as PcbLayers[]).length, selection.length, selection.map( (layer)=> layer.id));
 
-//    console.log(row.enabled,selection && selection.findIndex( (layer) => layer.filename === row.filename) >= 0, selection[0].filename );
+//    console.log(row.enabled,selection && selection.findIndex( (layer) => layer.id === row.id) >= 0, selection[0].id );
 
     store.commit("updateField",{ path:'layers['+
-    (this.$store.state.layers as PcbLayers[]).findIndex( (layer) => layer.filename === row.filename) 
-    +'].enabled', value: selection && selection.findIndex( (layer) => layer.filename === row.filename) >= 0 });
+    (this.$store.state.layers as PcbLayers[]).findIndex( (layer) => layer.id === row.id) 
+    +'].enabled', value: selection && selection.findIndex( (layer) => layer.id === row.id) >= 0 });
     (this as any).redrawpcb();  
   }
 }

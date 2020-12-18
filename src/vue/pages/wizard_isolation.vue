@@ -1,21 +1,25 @@
 <template>
   <el-container direction="vertical">
     <el-row
-      v-for="copper in coppers"
-      :key="copper.filename"
+      v-for="isolation in isolations"
+      :key="isolation.layer"
       type="flex"
       align="middle"
-      v-loading="options[copper.filename].busy"
+      v-loading="!options[isolation.layer] || options[isolation.layer].busy"
       element-loading-text="Processing..."
       element-loading-spinner="el-icon-loading"
       element-loading-background="rgba(0, 0, 0, 0.8)"
     >
       <el-col :span="16">
         <h4>
-          {{ copper.filename }}
+          {{ isolation.layer }}
           <small
-            >Side: {{ copper.side }} Render Time:
-            {{ options[copper.filename].renderTime }}ms</small
+            >Render Time:
+            {{
+              options[isolation.layer]
+                ? options[isolation.layer].renderTime
+                : "-"
+            }}ms</small
           >
         </h4>
 
@@ -24,19 +28,23 @@
             <svg-viewer
               :panzoom="true"
               _class="fullframe"
-              :data="svgs[copper.filename]"
-              :style="{'--isolation-width': (doutline[copper.filename]*2)+'mm' }"
+              :data="isolation.svg"
+              :style="{ '--isolation-width': isolation.doutline * 2 + 'mm' }"
             ></svg-viewer>
           </el-tab-pane>
-          <el-tab-pane label="Work (3d)">
-            <g-code 
-            :data="gcodes[copper.filename]"
-            :gcgrid="true" 
-            :width="width" 
-            :height="height"></g-code>
+          <el-tab-pane label="Work (3d)" :disabled="!isolation.gcode">
+            <g-code
+              :data="isolation.gcode"
+              :gcgrid="true"
+              :width="width"
+              :height="height"
+            ></g-code>
           </el-tab-pane>
-          <el-tab-pane label="Gcode">
-             <highlightjs  language="gcode" :code="gcodes[copper.filename]||'Loading...'"/>
+          <el-tab-pane label="Gcode" :disabled="!isolation.gcode">
+            <highlightjs
+              language="gcode"
+              :code="isolation.gcode || 'Loading...'"
+            />
           </el-tab-pane>
         </el-tabs>
       </el-col>
@@ -45,30 +53,36 @@
         <el-form ref="form" label-width="11em">
           <el-form-item label="Show Border">
             <el-switch
-              v-model="options[copper.filename].showOutline"
-              @input="redrawpcb(copper)"
+              v-model="isolation.showOutline"
+              @input="redrawpcb(isolation)"
             ></el-switch>
           </el-form-item>
           <el-form-item label="Use Fill Elements">
             <el-switch
-              v-model="options[copper.filename].useFill"
-              @input="redrawpcb(copper)"
+              v-model="isolation.useFill"
+              @input="redrawpcb(isolation)"
             ></el-switch>
           </el-form-item>
           <el-form-item label="Fill Elements Outline">
             <el-input-number
               size="mini"
-              v-model="options[copper.filename].useFillPitch"
+              v-model="isolation.useFillPitch"
               :min="0.0001"
               :max="1"
               :precision="4"
               :step="0.001"
-              :disabled="!options[copper.filename].useFill"
-              @change="redrawpcb(copper)"
+              :disabled="!isolation.useFill"
+              @change="redrawpcb(isolation)"
             ></el-input-number>
           </el-form-item>
           <el-form-item label="Isolation Tool">
-            <el-select v-if="toolType[copper.filename]"  v-model="toolType[copper.filename]" value-key="name" placeholder="Select" @change="toolChange(copper)" size="mini">
+            <el-select
+              v-model="isolation.toolType"
+              value-key="name"
+              placeholder="Tool..."
+              @change="toolChange(isolation)"
+              size="mini"
+            >
               <el-option
                 v-for="item in toolTypes"
                 :key="item.name"
@@ -81,27 +95,27 @@
           <el-form-item label="Isolation thickness">
             <el-input-number
               size="mini"
-              v-model="dthickness[copper.filename]"
+              v-model="isolation.dthickness"
               :min="0"
               :max="5"
               :precision="4"
               :step="0.1"
-              :disabled="Object.keys(toolType).length == 0 || !toolType[copper.filename].name"
-              @change="changeThickness(copper)"
+              :disabled="!isolation.toolType"
+              @change="changeThickness(isolation)"
             ></el-input-number>
-          </el-form-item>          
+          </el-form-item>
           <el-form-item label="Isolation width">
             <el-input-number
               size="mini"
-              v-model="doutline[copper.filename]"
+              v-model="isolation.doutline"
               :min="0.0001"
               :max="5"
               :precision="4"
               :step="0.001"
               :disabled="true"
-              @change="redrawpcb(copper)"
+              @change="redrawpcb(isolation)"
             ></el-input-number>
-          </el-form-item>          
+          </el-form-item>
         </el-form>
       </el-col>
     </el-row>
@@ -146,19 +160,17 @@ import {
 } from "@/models/plotterData";
 import { IWorkerData, IWorkerDataType } from "@/models/workerData";
 import PlotterWorker from "_/workers/plotterDataToModel.worker";
-import { IProject } from "@/models/project";
+import { IProject, IProjectIsolation } from "@/models/project";
 import { Store } from "vuex";
+import { Tooldb } from "@/typings/tooldb";
+import { IPlotterOptions } from "@/workers/plotterDataToModel.worker";
 
 interface IDictionary<T> {
   [index: string]: T;
 }
 
 interface Options {
-  showOutline: boolean;
-  outlineTick: number;
   renderTime: number;
-  useFill: boolean;
-  useFillPitch: number;
   busy: boolean;
 }
 
@@ -168,106 +180,122 @@ interface Options {
     SvgViewer,
   },
   computed: {
-    ...mapFields([
-      "layers",
-      "config.pcb.width",
-      "config.pcb.height",
-      "config.isolation.toolType",
-      "config.isolation.dthickness",
-      "config.isolation.doutline",
-    ]),
-//    ...mapMultiRowFields([     
-//    ])
+    ...mapFields(["layers", "config.pcb.width", "config.pcb.height"]),
+    ...mapMultiRowFields(["config.isolations"]),
   },
 })
 export default class WizardIsolation extends Vue {
-  coppers: PcbLayers[] = [];
-  svgs: IDictionary<String> = {};
-  gcodes: IDictionary<String> = {};
-
-  toolTypes: any[] = [];
+  toolTypes: Tooldb[] = [];
   options: IDictionary<Options> = {};
 
   mounted() {
-    //
-    this.coppers = (this.$store.state.layers as PcbLayers[]).filter(
-      (layer) => layer.type === whatsThatGerber.TYPE_COPPER && layer.enabled
-    );
-    this.coppers.forEach((copper) => {
-      this.options[copper.filename] = {
-        showOutline: false,
-        renderTime: 0,
-        useFill: false,
-        useFillPitch: 0.01,
-        busy: true,
-        outlineTick: 0.1
-      };
-      // FIME: reimplement with store.commit
-      if(!this.$store.state.config.isolation.toolType[copper.filename])
-        this.$store.state.config.isolation.toolType[copper.filename]={};
-      this.redrawpcb(copper);
+    this.$store.commit("updateField", {
+      path: "config.isolations",
+      value: (this.$store.state.layers as PcbLayers[])
+        .filter((layer) => {
+          return layer.type === whatsThatGerber.TYPE_COPPER && layer.enabled;
+        })
+        .map((layer) => {
+          const ret: IProjectIsolation = {
+            layer: layer.name,
+            showOutline: false,
+            useFill: false,
+            useFillPitch: 0.005,
+            toolType: undefined,
+            dthickness: undefined,
+            doutline: undefined,
+            svg: undefined,
+            gcode: undefined,
+          };
+          this.options[layer.name] = {
+            renderTime: -1,
+            busy: true,
+          };
+          this.redrawpcb(ret);
+          return ret;
+        }),
     });
 
     new Promise((resolve) => {
       FSStore.get("data.tool.types", []).then((data) => {
-     //   console.log("---->", data);
         this.toolTypes = data;
       });
-    });   
+    });
   }
 
-  changeThickness(layer: PcbLayers){
-    if(this.$store && this.$store.state){
-      const state = (this.$store as Store<IProject>).state; 
-      const tool = state!.config!.isolation!.toolType![layer.filename];
-      if(tool && tool.type === 'V-Shape'){
-//        console.log("Calcolating Tichness!");
-        state!.config!.isolation!.doutline![layer.filename] = Trigonomerty.getTipDiamaterForVTool(
-          tool.size as number, 
-          tool.angle as number, 
-          state!.config!.isolation!.dthickness![layer.filename]
-          );
-      } else {
-        console.log("Fixed size tool",tool);
-        state!.config!.isolation!.doutline![layer.filename] = tool.size as number;
-      }
-      this.redrawpcb(layer);
-    }
-  }
-
-  toolChange(layer: PcbLayers) {
+  changeThickness(isolation: IProjectIsolation) {
+    const index = (this.$store.state as IProject).config.isolations.findIndex(
+      (iso) => iso.layer === isolation.layer
+    );
     const state = (this.$store as Store<IProject>).state;
-    if(state && state.config && state.config.pcb && state.config.pcb.blankType){
-      const isolation = state!.config!.isolation;
-      if(!isolation.dthickness)isolation.dthickness={};
-      isolation.dthickness[layer.filename] = state!.config!.pcb!.blankType.cthickness as number;
-      this.changeThickness(layer);
-    } else {
-      console.error("Error instate object",state);
+    const tool = isolation!.toolType;
+    if (this.$store && this.$store.state) {
+      if (tool && tool.type === "V-Shape") {
+        this.$store.commit("updateField", {
+          path: `config.isolations[${index}].doutline`,
+          value: Trigonomerty.getTipDiamaterForVTool(
+            tool.size as number,
+            tool.angle as number,
+            isolation.dthickness as number
+          ),
+        });
+      } else if (tool) {
+        this.$store.commit("updateField", {
+          path: `config.isolations[${index}].doutline`,
+          value: tool.size as number,
+        });
+      }
+      this.redrawpcb(isolation);
     }
   }
 
-  redrawpcb(layer: PcbLayers) {
-    const isow = this.$store.state.config.isolation.doutline[layer.filename];
-    if(isow) this.options[layer.filename].outlineTick = isow;
-    this.options[layer.filename].busy = true;
-    this.options[layer.filename].renderTime = 0;
+  toolChange(isolation: IProjectIsolation) {
+    const index = (this.$store.state as IProject).config.isolations.findIndex(
+      (iso) => iso.layer === isolation.layer
+    );
+    const state = (this.$store as Store<IProject>).state;
+    if (
+      state &&
+      state.config &&
+      state.config.pcb &&
+      state.config.pcb.blankType
+    ) {
+      this.$store.commit("updateField", {
+        path: `config.isolations[${index}].dthickness`,
+        value: state!.config!.pcb!.blankType.cthickness as number,
+      });
+      this.changeThickness(isolation);
+    } else {
+      console.error("Error instate object", state);
+    }
+  }
+
+  redrawpcb(isolation: IProjectIsolation) {
+    this.options[isolation.layer].busy = true;
+    this.options[isolation.layer].renderTime = 0;
     this.$forceUpdate();
     const startTime = Date.now();
-    const _layer = JSON.parse(JSON.stringify(layer), (k, v) => {
-      if (
-        v !== null &&
-        typeof v === "object" &&
-        "type" in v &&
-        v.type === "Buffer" &&
-        "data" in v &&
-        Array.isArray(v.data)
-      ) {
-        return Buffer.from(v.data);
+
+    const _layer = JSON.parse(
+      JSON.stringify(
+        (this.$store.state.layers as PcbLayers[]).filter(
+          (layer) => layer.name === isolation.layer
+        )[0]
+      ),
+      (k, v) => {
+        if (
+          v !== null &&
+          typeof v === "object" &&
+          "type" in v &&
+          v.type === "Buffer" &&
+          "data" in v &&
+          Array.isArray(v.data)
+        ) {
+          return Buffer.from(v.data);
+        }
+        return v;
       }
-      return v;
-    });
-    // console.log("C-Rendering: ", _layer);
+    );
 
     const stream = new Duplex();
     stream.push((_layer as PcbLayers).gerber);
@@ -299,16 +327,33 @@ export default class WizardIsolation extends Vue {
 
     plotterWorker.postMessage({
       type: IWorkerDataType.START,
-      data: this.options[layer.filename],
+      data: {
+        showOutline: isolation.showOutline,
+        useFill: isolation.useFill,
+        useFillPitch: isolation.useFillPitch,
+        outlineTick: isolation.doutline,
+      } as IPlotterOptions,
     });
     plotterWorker.onmessage = (event) => {
-    //  console.log("From Render Warker!", event);
-      const data = event.data as IWorkerData<{svg:string,gcode:string}>;
+      //  console.log("From Render Warker!", event);
+      const data = event.data as IWorkerData<{ svg: string; gcode: string }>;
       if (data.type === IWorkerDataType.END) {
-        this.svgs[layer.filename] = (event.data as IWorkerData<{svg:string,gcode:string}>).data.svg;
-        this.gcodes[layer.filename] = (event.data as IWorkerData<{svg:string,gcode:string}>).data.gcode;
-        this.options[layer.filename].renderTime = Date.now() - startTime;
-        this.options[layer.filename].busy = false;
+        const index = (this.$store
+          .state as IProject).config.isolations.findIndex(
+          (iso) => iso.layer === isolation.layer
+        );
+        this.$store.commit("updateField", {
+          path: `config.isolations.${index}.svg`,
+          value: (event.data as IWorkerData<{ svg: string; gcode: string }>)
+            .data.svg,
+        });
+        this.$store.commit("updateField", {
+          path: `config.isolations.${index}.gcode`,
+          value: (event.data as IWorkerData<{ svg: string; gcode: string }>)
+            .data.gcode,
+        });
+        this.options[_layer.name].renderTime = Date.now() - startTime;
+        this.options[_layer.name].busy = false;
         this.$forceUpdate();
       }
     };

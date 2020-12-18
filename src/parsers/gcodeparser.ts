@@ -273,14 +273,14 @@ export class GCodeParser {
     // Feed rapidly to a position at a specified feedrate
     feedRapid(position:IGCodePosition, feedrate:number = this.state.feedrate, optimize:boolean = true) {
       if(optimize &&
-        position.x === this.state.position.x &&
-        position.y === this.state.position.y        
+        position.x?.toFixed(this.options.precision) === this.state.position.x?.toFixed(this.options.precision) &&
+        position.y?.toFixed(this.options.precision) === this.state.position.y?.toFixed(this.options.precision)        
         )return;
       
-      if(!position.z && this.state.position.z != this.options.clearance){
+      if(!position.z && this.state.position.z?.toFixed(this.options.precision) !== this.options.clearance?.toFixed(this.options.precision)){
         this.motion('00',{z: this.options.clearance},feedrate);
         position.z = undefined;
-      } else if(position.z && position.z != this.state.position.z){
+      } else if(position.z && position.z?.toFixed(this.options.precision) !== this.state.position.z?.toFixed(this.options.precision)){
         this.motion('00',{z: position.z},feedrate);
         position.z = undefined;
       } 
@@ -292,7 +292,7 @@ export class GCodeParser {
     // Feed linearly to a position at a specified feedrate
     feedLinear(position:IGCodePosition, feedrate:number = this.state.feedrate) {
       // Add the code to the stack to linearly to the specified position
-      if(position.z && position.z != this.state.position.z){
+      if(position.z && position.z?.toFixed(this.options.precision) !== this.state.position.z?.toFixed(this.options.precision)){
           this.motion('00',{z: position.z},feedrate);
           position.z = undefined;
       }

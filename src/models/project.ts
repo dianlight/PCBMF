@@ -3,6 +3,18 @@ import { Tooldb } from "@/typings/tooldb";
 import { IDictionary } from "./dictionary";
 import { PcbLayers } from "./pcblayer";
 
+
+export interface IProjectIsolation {
+    layer: string,
+    showOutline: boolean,
+    useFill: boolean,
+    useFillPitch: number,
+    toolType: Tooldb | undefined,
+    dthickness:number | undefined,
+    doutline: number | undefined,
+    svg:string | undefined,
+    gcode:string | undefined
+}
 export interface IProject {
     currentFile: string | undefined,
     layers: PcbLayers[] | undefined,
@@ -13,11 +25,6 @@ export interface IProject {
             height: number | undefined,
             width: number | undefined
         },
-        isolation: {
-            toolType: IDictionary<Tooldb> | undefined,
-            dthickness: IDictionary<number> | undefined,
-            doutline: IDictionary<number> | undefined,
-            json: IDictionary<string> | undefined,
-        }
+        isolations: IProjectIsolation[]
     }
 }

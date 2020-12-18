@@ -3,6 +3,7 @@
     <el-main>
       <div ref="container" id="container"></div>
     </el-main>
+    <!--
     <el-footer>
       <el-button-group>
         <el-button size="mini" type="primary" icon="el-icon-edit"></el-button>
@@ -11,6 +12,7 @@
       </el-button-group>
       {{ camera ? JSON.stringify(camera.position) : "" }}
     </el-footer>
+    -->
   </el-container>
 </template>
 
