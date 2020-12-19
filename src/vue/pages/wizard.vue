@@ -2,7 +2,7 @@
   <el-container direction="vertical">
     <el-card>
       <el-header>
-        <el-steps :active="active - 1" finish-status="success" align-center>
+        <el-steps ref="step" :active="active - 1" finish-status="success" align-center>
           <el-step title="Step 1" description="Layout"></el-step>
           <el-step title="Step 2" description="Isolation"></el-step>
           <el-step title="Step 3" description="Drill PTH"></el-step>
@@ -35,7 +35,7 @@
               >Back</el-button
             >
             <el-button
-              @click="nextPage(+1)"
+              @click="nextPage(+1,skip)"
               :disabled="active == 9 || !skip"
               size="small"
               round
@@ -60,6 +60,8 @@
 </template>
 
 <script lang="ts">
+import { ElStep, StepStatus } from "element-ui/types/step";
+import { ElSteps } from "element-ui/types/steps";
 import Vue from "vue";
 import Component from "vue-class-component";
 import { Provide, Watch } from "vue-property-decorator";
@@ -72,11 +74,13 @@ export default class Wizard extends Vue {
   prev = true;
   next = true;
   skip = true;
-  outstatus = "success";
-  nextCallback: () => boolean | PromiseLike<boolean> = () => true;
+  lastinc = 0;
+  nextCallback: (type: 'next'|'back'|'skip') => boolean | PromiseLike<boolean> = () => true;
 
-  nextPage(inc: number) {
-    Promise.resolve(this.nextCallback()).then((resolve) => {
+  nextPage(inc: number, skip: boolean = false) {
+    this.lastinc = inc;
+
+    Promise.resolve(this.nextCallback(skip?'skip':((inc >0)?'next':'back'))).then((resolve) => {
       if (resolve) {
         this.active += inc;
         console.log("New Active:", inc);
@@ -99,15 +103,10 @@ export default class Wizard extends Vue {
     });
   }
 
-  @Provide()
-  setTabStatus(state: "wait" | "process" | "finish" | "error" | "success") {
-    console.log("----> Status", state);
-  }
-
-  @Provide()
-  setOutTabStatus(state: "wait" | "process" | "finish" | "error" | "success") {
-    this.outstatus = state;
-  }
+//  @Provide()
+//  setTabStatus(state: "wait" | "process" | "finish" | "error" | "success") {
+//    console.log("----> Status", state);
+//  }
 
   @Provide()
   enableButtons(prev: boolean, skip: boolean, next: boolean) {
@@ -117,8 +116,14 @@ export default class Wizard extends Vue {
   }
 
   @Provide()
-  registerNextCallback(callback: () => boolean | PromiseLike<boolean>) {
+  registerNextCallback(callback: (type: 'next'|'back'|'skip') => boolean | PromiseLike<boolean>) {
     this.nextCallback = callback;
+  }
+
+  @Provide()
+  wizardPushSkip(){
+    console.log("Skip to ",this.lastinc);
+    this.nextPage(this.lastinc,true);
   }
 }
 </script>

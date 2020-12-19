@@ -1,7 +1,8 @@
 <template>
   <el-container direction="vertical">
+    <h1 v-if="isolations.length == 0">No isolation layer to process</h1>
     <el-row
-      v-for="isolation in isolations"
+      v-for="(isolation,index) in isolations"
       :key="isolation.layer"
       type="flex"
       align="middle"
@@ -50,7 +51,7 @@
       </el-col>
       <el-col :span="8">
         <h1></h1>
-        <el-form ref="form" label-width="11em">
+        <el-form :model="isolation" ref="formx" label-width="11em">
           <el-form-item label="Show Border">
             <el-switch
               v-model="isolation.showOutline"
@@ -75,7 +76,8 @@
               @change="redrawpcb(isolation)"
             ></el-input-number>
           </el-form-item>
-          <el-form-item label="Isolation Tool">
+          <el-form-item label="Isolation Tool" :rules="[{ required: true, trigger:'change' }]" 
+          prop="toolType">
             <el-select
               v-model="isolation.toolType"
               value-key="name"
@@ -92,7 +94,11 @@
               </el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="Isolation thickness">
+          <el-form-item
+            label="Isolation thickness"
+            :rules="[{ required: true, trigger:'blur', type: 'number', min: 0.0001 }]"
+            prop="dthickness"
+          >
             <el-input-number
               size="mini"
               v-model="isolation.dthickness"
@@ -104,7 +110,11 @@
               @change="changeThickness(isolation)"
             ></el-input-number>
           </el-form-item>
-          <el-form-item label="Isolation width">
+          <el-form-item
+            label="Isolation width"
+            :rules="[{ required: true,trigger:'blur', type: 'number', min: 0.0001 }]"
+            prop="doutline"
+          >
             <el-input-number
               size="mini"
               v-model="isolation.doutline"
@@ -164,6 +174,7 @@ import { IProject, IProjectIsolation } from "@/models/project";
 import { Store } from "vuex";
 import { Tooldb } from "@/typings/tooldb";
 import { IPlotterOptions } from "@/workers/plotterDataToModel.worker";
+import { Form } from "element-ui";
 
 interface IDictionary<T> {
   [index: string]: T;
@@ -191,10 +202,48 @@ export default class WizardIsolation extends Vue {
   toolTypes: Tooldb[] = [];
   options: IDictionary<Options> = {};
 
-  @Inject() readonly setTabStatus: ((state: boolean) => void) | undefined;
+  @Inject() readonly registerNextCallback:
+    | ((
+        callback: (
+          type: "next" | "back" | "skip"
+        ) => boolean | PromiseLike<boolean>
+      ) => void)
+    | undefined;
+  @Inject() readonly enableButtons:
+    | ((prev: boolean, skip: boolean, next: boolean) => void)
+    | undefined;
+  @Inject() readonly wizardPushSkip: (() => void) | undefined;
 
   mounted() {
-    this.setTabStatus!(true);
+    this.enableButtons!(true, true, true);
+    this.registerNextCallback!((type: "next" | "back" | "skip") => {
+      // Gestione Skip
+      if (type === "skip" || type == "back") return Promise.resolve(true);
+      // Validazione
+      console.log(this.$refs.formx);
+      let formArray: Form[] = ((this.$refs.formx as unknown) as Form[]);
+ 
+      return new Promise((resovedall) => {
+        const results = Promise.all(
+          formArray.map(
+            (form) =>
+              new Promise<boolean>((resolve) => {
+//                console.log(form);
+                console.log(form);
+                form.validate((valid) => {
+                  console.log(valid,form);
+                  if (valid) resolve(true);
+                  else resolve(false);
+                });
+              })
+          )
+        ).then((results) => {
+ //           resovedall(false);
+          resovedall(results.every((value, index, all) => value == true));
+        });
+      });
+    });
+
     this.$store.commit("updateField", {
       path: "config.isolations",
       value: (this.$store.state.layers as PcbLayers[])
@@ -213,12 +262,12 @@ export default class WizardIsolation extends Vue {
             svg: undefined,
             gcode: undefined,
           };
-          const oldrecord = (this.$store.state as IProject).config.isolations.find( layer=>layer.layer === ret.layer );
-          if(oldrecord){
-            Object.assign(
-              ret,
-              oldrecord
-            );
+          const oldrecord = (this.$store
+            .state as IProject).config.isolations.find(
+            (layer) => layer.layer === ret.layer
+          );
+          if (oldrecord) {
+            Object.assign(ret, oldrecord);
           }
           this.options[layer.name] = {
             renderTime: -1,
@@ -234,6 +283,11 @@ export default class WizardIsolation extends Vue {
         this.toolTypes = data;
       });
     });
+
+    if ((this.$store.state as IProject).config.isolations.length == 0) {
+      console.log("No isolation need to skip");
+      this.wizardPushSkip!();
+    }
   }
 
   changeThickness(isolation: IProjectIsolation) {

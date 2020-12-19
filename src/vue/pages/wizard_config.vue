@@ -17,7 +17,7 @@
             id="topview"
             :data="topsvg"
           ></svg-viewer>
-          <!--<div class="boardview" v-html="topsvg"></div>-->
+
           <div class="clearfix">
             <el-form-item label="Bottom Layer">
               <el-switch
@@ -27,12 +27,12 @@
               ></el-switch>
             </el-form-item>
           </div>
-          <!--div class="boardview" v-html="bottomsvg"></div-->
+
           <svg-viewer _class="boardview" :data="bottomsvg"></svg-viewer>
         </el-form>
       </el-col>
       <el-col :span="14">
-        <el-form :model="pcb" v-model="pcb" ref="form" label-width="120px">
+        <el-form :model="pcb" _v-model="pcb" ref="form" label-width="120px">
           <el-form-item
             label="PCB blank type"
             prop="blankType"
@@ -173,6 +173,7 @@ import { Inject, VModel } from "vue-property-decorator";
 import SvgViewer from "@/vue/components/svgviewer.vue";
 import { PcbLayers } from "@/models/pcblayer";
 import { IProject } from "@/models/project";
+import { config } from "vue/types/umd";
 
 let svg_top: string, svg_bottom: string;
 
@@ -200,44 +201,6 @@ export default class WizardConfig extends Vue {
 
   pcbTypes: any[] = [];
 
-  rules = {
-    blankType: [
-      {
-        required: true,
-        message: "Please choose a valid blank pcb type",
-        trigger: "change",
-      },
-    ],
-    width: [
-      {
-        type: "float",
-        required: true,
-        message: "Please input valid witdh",
-        trigger: "blur",
-      },
-      {
-        min: 1,
-        max: 1000,
-        message: "Length should be 3 to 5",
-        trigger: "blur",
-      },
-    ],
-    height: [
-      {
-        type: "float",
-        required: true,
-        message: "Please input valid height",
-        trigger: "blur",
-      },
-      {
-        min: 1,
-        max: 1000,
-        message: "Length should be 3 to 5",
-        trigger: "blur",
-      },
-    ],
-  };
-
   types = [
     whatsThatGerber.TYPE_SOLDERMASK,
     whatsThatGerber.TYPE_SILKSCREEN,
@@ -255,11 +218,11 @@ export default class WizardConfig extends Vue {
     whatsThatGerber.SIDE_ALL,
   ];
 
-  @Inject() readonly setOutTabStatus:
-    | ((state: "wait" | "process" | "finish" | "error" | "success") => void)
-    | undefined;
+  //@Inject() readonly setOutTabStatus:
+  //  | ((state: "wait" | "process" | "finish" | "error" | "success") => void)
+  //  | undefined;
   @Inject() readonly registerNextCallback:
-    | ((callback: () => boolean | PromiseLike<boolean>) => void)
+    | ((callback: (type: 'next'|'back'|'skip') => boolean | PromiseLike<boolean>) => void)
     | undefined;
   @Inject() readonly enableButtons:
     | ((prev: boolean, skip: boolean, next: boolean) => void)
@@ -267,11 +230,18 @@ export default class WizardConfig extends Vue {
 
   mounted() {
     this.enableButtons!(true, false, true);
-    this.registerNextCallback!(() => {
+    this.registerNextCallback!((type: 'next'|'back'|'skip') => {
       return new Promise((resolve, reject) => {
         (this.$refs.form as any).validate((valid: boolean): void => {
           if (valid) {
-            resolve(true);
+            // Check selected PCB rules
+            const layers = this.$store.state.layers as PcbLayers[];
+            if(layers.filter( layer=>layer.enabled ).length == 0){
+              this.$message.error('No Layers selected!');
+              resolve(false);              
+            } else {
+              resolve(true);
+            }
           } else {
             resolve(false);
           }
