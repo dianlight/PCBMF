@@ -4,16 +4,25 @@ import { IDictionary } from "./dictionary";
 import { PcbLayers } from "./pcblayer";
 
 
-export interface IProjectIsolation {
+export interface IProjectWork {
     layer: string,
+    toolType: Tooldb | undefined,
+    svg:string | undefined,
+    gcode:string | undefined
+}
+
+export interface IProjectIsolation extends IProjectWork {
     showOutline: boolean,
     useFill: boolean,
     useFillPitch: number,
-    toolType: Tooldb | undefined,
     dthickness:number | undefined,
     doutline: number | undefined,
-    svg:string | undefined,
-    gcode:string | undefined
+}
+
+export interface IProjectDrill extends IProjectWork{
+    showOutline: boolean,
+    dthickness:number | undefined,
+    doutline: number | undefined,
 }
 export interface IProject {
     currentFile: string | undefined,
@@ -25,6 +34,7 @@ export interface IProject {
             height: number | undefined,
             width: number | undefined
         },
-        isolations: IProjectIsolation[]
+        isolations: IProjectIsolation[],
+        drills: IProjectDrill[]
     }
 }

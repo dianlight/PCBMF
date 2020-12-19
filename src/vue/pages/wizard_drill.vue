@@ -1,24 +1,24 @@
 <template>
   <el-container direction="vertical">
-    <h1 v-if="isolations.length == 0">No isolation layer to process</h1>
+    <h1 v-if="drills.length == 0">No drill layer to process</h1>
     <el-row
-      v-for="(isolation) in isolations"
-      :key="isolation.layer"
+      v-for="(drill) in drills"
+      :key="drill.layer"
       type="flex"
       align="middle"
-      v-loading="!options[isolation.layer] || options[isolation.layer].busy"
+      v-loading="!options[drill.layer] || options[drill.layer].busy"
       element-loading-text="Processing..."
       element-loading-spinner="el-icon-loading"
       element-loading-background="rgba(0, 0, 0, 0.8)"
     >
       <el-col :span="16">
         <h4>
-          {{ isolation.layer }}
+          {{ drill.layer }}
           <small
             >Render Time:
             {{
-              options[isolation.layer]
-                ? options[isolation.layer].renderTime
+              options[drill.layer]
+                ? options[drill.layer].renderTime
                 : "-"
             }}ms</small
           >
@@ -29,60 +29,60 @@
             <svg-viewer
               :panzoom="true"
               _class="fullframe"
-              :data="isolation.svg"
-              :style="{ '--isolation-width': isolation.doutline * 2 + 'mm' }"
+              :data="drill.svg"
+              :style="{ '--drill-width': drill.doutline * 2 + 'mm' }"
             ></svg-viewer>
           </el-tab-pane>
-          <el-tab-pane label="Work (3d)" :disabled="!isolation.gcode" lazy>
+          <el-tab-pane label="Work (3d)" :disabled="!drill.gcode" lazy>
             <g-code
-              :data="isolation.gcode"
+              :data="drill.gcode"
               :gcgrid="true"
               :width="width"
               :height="height"
             ></g-code>
           </el-tab-pane>
-          <el-tab-pane label="Gcode" :disabled="!isolation.gcode">
+          <el-tab-pane label="Gcode" :disabled="!drill.gcode">
             <highlightjs
               language="gcode"
-              :code="isolation.gcode || 'Loading...'"
+              :code="drill.gcode || 'Loading...'"
             />
           </el-tab-pane>
         </el-tabs>
       </el-col>
       <el-col :span="8">
         <h1></h1>
-        <el-form :model="isolation" ref="formx" label-width="11em">
+        <el-form :model="drill" ref="formx" label-width="11em">
           <el-form-item label="Show Border">
             <el-switch
-              v-model="isolation.showOutline"
-              @input="redrawpcb(isolation)"
+              v-model="drill.showOutline"
+              @input="redrawpcb(drill)"
             ></el-switch>
           </el-form-item>
           <el-form-item label="Use Fill Elements">
             <el-switch
-              v-model="isolation.useFill"
-              @input="redrawpcb(isolation)"
+              v-model="drill.useFill"
+              @input="redrawpcb(drill)"
             ></el-switch>
           </el-form-item>
           <el-form-item label="Fill Elements Outline">
             <el-input-number
               size="mini"
-              v-model="isolation.useFillPitch"
+              v-model="drill.useFillPitch"
               :min="0.0001"
               :max="1"
               :precision="4"
               :step="0.001"
-              :disabled="!isolation.useFill"
-              @change="redrawpcb(isolation)"
+              :disabled="!drill.useFill"
+              @change="redrawpcb(drill)"
             ></el-input-number>
           </el-form-item>
-          <el-form-item label="Isolation Tool" :rules="[{ required: true, trigger:'change' }]" 
+          <el-form-item label="drill Tool" :rules="[{ required: true, trigger:'change' }]" 
           prop="toolType">
             <el-select
-              v-model="isolation.toolType"
+              v-model="drill.toolType"
               value-key="name"
               placeholder="Tool..."
-              @change="toolChange(isolation)"
+              @change="toolChange(drill)"
               size="mini"
             >
               <el-option
@@ -95,35 +95,35 @@
             </el-select>
           </el-form-item>
           <el-form-item
-            label="Isolation thickness"
+            label="drill thickness"
             :rules="[{ required: true, trigger:'blur', type: 'number', min: 0.0001 }]"
             prop="dthickness"
           >
             <el-input-number
               size="mini"
-              v-model="isolation.dthickness"
+              v-model="drill.dthickness"
               :min="0"
-              :max="5"
+              :max="50"
               :precision="4"
               :step="0.1"
-              :disabled="!isolation.toolType"
-              @change="changeThickness(isolation)"
+              :disabled="!drill.toolType"
+              @change="changeThickness(drill)"
             ></el-input-number>
           </el-form-item>
           <el-form-item
-            label="Isolation width"
+            label="drill width"
             :rules="[{ required: true,trigger:'blur', type: 'number', min: 0.0001 }]"
             prop="doutline"
           >
             <el-input-number
               size="mini"
-              v-model="isolation.doutline"
+              v-model="drill.doutline"
               :min="0.0001"
               :max="5"
               :precision="4"
               :step="0.001"
               :disabled="true"
-              @change="redrawpcb(isolation)"
+              @change="redrawpcb(drill)"
             ></el-input-number>
           </el-form-item>
         </el-form>
@@ -170,7 +170,7 @@ import {
 } from "@/models/plotterData";
 import { IWorkerData, IWorkerDataType } from "@/models/workerData";
 import PlotterWorker from "_/workers/plotterDataToModel.worker";
-import { IProject, IProjectIsolation } from "@/models/project";
+import { IProject, IProjectDrill } from "@/models/project";
 import { Store } from "vuex";
 import { Tooldb } from "@/typings/tooldb";
 import { IPlotterOptions } from "@/workers/plotterDataToModel.worker";
@@ -192,13 +192,10 @@ interface Options {
   },
   computed: {
     ...mapFields(["layers", "config.pcb.width", "config.pcb.height"]),
-    ...mapMultiRowFields(["config.isolations"]),
+    ...mapMultiRowFields(["config.drills"]),
   },
-  //  inject: [
-  //    'setTabStatus'
-  //  ]
 })
-export default class WizardIsolation extends Vue {
+export default class WizardDrill extends Vue {
   toolTypes: Tooldb[] = [];
   options: IDictionary<Options> = {};
 
@@ -236,24 +233,23 @@ export default class WizardIsolation extends Vue {
               })
           )
         ).then((results) => {
- //           resovedall(false);
           resovedall(results.every((value, index, all) => value == true));
         });
       });
     });
 
     this.$store.commit("updateField", {
-      path: "config.isolations",
+      path: "config.drills",
       value: (this.$store.state.layers as PcbLayers[])
         .filter((layer) => {
-          return layer.type === whatsThatGerber.TYPE_COPPER && layer.enabled;
+          return layer.type === whatsThatGerber.TYPE_DRILL && layer.enabled;
         })
         .map((layer, index) => {
-          const ret: IProjectIsolation = {
+          const ret: IProjectDrill = {
             layer: layer.name,
             showOutline: false,
-            useFill: false,
-            useFillPitch: 0.005,
+//            useFill: false,
+//            useFillPitch: 0.005,
             toolType: undefined,
             dthickness: undefined,
             doutline: undefined,
@@ -261,7 +257,7 @@ export default class WizardIsolation extends Vue {
             gcode: undefined,
           };
           const oldrecord = (this.$store
-            .state as IProject).config.isolations.find(
+            .state as IProject).config.drills.find(
             (layer) => layer.layer === ret.layer
           );
           if (oldrecord) {
@@ -278,45 +274,35 @@ export default class WizardIsolation extends Vue {
 
     new Promise((resolve) => {
       FSStore.get("data.tool.types", []).then((data) => {
-        this.toolTypes = data.filter((tool:Tooldb)=>tool.type === 'V-Shape' || tool.type === 'Mill');
+        this.toolTypes = data.filter((tool:Tooldb)=>tool.type === 'Drill' || tool.type === 'Mill');;
       });
     });
 
-    if ((this.$store.state as IProject).config.isolations.length == 0) {
-      console.log("No isolation need to skip");
+    if ((this.$store.state as IProject).config.drills.length == 0) {
+      console.log("No drill need to skip");
       this.wizardPushSkip!();
     }
   }
 
-  changeThickness(isolation: IProjectIsolation) {
-    const index = (this.$store.state as IProject).config.isolations.findIndex(
-      (iso) => iso.layer === isolation.layer
+  changeThickness(drill: IProjectDrill) {
+    const index = (this.$store.state as IProject).config.drills.findIndex(
+      (iso) => iso.layer === drill.layer
     );
     const state = (this.$store as Store<IProject>).state;
-    const tool = isolation!.toolType;
+    const tool = drill!.toolType;
     if (this.$store && this.$store.state) {
-      if (tool && tool.type === "V-Shape") {
+      
         this.$store.commit("updateField", {
-          path: `config.isolations[${index}].doutline`,
-          value: Trigonomerty.getTipDiamaterForVTool(
-            tool.size as number,
-            tool.angle as number,
-            isolation.dthickness as number
-          ),
+          path: `config.drills[${index}].doutline`,
+          value: tool!.size as number,
         });
-      } else if (tool) {
-        this.$store.commit("updateField", {
-          path: `config.isolations[${index}].doutline`,
-          value: tool.size as number,
-        });
-      }
-      this.redrawpcb(isolation);
+      this.redrawpcb(drill);
     }
   }
 
-  toolChange(isolation: IProjectIsolation) {
-    const index = (this.$store.state as IProject).config.isolations.findIndex(
-      (iso) => iso.layer === isolation.layer
+  toolChange(drill: IProjectDrill) {
+    const index = (this.$store.state as IProject).config.drills.findIndex(
+      (iso) => iso.layer === drill.layer
     );
     const state = (this.$store as Store<IProject>).state;
     if (
@@ -326,25 +312,25 @@ export default class WizardIsolation extends Vue {
       state.config.pcb.blankType
     ) {
       this.$store.commit("updateField", {
-        path: `config.isolations[${index}].dthickness`,
-        value: state!.config!.pcb!.blankType.cthickness as number,
+        path: `config.drills[${index}].dthickness`,
+        value: state!.config!.pcb!.blankType.bthickness as number,
       });
-      this.changeThickness(isolation);
+      this.changeThickness(drill);
     } else {
       console.error("Error instate object", state);
     }
   }
 
-  redrawpcb(isolation: IProjectIsolation) {
-    this.options[isolation.layer].busy = true;
-    this.options[isolation.layer].renderTime = 0;
+  redrawpcb(drill: IProjectDrill) {
+    this.options[drill.layer].busy = true;
+    this.options[drill.layer].renderTime = 0;
     this.$forceUpdate();
     const startTime = Date.now();
 
     const _layer = JSON.parse(
       JSON.stringify(
         (this.$store.state.layers as PcbLayers[]).filter(
-          (layer) => layer.name === isolation.layer
+          (layer) => layer.name === drill.layer
         )[0]
       ),
       (k, v) => {
@@ -367,7 +353,7 @@ export default class WizardIsolation extends Vue {
     stream.push(null);
 
     var parser = gerberParser({
-      filetype: "gerber",
+      filetype: "drill",
     });
     var plotter = gerberPlotter({
       optimizePaths: true,
@@ -393,12 +379,12 @@ export default class WizardIsolation extends Vue {
     plotterWorker.postMessage({
       type: IWorkerDataType.START,
       data: {
-        name: isolation.layer,
-        showOutline: isolation.showOutline,
-        useFill: isolation.useFill,
-        useFillPitch: isolation.useFillPitch,
-        outlineTick: isolation.doutline,
-        cutdepth: isolation.dthickness
+        name: drill.layer,
+        showOutline: drill.showOutline,
+//        useFill: drill.useFill,
+//        useFillPitch: drill.useFillPitch,
+        outlineTick: -(drill.doutline||0),
+        cutdepth: drill.dthickness,
       } as IPlotterOptions,
     });
     plotterWorker.onmessage = (event) => {
@@ -406,16 +392,16 @@ export default class WizardIsolation extends Vue {
       const data = event.data as IWorkerData<{ svg: string; gcode: string }>;
       if (data.type === IWorkerDataType.END) {
         const index = (this.$store
-          .state as IProject).config.isolations.findIndex(
-          (iso) => iso.layer === isolation.layer
+          .state as IProject).config.drills.findIndex(
+          (iso) => iso.layer === drill.layer
         );
         this.$store.commit("updateField", {
-          path: `config.isolations.${index}.svg`,
+          path: `config.drills.${index}.svg`,
           value: (event.data as IWorkerData<{ svg: string; gcode: string }>)
             .data.svg,
         });
         this.$store.commit("updateField", {
-          path: `config.isolations.${index}.gcode`,
+          path: `config.drills.${index}.gcode`,
           value: (event.data as IWorkerData<{ svg: string; gcode: string }>)
             .data.gcode,
         });
@@ -447,7 +433,7 @@ export default class WizardIsolation extends Vue {
 
 svg #outline {
   stroke: red;
-  stroke-width: var(--isolation-width);
+  stroke-width: var(--drill-width);
   stroke-linecap: round;
 }
 

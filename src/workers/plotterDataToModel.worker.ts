@@ -11,10 +11,12 @@ interface IShapeDictionary {
 }
 
 export interface IPlotterOptions {
+    name: string;
     showOutline: boolean;
     useFill: boolean;
     useFillPitch: number;
     outlineTick: number;
+    cutdepth: number;
 }
 
 
@@ -205,8 +207,9 @@ export interface IPlotterOptions {
 
                 let outline = undefined;
                 if(options.outlineTick){
+                    const outl = options.outlineTick > 0?options.outlineTick:-options.outlineTick;
                     console.log("Apply outline:",options.outlineTick);
-                    outline = makerjs.model.outline(gmodel,options.outlineTick/2,0,false);
+                    outline = makerjs.model.outline(gmodel,outl/2,0,options.outlineTick > 0?false:true);
                 }
                // let json = {};
                 let gcode:String = "";
@@ -219,7 +222,7 @@ export interface IPlotterOptions {
                 //    const arcprecision = .2; // FIXME: from config maximum lenght between points.
                     const code = new GCodeParser({
                         // Define the script name
-                        name: '123',
+                        name: options.name,
                         // Define the scale to use (default is mm)
                         unit: 'mm',
                         // Define the starting x and y position
@@ -232,11 +235,12 @@ export interface IPlotterOptions {
                         clearance: 10, // FIXME: From config travel height
                         precision: 3 // FIXME: From config
                       });
-                    const cut_deep = 1; // FIXME: From model cut deep  
+                    const cut_deep = options.cutdepth; // FIXME: From model cut deep  
                     
                     function orderPath(cpoints:makerjs.IPoint[]) {
 
                         function isEqual(value:makerjs.IPoint, other:makerjs.IPoint):boolean {
+                            if(!value)return false;
                             return  value[0].toFixed(code.options.precision) == other[0].toFixed(code.options.precision) 
                                && value[1].toFixed(code.options.precision) == other[1].toFixed(code.options.precision)
                         }
@@ -312,6 +316,7 @@ export interface IPlotterOptions {
                                     const segments = pathCircle.radius*2*Math.PI / (1/10*code.options.precision);
                                     const points = makerjs.path.toPoints(pathCircle,segments);
                                     const opoints = orderPath(points);
+                                    if(opoints && opoints[0]){
                                     code.feedRapid({
                                         x: opoints[0][0],
                                         y: opoints[0][1],                                            
@@ -328,7 +333,8 @@ export interface IPlotterOptions {
                                         x: opoints[0][0],
                                         y: opoints[0][1],  
                                         z: -cut_deep                                          
-                                    });                                    
+                                    });    
+                                }                                
                                 /*
                                 } else if(makerjs.isPathArcInBezierCurve(path[1])){
                                     // TODO: Please implements

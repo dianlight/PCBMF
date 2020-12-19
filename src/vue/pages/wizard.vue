@@ -5,14 +5,13 @@
         <el-steps ref="step" :active="active - 1" finish-status="success" align-center>
           <el-step title="Step 1" description="Layout"></el-step>
           <el-step title="Step 2" description="Isolation"></el-step>
-          <el-step title="Step 3" description="Drill PTH"></el-step>
-          <el-step title="Step 4" description="Drill NPTH"></el-step>
-          <el-step title="Step 5" description="Outline"></el-step>
-          <el-step title="Step 6" description="Copper thief"></el-step>
-          <el-step title="Step 7" description="Mask removal"></el-step>
-          <el-step title="Step 8" description="Solder mask"></el-step>
-          <el-step title="Step 9" description="Two side guide"></el-step>
-          <el-step title="Step 5" description="Done"></el-step>
+          <el-step title="Step 3" description="Drill"></el-step>
+          <el-step title="Step 4" description="Outline"></el-step>
+          <el-step title="Step 5" description="Copper thief"></el-step>
+          <el-step title="Step 6" description="Mask removal"></el-step>
+          <el-step title="Step 7" description="Solder mask"></el-step>
+          <el-step title="Step 8" description="Two side guide"></el-step>
+          <el-step title="Step 9" description="Done"></el-step>
         </el-steps>
       </el-header>
     </el-card>
