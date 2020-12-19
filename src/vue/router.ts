@@ -6,6 +6,7 @@ import wizard_config from "./pages/wizard_config.vue";
 import preferencies from "./pages/preferencies.vue";
 import wizard_isolation from "@/vue/pages/wizard_isolation.vue";
 import wizard_drill from "@/vue/pages/wizard_drill.vue";
+import wizard_outline from "@/vue/pages/wizard_outline.vue";
 
 Vue.use(VueRouter);
 
@@ -28,6 +29,11 @@ export default new VueRouter({
                 path: 'drill',
                 component: wizard_drill,
                 meta: { step: 2 }
+            },
+            {
+                path: 'outline',
+                component: wizard_outline,
+                meta: { step: 3 }
             },
         ] },
     ]

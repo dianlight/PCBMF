@@ -24,6 +24,12 @@ export interface IProjectDrill extends IProjectWork{
     dthickness:number | undefined,
     doutline: number | undefined,
 }
+
+export interface IProjectOutline extends IProjectWork{
+    showOutline: boolean,
+    dthickness:number | undefined,
+    doutline: number | undefined,
+}
 export interface IProject {
     currentFile: string | undefined,
     layers: PcbLayers[] | undefined,
@@ -35,6 +41,7 @@ export interface IProject {
             width: number | undefined
         },
         isolations: IProjectIsolation[],
-        drills: IProjectDrill[]
+        drills: IProjectDrill[],
+        outlines: IProjectOutline[]
     }
 }

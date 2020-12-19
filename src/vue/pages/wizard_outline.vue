@@ -1,24 +1,24 @@
 <template>
   <el-container direction="vertical">
-    <h1 v-if="drills.length == 0">No drill layer to process</h1>
+    <h1 v-if="outlines.length == 0">No outline layer to process</h1>
     <el-row
-      v-for="(drill) in drills"
-      :key="drill.layer"
+      v-for="(outline) in outlines"
+      :key="outline.layer"
       type="flex"
       align="middle"
-      v-loading="!options[drill.layer] || options[drill.layer].busy"
+      v-loading="!options[outline.layer] || options[outline.layer].busy"
       element-loading-text="Processing..."
       element-loading-spinner="el-icon-loading"
       element-loading-background="rgba(0, 0, 0, 0.8)"
     >
       <el-col :span="16">
         <h4>
-          {{ drill.layer }}
+          {{ outline.layer }}
           <small
             >Render Time:
             {{
-              options[drill.layer]
-                ? options[drill.layer].renderTime
+              options[outline.layer]
+                ? options[outline.layer].renderTime
                 : "-"
             }}ms</small
           >
@@ -29,62 +29,62 @@
             <svg-viewer
               :panzoom="true"
               _class="fullframe"
-              :data="drill.svg"
-              :style="{ '--drill-width': drill.doutline * 2 + 'mm' }"
+              :data="outline.svg"
+              :style="{ '--outline-width': outline.doutline * 2 + 'mm' }"
             ></svg-viewer>
           </el-tab-pane>
-          <el-tab-pane label="Work (3d)" :disabled="!drill.gcode" lazy>
+          <el-tab-pane label="Work (3d)" :disabled="!outline.gcode" lazy>
             <g-code
-              :data="drill.gcode"
+              :data="outline.gcode"
               :gcgrid="true"
               :width="width"
               :height="height"
             ></g-code>
           </el-tab-pane>
-          <el-tab-pane label="Gcode" :disabled="!drill.gcode">
+          <el-tab-pane label="Gcode" :disabled="!outline.gcode">
             <highlightjs
               language="gcode"
-              :code="drill.gcode || 'Loading...'"
+              :code="outline.gcode || 'Loading...'"
             />
           </el-tab-pane>
         </el-tabs>
       </el-col>
       <el-col :span="8">
         <h1></h1>
-        <el-form :model="drill" ref="formx" label-width="11em">
-          <el-form-item label="Show Border">
+        <el-form :model="outline" ref="formx" label-width="11em">
+          <el-form-item label="Square Border">
             <el-switch
-              v-model="drill.showOutline"
-              @input="redrawpcb(drill)"
+              v-model="outline.showOutline"
+              @input="redrawpcb(outline)"
             ></el-switch>
           </el-form-item>
           <!--
           <el-form-item label="Use Fill Elements">
             <el-switch
-              v-model="drill.useFill"
-              @input="redrawpcb(drill)"
+              v-model="outline.useFill"
+              @input="redrawpcb(outline)"
             ></el-switch>
           </el-form-item>
           <el-form-item label="Fill Elements Outline">
             <el-input-number
               size="mini"
-              v-model="drill.useFillPitch"
+              v-model="outline.useFillPitch"
               :min="0.0001"
               :max="1"
               :precision="4"
               :step="0.001"
-              :disabled="!drill.useFill"
-              @change="redrawpcb(drill)"
+              :disabled="!outline.useFill"
+              @change="redrawpcb(outline)"
             ></el-input-number>
           </el-form-item>
           -->
-          <el-form-item label="drill Tool" :rules="[{ required: true, trigger:'change' }]" 
+          <el-form-item label="outline Tool" :rules="[{ required: true, trigger:'change' }]" 
           prop="toolType">
             <el-select
-              v-model="drill.toolType"
+              v-model="outline.toolType"
               value-key="name"
               placeholder="Tool..."
-              @change="toolChange(drill)"
+              @change="toolChange(outline)"
               size="mini"
             >
               <el-option
@@ -97,35 +97,35 @@
             </el-select>
           </el-form-item>
           <el-form-item
-            label="drill thickness"
+            label="outline thickness"
             :rules="[{ required: true, trigger:'blur', type: 'number', min: 0.0001 }]"
             prop="dthickness"
           >
             <el-input-number
               size="mini"
-              v-model="drill.dthickness"
+              v-model="outline.dthickness"
               :min="0"
               :max="50"
               :precision="4"
               :step="0.1"
-              :disabled="!drill.toolType"
-              @change="changeThickness(drill)"
+              :disabled="!outline.toolType"
+              @change="changeThickness(outline)"
             ></el-input-number>
           </el-form-item>
           <el-form-item
-            label="drill width"
+            label="outline width"
             :rules="[{ required: true,trigger:'blur', type: 'number', min: 0.0001 }]"
             prop="doutline"
           >
             <el-input-number
               size="mini"
-              v-model="drill.doutline"
+              v-model="outline.doutline"
               :min="0.0001"
               :max="5"
               :precision="4"
               :step="0.001"
               :disabled="true"
-              @change="redrawpcb(drill)"
+              @change="redrawpcb(outline)"
             ></el-input-number>
           </el-form-item>
         </el-form>
@@ -172,7 +172,7 @@ import {
 } from "@/models/plotterData";
 import { IWorkerData, IWorkerDataType } from "@/models/workerData";
 import PlotterWorker from "_/workers/plotterDataToModel.worker";
-import { IProject, IProjectDrill } from "@/models/project";
+import { IProject, IProjectOutline } from "@/models/project";
 import { Store } from "vuex";
 import { Tooldb } from "@/typings/tooldb";
 import { IPlotterOptions } from "@/workers/plotterDataToModel.worker";
@@ -194,10 +194,10 @@ interface Options {
   },
   computed: {
     ...mapFields(["layers", "config.pcb.width", "config.pcb.height"]),
-    ...mapMultiRowFields(["config.drills"]),
+    ...mapMultiRowFields(["config.outlines"]),
   },
 })
-export default class WizardDrill extends Vue {
+export default class Wizardoutline extends Vue {
   toolTypes: Tooldb[] = [];
   options: IDictionary<Options> = {};
 
@@ -241,13 +241,13 @@ export default class WizardDrill extends Vue {
     });
 
     this.$store.commit("updateField", {
-      path: "config.drills",
+      path: "config.outlines",
       value: (this.$store.state.layers as PcbLayers[])
         .filter((layer) => {
-          return layer.type === whatsThatGerber.TYPE_DRILL && layer.enabled;
+          return layer.type === whatsThatGerber.TYPE_OUTLINE && layer.enabled;
         })
         .map((layer, index) => {
-          const ret: IProjectDrill = {
+          const ret: IProjectOutline = {
             layer: layer.name,
             showOutline: false,
 //            useFill: false,
@@ -259,7 +259,7 @@ export default class WizardDrill extends Vue {
             gcode: undefined,
           };
           const oldrecord = (this.$store
-            .state as IProject).config.drills.find(
+            .state as IProject).config.outlines.find(
             (layer) => layer.layer === ret.layer
           );
           if (oldrecord) {
@@ -276,35 +276,35 @@ export default class WizardDrill extends Vue {
 
     new Promise((resolve) => {
       FSStore.get("data.tool.types", []).then((data) => {
-        this.toolTypes = data.filter((tool:Tooldb)=>tool.type === 'Drill' || tool.type === 'Mill');;
+        this.toolTypes = data.filter((tool:Tooldb)=>tool.type === 'Mill');;
       });
     });
 
-    if ((this.$store.state as IProject).config.drills.length == 0) {
-      console.log("No drill need to skip");
+    if ((this.$store.state as IProject).config.outlines.length == 0) {
+      console.log("No outline need to skip");
       this.wizardPushSkip!();
     }
   }
 
-  changeThickness(drill: IProjectDrill) {
-    const index = (this.$store.state as IProject).config.drills.findIndex(
-      (iso) => iso.layer === drill.layer
+  changeThickness(outline: IProjectOutline) {
+    const index = (this.$store.state as IProject).config.outlines.findIndex(
+      (iso) => iso.layer === outline.layer
     );
     const state = (this.$store as Store<IProject>).state;
-    const tool = drill!.toolType;
+    const tool = outline!.toolType;
     if (this.$store && this.$store.state) {
       
         this.$store.commit("updateField", {
-          path: `config.drills[${index}].doutline`,
+          path: `config.outlines[${index}].doutline`,
           value: tool!.size as number,
         });
-      this.redrawpcb(drill);
+      this.redrawpcb(outline);
     }
   }
 
-  toolChange(drill: IProjectDrill) {
-    const index = (this.$store.state as IProject).config.drills.findIndex(
-      (iso) => iso.layer === drill.layer
+  toolChange(outline: IProjectOutline) {
+    const index = (this.$store.state as IProject).config.outlines.findIndex(
+      (iso) => iso.layer === outline.layer
     );
     const state = (this.$store as Store<IProject>).state;
     if (
@@ -314,25 +314,25 @@ export default class WizardDrill extends Vue {
       state.config.pcb.blankType
     ) {
       this.$store.commit("updateField", {
-        path: `config.drills[${index}].dthickness`,
+        path: `config.outlines[${index}].dthickness`,
         value: state!.config!.pcb!.blankType.bthickness as number,
       });
-      this.changeThickness(drill);
+      this.changeThickness(outline);
     } else {
       console.error("Error instate object", state);
     }
   }
 
-  redrawpcb(drill: IProjectDrill) {
-    this.options[drill.layer].busy = true;
-    this.options[drill.layer].renderTime = 0;
+  redrawpcb(outline: IProjectOutline) {
+    this.options[outline.layer].busy = true;
+    this.options[outline.layer].renderTime = 0;
     this.$forceUpdate();
     const startTime = Date.now();
 
     const _layer = JSON.parse(
       JSON.stringify(
         (this.$store.state.layers as PcbLayers[]).filter(
-          (layer) => layer.name === drill.layer
+          (layer) => layer.name === outline.layer
         )[0]
       ),
       (k, v) => {
@@ -355,7 +355,7 @@ export default class WizardDrill extends Vue {
     stream.push(null);
 
     var parser = gerberParser({
-      filetype: "drill",
+      filetype: "gerber",
     });
     var plotter = gerberPlotter({
       optimizePaths: true,
@@ -381,12 +381,12 @@ export default class WizardDrill extends Vue {
     plotterWorker.postMessage({
       type: IWorkerDataType.START,
       data: {
-        name: drill.layer,
-        showOutline: drill.showOutline,
-//        useFill: drill.useFill,
-//        useFillPitch: drill.useFillPitch,
-        outlineTick: -(drill.doutline||0),
-        cutdepth: drill.dthickness,
+        name: outline.layer,
+        showOutline: outline.showOutline,
+//        useFill: outline.useFill,
+//        useFillPitch: outline.useFillPitch,
+        outlineTick: outline.doutline,
+        cutdepth: outline.dthickness,
       } as IPlotterOptions,
     });
     plotterWorker.onmessage = (event) => {
@@ -394,16 +394,16 @@ export default class WizardDrill extends Vue {
       const data = event.data as IWorkerData<{ svg: string; gcode: string }>;
       if (data.type === IWorkerDataType.END) {
         const index = (this.$store
-          .state as IProject).config.drills.findIndex(
-          (iso) => iso.layer === drill.layer
+          .state as IProject).config.outlines.findIndex(
+          (iso) => iso.layer === outline.layer
         );
         this.$store.commit("updateField", {
-          path: `config.drills.${index}.svg`,
+          path: `config.outlines.${index}.svg`,
           value: (event.data as IWorkerData<{ svg: string; gcode: string }>)
             .data.svg,
         });
         this.$store.commit("updateField", {
-          path: `config.drills.${index}.gcode`,
+          path: `config.outlines.${index}.gcode`,
           value: (event.data as IWorkerData<{ svg: string; gcode: string }>)
             .data.gcode,
         });
@@ -435,7 +435,7 @@ export default class WizardDrill extends Vue {
 
 svg #outline {
   stroke: red;
-  stroke-width: var(--drill-width);
+  stroke-width: var(--outline-width);
   stroke-linecap: round;
 }
 

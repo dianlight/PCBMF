@@ -32,6 +32,7 @@ export default new Vuex.Store<IProject>({
             },
             isolations: [],
             drills: [],
+            outlines: []
         }
     },
     plugins: [vuexPersist.plugin],
