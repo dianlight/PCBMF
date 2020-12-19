@@ -2,7 +2,7 @@
   <el-container direction="vertical">
     <el-card>
       <el-header>
-        <el-steps :active="active-1" finish-status="success" align-center>
+        <el-steps :active="active - 1" finish-status="success" align-center>
           <el-step title="Step 1" description="Layout"></el-step>
           <el-step title="Step 2" description="Isolation"></el-step>
           <el-step title="Step 3" description="Drill PTH"></el-step>
@@ -23,12 +23,33 @@
     </el-main>
     <el-footer>
       <el-row type="flex" justify="end">
-        <el-col :span="4">
+        <el-col :span="6">
           <el-button-group>
-            <el-button @click="nextPage(-1)" :disabled="active == 1"
+            <el-button
+              @click="nextPage(-1)"
+              :disabled="active == 1 || !prev"
+              size="small"
+              type="primary"
+              round
+              icon="el-icon-arrow-left"
               >Back</el-button
             >
-            <el-button @click="nextPage(+1)" :disabled="active == 9"
+            <el-button
+              @click="nextPage(+1)"
+              :disabled="active == 9 || !skip"
+              size="small"
+              round
+              type="warning"
+              icon="el-icon-d-arrow-right"
+              >Skip</el-button
+            >
+            <el-button
+              @click="nextPage(+1)"
+              :disabled="active == 9 || !next"
+              size="small"
+              type="primary"
+              round
+              icon="el-icon-arrow-right"
               >Next</el-button
             >
           </el-button-group>
@@ -48,24 +69,56 @@ import store from "../store";
 @Component
 export default class Wizard extends Vue {
   active = 1;
+  prev = true;
+  next = true;
+  skip = true;
+  outstatus = "success";
+  nextCallback: () => boolean | PromiseLike<boolean> = () => true;
 
   nextPage(inc: number) {
-    this.active += inc;
-    console.log("New Active:", inc);
-    this.$router!.options!.routes!.find(
-      (route: RouteConfig) => route.path === "/wizard/"
-    )?.children?.forEach((route: RouteConfig) => {
-      console.log(route.meta.step == this.active, route.meta.step, this.active);
-      if (route.meta.step == this.active - 1) {
-        console.log("Visualize Path:", route.path);
-        this.$router.push(route.path);
+    Promise.resolve(this.nextCallback()).then((resolve) => {
+      if (resolve) {
+        this.active += inc;
+        console.log("New Active:", inc);
+        this.$router!.options!.routes!.find(
+          (route: RouteConfig) => route.path === "/wizard/"
+        )?.children?.forEach((route: RouteConfig) => {
+          console.log(
+            route.meta.step == this.active,
+            route.meta.step,
+            this.active
+          );
+          if (route.meta.step == this.active - 1) {
+            console.log("Visualize Path:", route.path);
+            this.nextCallback = () => true;
+            (this.prev = true), (this.next = true), (this.skip = true);
+            this.$router.push(route.path);
+          }
+        });
       }
     });
   }
 
   @Provide()
-  setTabStatus(state:"success"|"error"){
-    console.log("----> Status",state);
+  setTabStatus(state: "wait" | "process" | "finish" | "error" | "success") {
+    console.log("----> Status", state);
+  }
+
+  @Provide()
+  setOutTabStatus(state: "wait" | "process" | "finish" | "error" | "success") {
+    this.outstatus = state;
+  }
+
+  @Provide()
+  enableButtons(prev: boolean, skip: boolean, next: boolean) {
+    this.prev = prev;
+    this.next = next;
+    this.skip = skip;
+  }
+
+  @Provide()
+  registerNextCallback(callback: () => boolean | PromiseLike<boolean>) {
+    this.nextCallback = callback;
   }
 }
 </script>

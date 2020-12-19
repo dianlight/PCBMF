@@ -134,6 +134,7 @@
         "@ncform/ncform-common": "^1.7.2",
         "@ncform/ncform-theme-elementui": "^1.7.5",
         "adm-zip": "^0.5.1",
+        "async-validator": "^1.8.5",
         "axios": "^0.21.0",
         "colornames": "^1.1.1",
         "conf": "^7.1.2",
