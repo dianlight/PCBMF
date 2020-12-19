@@ -41,7 +41,7 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
-import { Watch } from "vue-property-decorator";
+import { Provide, Watch } from "vue-property-decorator";
 import { Route, RouteConfig } from "vue-router";
 import store from "../store";
 
@@ -61,6 +61,11 @@ export default class Wizard extends Vue {
         this.$router.push(route.path);
       }
     });
+  }
+
+  @Provide()
+  setTabStatus(state:"success"|"error"){
+    console.log("----> Status",state);
   }
 }
 </script>

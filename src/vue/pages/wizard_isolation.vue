@@ -133,7 +133,7 @@ import { mapFields, mapMultiRowFields } from "vuex-map-fields";
 import { ElTable } from "element-ui/types/table";
 import FSStore from "@/fsstore";
 import Component from "vue-class-component";
-import { VModel } from "vue-property-decorator";
+import { Inject, VModel } from "vue-property-decorator";
 import GCode from "@/vue/components/gcode.vue";
 import SvgViewer from "@/vue/components/svgviewer.vue";
 import fs from "fs";
@@ -183,19 +183,25 @@ interface Options {
     ...mapFields(["layers", "config.pcb.width", "config.pcb.height"]),
     ...mapMultiRowFields(["config.isolations"]),
   },
+  //  inject: [
+  //    'setTabStatus'
+  //  ]
 })
 export default class WizardIsolation extends Vue {
   toolTypes: Tooldb[] = [];
   options: IDictionary<Options> = {};
 
+  @Inject() readonly setTabStatus: ((state: boolean) => void) | undefined;
+
   mounted() {
+    this.setTabStatus!(true);
     this.$store.commit("updateField", {
       path: "config.isolations",
       value: (this.$store.state.layers as PcbLayers[])
         .filter((layer) => {
           return layer.type === whatsThatGerber.TYPE_COPPER && layer.enabled;
         })
-        .map((layer) => {
+        .map((layer, index) => {
           const ret: IProjectIsolation = {
             layer: layer.name,
             showOutline: false,
@@ -207,6 +213,13 @@ export default class WizardIsolation extends Vue {
             svg: undefined,
             gcode: undefined,
           };
+          const oldrecord = (this.$store.state as IProject).config.isolations.find( layer=>layer.layer === ret.layer );
+          if(oldrecord){
+            Object.assign(
+              ret,
+              oldrecord
+            );
+          }
           this.options[layer.name] = {
             renderTime: -1,
             busy: true,
