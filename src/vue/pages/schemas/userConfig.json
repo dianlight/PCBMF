@@ -1,10 +1,37 @@
 {
     "type": "object",
     "properties": {
-        "choice": {
+        "serial": {
+            "type": "string",
+            "ui": {
+                "columns": 7,
+                "required": true,
+                "label": "Serial",
+                "widget": "select",
+                "widgetConfig": {
+                    "suffixIcon": "el-icon-date",
+                    "size": "mini",
+                    "placeholder": "select your choice",
+                    "enumSource": []
+                },
+                "help": {
+                    "show": true,
+                    "text": "?",
+                    "content": "Only GRBL 1.1 firmware is supported - See documentation"
+                }
+            },
+            "rules": {
+                "required": {
+                    "value": true,
+                    "errMsg": "it is required!"
+                }
+            }
+        },
+        "dialect": {
             "type": "string",
             "value": 1,
             "ui": {
+                "columns": 5,
                 "required": true,
                 "readonly": true,
                 "label": "Dialect",
@@ -40,10 +67,46 @@
                 }
             }
         },
+        "units": {
+            "type": "string",
+            "value": 1,
+            "ui": {
+                "columns": 3,
+                "required": true,
+                "readonly": true,
+                "label": "Unit",
+                "widget": "select",
+                "widgetConfig": {
+                    "size": "mini",
+                    "placeholder": "select your choice",
+                    "enumSource": [
+                        {
+                            "value": 1,
+                            "label": "mm"
+                        },
+                        {
+                            "value": 2,
+                            "label": "in"
+                        }
+                    ]
+                },
+                "help": {
+                    "show": true,
+                    "text": "!",
+                    "content": "Only mm is supported - See documentation"
+                }
+            },
+            "rules": {
+                "required": {
+                    "value": true,
+                    "errMsg": "it is required!"
+                }
+            }
+        },
         "home": {
             "type": "boolean",
             "ui": {
-                "columns": 5,
+                "columns": 4,
                 "label": "Homing",
                 "help": {
                     "show": true,
@@ -65,7 +128,7 @@
             "type": "integer",
             "default": 50,
             "ui": {
-                "columns": 7,
+                "columns": 3,
                 "label": "Max Feedrate",
                 "help": {
                     "show": true,
@@ -83,10 +146,32 @@
                 }
             }
         },
+        "precision": {
+            "type": "integer",
+            "default": 3,
+            "ui": {
+                "columns": 3,
+                "label": "Precision",
+                "help": {
+                    "show": true,
+                    "text": "?",
+                    "content": "Working precision in decimals"
+                },
+                "widgetConfig": {
+                    "size": "mini"
+                }
+            },
+            "rules": {
+                "required": {
+                    "value": true,
+                    "errMsg": "it is required!"
+                }
+            }
+        },
         "linenumber": {
             "type": "boolean",
             "ui": {
-                "columns": 5,
+                "columns": 4,
                 "label": "Line Number",
                 "help": {
                     "show": true,
@@ -98,12 +183,37 @@
                 }
             }
         },
+        "archtolerance": {
+            "type": "integer",
+            "value": 0.002,
+            "ui": {
+                "columns": 3,
+                "required": true,
+                "readonly": true,
+                "label": "Arch Tolerance",
+                "placeholder": "Working Plate Witdh",
+                "help": {
+                    "show": true,
+                    "text": "!",
+                    "content": "Not yet supported"
+                },
+                "widgetConfig": {
+                    "size": "mini"
+                }
+            },
+            "rules": {
+                "required": {
+                    "value": true
+                }
+            }
+        },
         "platewidth": {
             "type": "integer",
+            "value": 200,
             "ui": {
                 "columns": 3,
                 "label": "Plate Width",
-                "placeholder": "Working Plate Witdh",
+                "placeholder": "Working Plate Witdh (X)",
                 "help": {
                     "show": true,
                     "text": "?",
@@ -114,13 +224,14 @@
                 }
             }
         },
-        "plateheight": {
+        "platedepth": {
             "type": "integer",
+            "value": 100,
             "ui": {
                 "columns": 3,
                 "showLabel": true,
-                "label": "Height",
-                "placeholder": "Working Plate Height",
+                "label": "Depth",
+                "placeholder": "Working Plate Depth (Y)",
                 "help": {
                     "show": true,
                     "text": "?",
@@ -129,6 +240,65 @@
                 "widgetConfig": {
                     "size": "mini"
                 }
+            }
+        },
+        "parkingx": {
+            "type": "integer",
+            "value": 0,
+            "ui": {
+                "columns": 3,
+                "label": "Parking X",
+                "placeholder": "X world cordinate",
+                "help": {
+                    "show": true,
+                    "text": "?",
+                    "content": "Where to park tool"
+                },
+                "widgetConfig": {
+                    "size": "mini"
+                }
+            }
+        },
+        "parkingy": {
+            "type": "integer",
+            "value": 0,
+            "ui": {
+                "columns": 3,
+                "showLabel": true,
+                "label": "Y",
+                "placeholder": "Y world cordinates",
+                "help": {
+                    "show": true,
+                    "text": "?",
+                    "content": "Where to taprk tool"
+                },
+                "widgetConfig": {
+                    "size": "mini"
+                }
+            }
+        },
+        "spindlespeed": {
+            "type": "integer",
+            "value": 10000,
+            "ui": {
+                "columns": 3,
+                "required": true,
+                "label": "Spindle (RPM)",
+                "placeholder": "RPM",
+                "help": {
+                    "show": true,
+                    "text": "!",
+                    "content": "Not yet supported"
+                },
+                "widgetConfig": {
+                    "size": "mini"
+                }
+            },
+            "rules": {
+                "required": {
+                    "value": true
+                },
+                "minimum": 0
             }
         }
     },

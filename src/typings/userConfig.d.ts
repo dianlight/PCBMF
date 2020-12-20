@@ -6,11 +6,18 @@
  */
 
 export interface UserConfig {
-  choice?: string;
+  serial?: string;
+  dialect?: string;
+  units?: string;
   home?: boolean;
   feedrate?: number;
+  precision?: number;
   linenumber?: boolean;
+  archtolerance?: number;
   platewidth?: number;
-  plateheight?: number;
+  platedepth?: number;
+  parkingx?: number;
+  parkingy?: number;
+  spindlespeed?: number;
   [k: string]: unknown;
 }
