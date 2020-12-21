@@ -13,6 +13,14 @@
 
 ### 🏠 [Homepage](https://github.com/dianlight/PCBMF#readme)
 
+
+## Vote or add you best Feature Requests
+
+Go to https://feathub.com/dianlight/PCBMF to vote and/or add your own ideas!<br>
+Here's the current top ten ideas (by votes):</br>
+
+[![Feature Requests](https://feathub.com/dianlight/PCBMF?format=svg)](https://feathub.com/dianlight/PCBMF)
+
 ## Author
 
 👤 **Lucio Tarantino**
