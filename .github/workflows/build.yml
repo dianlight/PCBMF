@@ -28,6 +28,5 @@ jobs:
       - name: Release if tagged version
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
-          npm run publish
-        with:
-          GITHUB_TOKEN: ${{ secrets.github_token }}  
+          GITHUB_TOKEN=${{ secrets.github_token }} npm run publish
+            
