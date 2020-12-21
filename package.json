@@ -3,10 +3,14 @@
     "productName": "PCB Mini Factory",
     "version": "0.0.1",
     "description": "A Minimal Software for Milling and Drilling PCB with simple CNC",
+    "homepage": "https://github.com/dianlight/PCBMF#readme",
     "main": ".webpack/main",
     "repository": {
-        "url": "git@github.com:dianlight/pcbmf.git",
+        "url": "git@github.com:dianlight/PCBMF.git",
         "type": "git"
+    },
+    "bugs": {
+        "url": "https://github.com/dianlight/PCBMF/issues"
     },
     "scripts": {
         "start": "concurrently -k \"electron-forge start\" \"npm:watch\"",
@@ -22,7 +26,9 @@
         "test": "npm run package",
         "gen-patch": "patch-package --exclude"
     },
-    "keywords": [],
+    "keywords": [
+        "CNC","PCB"
+    ],
     "author": {
         "name": "dianlight",
         "email": "lucio.tarantino@gmail.com"
