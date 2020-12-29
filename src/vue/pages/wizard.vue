@@ -82,15 +82,17 @@ export default class Wizard extends Vue {
     Promise.resolve(this.nextCallback(skip?'skip':((inc >0)?'next':'back'))).then((resolve) => {
       if (resolve) {
         this.active += inc;
-        console.log("New Active:", inc);
+       // console.log("New Active:", inc);
         this.$router!.options!.routes!.find(
           (route: RouteConfig) => route.path === "/wizard/"
         )?.children?.forEach((route: RouteConfig) => {
+          /*
           console.log(
             route.meta.step == this.active,
             route.meta.step,
             this.active
           );
+          */
           if (route.meta.step == this.active - 1) {
             console.log("Visualize Path:", route.path);
             this.nextCallback = () => true;

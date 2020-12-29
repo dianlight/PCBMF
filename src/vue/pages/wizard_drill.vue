@@ -170,12 +170,12 @@ import {
   IPlotterDataStroke,
   IPlotterDataTypes,
 } from "@/models/plotterData";
-import { IWorkerData, IWorkerDataType } from "@/models/workerData";
-import PlotterWorker from "_/workers/plotterDataToModel.worker";
+//import { IWorkerData, IWorkerDataType } from "@/models/workerData";
+//import PlotterWorker from "_/workers/plotterDataToModel.worker";
 import { IProject, IProjectDrill } from "@/models/project";
 import { Store } from "vuex";
 import { Tooldb } from "@/typings/tooldb";
-import { IPlotterOptions } from "@/workers/plotterDataToModel.worker";
+//import { IPlotterOptions } from "@/workers/plotterDataToModel.worker";
 import { Form } from "element-ui";
 
 interface IDictionary<T> {
@@ -374,7 +374,7 @@ export default class WizardDrill extends Vue {
       origin: [0, 0],
       units: makerjs.unitType.Millimeter,
     };
-
+/*
     let index = 0;
     const plotterWorker = new PlotterWorker();
 
@@ -423,6 +423,7 @@ export default class WizardDrill extends Vue {
       .on("end", () => {
         plotterWorker.postMessage({ type: IWorkerDataType.END });
       });
+      */
   }
 }
 </script>

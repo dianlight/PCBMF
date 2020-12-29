@@ -8,13 +8,22 @@ export interface IProjectWork {
     layer: string,
     toolType: Tooldb | undefined,
     svg:string | undefined,
-    gcode:string | undefined
+    gcode:string | undefined,
+    geojson: Object | undefined
+}
+
+export interface IProjectCopper extends IProjectWork {
+    useFill: boolean,
+    useFillPitch: number,
+    dthickness:number | undefined,
+    dthief: number | undefined,
+    thiefmode: 'Brick'|'Column'|'Grid'|'Honeycomb'|'Radial'|'Row'|undefined
 }
 
 export interface IProjectIsolation extends IProjectWork {
     showOutline: boolean,
-    useFill: boolean,
-    useFillPitch: number,
+    unionDraw: boolean,
+//    useFillPitch: number,
     dthickness:number | undefined,
     doutline: number | undefined,
 }
@@ -42,6 +51,7 @@ export interface IProject {
         },
         isolations: IProjectIsolation[],
         drills: IProjectDrill[],
-        outlines: IProjectOutline[]
+        outlines: IProjectOutline[],
+        coppers: IProjectCopper[],
     }
 }

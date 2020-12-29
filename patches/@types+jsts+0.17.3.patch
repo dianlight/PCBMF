@@ -1,0 +1,87 @@
+diff --git a/node_modules/@types/jsts/index.d.ts b/node_modules/@types/jsts/index.d.ts
+index 1ddc491..ade0843 100644
+--- a/node_modules/@types/jsts/index.d.ts
++++ b/node_modules/@types/jsts/index.d.ts
+@@ -115,6 +115,14 @@ declare namespace jsts {
+             */
+             createPolygon(shell: LinearRing, holes: Array<LinearRing>): Polygon;      
+                   
++            /**
++            * Creates a GeometryCollection using the given Geometries; a null or empty array will create an empty GeometryCollection.
++            *
++            * @param {Geometry[]} An array of Geometries, each of which may be empty but not null, or null.
++            * @return {GeometryCollection} an array of Geometries, each of which may be empty but not null, or null.
++            */
++           createGeometryCollection(geometries?: Array<Geometry>): GeometryCollection;            
++
+         }
+ 
+         export class GeometryCollection extends jsts.geom.Geometry {
+@@ -122,6 +130,31 @@ declare namespace jsts {
+             constructor(geometries?: Array<Geometry>, factory?: GeometryFactory);
+         }
+ 
++        /**
++         * Iterates over all Geometrys in a {@link Geometry}, (which may be either a collection or an atomic geometry). 
++         * The iteration sequence follows a pre-order, depth-first traversal of the structure of the {@link GeometryCollection} 
++         *  (which may be nested). The original {@link Geometry} object is returned as well (as the first object), 
++         * as are all sub-collections and atomic elements. It is simple to ignore the intermediate 
++         * {@link GeometryCollection} objects if they are not needed.
++         */
++        export class GeometryCollectionIterator {
++
++            constructor(parent: Geometry);
++            /**
++            * Tests whether any geometry elements remain to be returned.
++            *
++            * @return {boolean} atrue if more geometry elements remain.
++            */
++           hasNext():boolean;
++            /**
++            * Gets the next geometry in the iteration sequence.
++            *
++            * @return {Geometry} the next geometry in the iteration.
++            */
++           next():Geometry;
++
++        }
++
+         /**
+          * A lightweight class used to store coordinates on the 2-dimensional
+          * Cartesian plane. It is distinct from {@link Point}, which is a subclass of
+@@ -719,6 +752,35 @@ declare namespace jsts {
+              */
+             getNumPoints(): number;
+ 
++            /**
++             * Gets the user data object for this geometry, if any.
++             * 
++             * @return {Object} the user data object, or null if none set
++             */
++            getUserData():Object;
++
++            /**
++             * Creates a deep copy of this Geometry object. Coordinate sequences contained in it are copied. 
++             * All instance fields are copied (i.e. envelope, SRID and userData).
++             * 
++             * NOTE: the userData object reference (if present) is copied, but the value itself is not copied. 
++             * If a deep copy is required this must be performed by the caller.
++             * 
++             * @return {Geometry} a deep copy of this geometry  
++             */
++            copy():Geometry;
++
++            /**
++             * A simple scheme for applications to add their own custom data to a Geometry. 
++             * An example use might be to add an object representing a Coordinate Reference System.
++             * 
++             * Note that user data objects are not present in geometries created by construction methods.
++             * 
++             * @param {Object} userData an object, the semantics for which are defined by the application using this Geometry
++             */
++            setUserData(userData: Object);
++
++
+             /**
+              * Tests whether this {@link Geometry} is simple. In general, the SFS
+              * specification of simplicity follows the rule:

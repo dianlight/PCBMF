@@ -26,12 +26,12 @@
 
         <el-tabs type="border-card">
           <el-tab-pane label="Model">
-            <svg-viewer
+            <geo-json-viewer
               :panzoom="true"
               _class="fullframe"
-              :data="isolation.svg"
+              :data.sync="isolation.geojson"
               :style="{ '--isolation-width': isolation.doutline * 2 + 'mm' }"
-            ></svg-viewer>
+            ></geo-json-viewer>
           </el-tab-pane>
           <el-tab-pane label="Work (3d)" :disabled="!isolation.gcode" lazy>
             <g-code
@@ -52,18 +52,21 @@
       <el-col :span="8">
         <h1></h1>
         <el-form :model="isolation" ref="formx" label-width="11em">
+          <!--
           <el-form-item label="Show Border">
             <el-switch
               v-model="isolation.showOutline"
               @input="redrawpcb(isolation)"
             ></el-switch>
           </el-form-item>
-          <el-form-item label="Use Fill Elements">
+          -->
+          <el-form-item label="Union Elements">
             <el-switch
-              v-model="isolation.useFill"
+              v-model="isolation.unionDraw"
               @input="redrawpcb(isolation)"
             ></el-switch>
           </el-form-item>
+          <!--
           <el-form-item label="Fill Elements Outline">
             <el-input-number
               size="mini"
@@ -76,6 +79,7 @@
               @change="redrawpcb(isolation)"
             ></el-input-number>
           </el-form-item>
+          -->
           <el-form-item label="Isolation Tool" :rules="[{ required: true, trigger:'change' }]" 
           prop="toolType">
             <el-select
@@ -135,8 +139,6 @@
 <script lang="ts">
 import Vue from "vue";
 import store from "../store";
-//import pcbStackup from "pcb-stackup";
-import gerberToSvg from "gerber-to-svg";
 import whatsThatGerber from "whats-that-gerber";
 import { mapGetters, mapMutations, mapState } from "vuex";
 import { mapFields, mapMultiRowFields } from "vuex-map-fields";
@@ -146,13 +148,10 @@ import Component from "vue-class-component";
 import { Inject, VModel } from "vue-property-decorator";
 import GCode from "@/vue/components/gcode.vue";
 import SvgViewer from "@/vue/components/svgviewer.vue";
+import GeoJsonViewer from "@/vue/components/geojsonviewer.vue";
 import fs from "fs";
 import { PcbLayers } from "@/models/pcblayer";
 import { GerberSide, GerberType } from "whats-that-gerber";
-import makerjs from "makerjs";
-import { Duplex } from "stream";
-import gerberParser from "gerber-parser";
-import gerberPlotter from "gerber-plotter";
 import colornames from "colornames";
 import * as Trigonomerty from "@/utils/trigonometry";
 import {
@@ -168,17 +167,17 @@ import {
   IPlotterDataStroke,
   IPlotterDataTypes,
 } from "@/models/plotterData";
-import { IWorkerData, IWorkerDataType } from "@/models/workerData";
-import PlotterWorker from "_/workers/plotterDataToModel.worker";
+//import { IWorkerDataIn, EWorkerDataTypeIn } from "@/models/workerData";
 import { IProject, IProjectIsolation } from "@/models/project";
 import { Store } from "vuex";
 import { Tooldb } from "@/typings/tooldb";
-import { IPlotterOptions } from "@/workers/plotterDataToModel.worker";
 import { Form } from "element-ui";
-
-interface IDictionary<T> {
-  [index: string]: T;
-}
+import {GerberParser, IGerberParserOption,IGerberParserResult}  from "@/workers/gerberParser";
+import { IsolationWork } from "@/workers/isolationWork";
+import { spawn, Thread, Worker, Transfer } from "threads";
+import { IDictionary } from "@/models/dictionary";
+import { FeatureCollection } from "geojson";
+//import {GeoJsonObject} from "geojson";
 
 interface Options {
   renderTime: number;
@@ -189,6 +188,7 @@ interface Options {
   components: {
     GCode,
     SvgViewer,
+    GeoJsonViewer,
   },
   computed: {
     ...mapFields(["layers", "config.pcb.width", "config.pcb.height"]),
@@ -252,13 +252,14 @@ export default class WizardIsolation extends Vue {
           const ret: IProjectIsolation = {
             layer: layer.name,
             showOutline: false,
-            useFill: false,
-            useFillPitch: 0.005,
+            unionDraw: false,
+//            useFillPitch: 0.005,
             toolType: undefined,
             dthickness: undefined,
             doutline: undefined,
             svg: undefined,
             gcode: undefined,
+            geojson: undefined
           };
           const oldrecord = (this.$store
             .state as IProject).config.isolations.find(
@@ -362,6 +363,109 @@ export default class WizardIsolation extends Vue {
       }
     );
 
+
+spawn<GerberParser>(new Worker("../../workers/gerberParser")).then(async (gerberParser)=>{
+    await gerberParser.create({
+      unionDraw: isolation.unionDraw
+    });
+    await gerberParser.load((_layer as PcbLayers).gerber);
+    gerberParser.commit().then( async data => {
+        const index = (this.$store
+          .state as IProject).config.isolations.findIndex(
+          (iso) => iso.layer === isolation.layer
+        );    
+        this.$store.commit("updateField", {
+          path: `config.isolations.${index}.geojson`,
+          value: data.geojson,
+        });
+
+        if(isolation.doutline){
+          const isolationWork = await spawn<IsolationWork>(new Worker("../../workers/isolationWork"));
+          const data2 = await isolationWork.create({
+            "name": isolation.layer,
+            "unit": "mm",
+            "drillPark": {
+              x:0,
+              y:0
+            },
+            "feedrate": 50,
+            "safeHtravel": 10,
+            "doutline": isolation.doutline,
+            "dthickness": isolation.dthickness,
+            },data.geojson as FeatureCollection);
+          this.$store.commit("updateField", {
+            path: `config.isolations.${index}.geojson`,
+            value: data2.geojson,
+          }); 
+          this.$store.commit("updateField", {
+            path: `config.isolations.${index}.gcode`,
+            value: data2.gcode,
+          });
+
+        }
+
+        this.options[_layer.name].renderTime = Date.now() - startTime;
+        this.options[_layer.name].busy = false;
+        this.$forceUpdate(); 
+        Thread.terminate(gerberParser);    
+    })
+});
+
+/**
+ * 
+ */
+/*
+  const worker = new class extends JobWorkerClient<IGerberParserResult,IGerberParserOption | string>{
+
+      nthis:any;
+
+      constructor(nthis:any, worker: GerberParserWorker, initialData: IGerberParserOption){
+        super(worker,initialData);
+        this.nthis = nthis;
+      }
+
+      chunk(data: any): void {
+        throw new Error("Method not implemented.");
+      }
+      progress(loaded: number,done: number): void {
+       // console.warn("Proress",loaded,done);
+      }
+      info(data: any): boolean {
+        throw new Error("Method not implemented.");
+      }
+      end(data: IGerberParserResult): void {
+        const index = (this.nthis.$store
+          .state as IProject).config.isolations.findIndex(
+          (iso) => iso.layer === isolation.layer
+        );
+    
+        console.log(data);
+
+        //
+        this.nthis.$store.commit("updateField", {
+          path: `config.isolations.${index}.svg`,
+          value: data.svg,
+        });
+        this.nthis.$store.commit("updateField", {
+          path: `config.isolations.${index}.geojson`,
+          value: data.geojson,
+        });
+        this.nthis.options[_layer.name].renderTime = Date.now() - startTime;
+        this.nthis.options[_layer.name].busy = false;
+        this.nthis.$forceUpdate();
+      }
+    }(this,new GerberParserWorker(),{
+//      useFill: isolation.useFill,
+//      useFillPitch: isolation.useFillPitch,
+    });
+
+
+
+
+    worker.load((_layer as PcbLayers).gerber);
+    worker.commit();
+*/
+/*
     const stream = new Duplex();
     stream.push((_layer as PcbLayers).gerber);
     stream.push(null);
@@ -370,8 +474,8 @@ export default class WizardIsolation extends Vue {
       filetype: "gerber",
     });
     var plotter = gerberPlotter({
-      optimizePaths: true,
-      plotAsOutline: false, // or mm?!?!?
+      optimizePaths: false,
+      plotAsOutline: 0.001, // or mm?!?!?
     });
 
     plotter.on("warning", function (w) {
@@ -388,6 +492,68 @@ export default class WizardIsolation extends Vue {
     };
 
     let index = 0;
+    const worker = new class extends JobWorkerClient<IPlotterToSvgResult,IPlotterToSvgOption | IPlotterData>{
+
+      nthis:any;
+
+      constructor(nthis:any, worker: GerberToSvgWorker, initialData: IPlotterToSvgOption){
+        super(worker,initialData);
+        this.nthis = nthis;
+      }
+
+      chunk(data: any): void {
+        throw new Error("Method not implemented.");
+      }
+      progress(loaded: number,done: number): void {
+       // console.warn("Proress",loaded,done);
+      }
+      info(data: any): boolean {
+        throw new Error("Method not implemented.");
+      }
+      end(data: IPlotterToSvgResult): void {
+
+        const index = (this.nthis.$store
+          .state as IProject).config.isolations.findIndex(
+          (iso) => iso.layer === isolation.layer
+        );
+
+        // Perform Outline
+
+
+        //
+        this.nthis.$store.commit("updateField", {
+          path: `config.isolations.${index}.svg`,
+          value: data.svg,
+        });
+        /*
+        this.nthis.$store.commit("updateField", {
+          path: `config.isolations.${index}.gcode`,
+          value: data.gcode,
+        });
+        * /
+        this.nthis.options[_layer.name].renderTime = Date.now() - startTime;
+        this.nthis.options[_layer.name].busy = false;
+        this.nthis.$forceUpdate();
+      }
+    }(this,new GerberToSvgWorker(),{
+      useFill: isolation.useFill,
+      useFillPitch: isolation.useFillPitch,
+    });
+
+
+    stream
+      .pipe(parser)
+      .pipe(plotter)
+      .on("error", (error) => console.error(error))
+      .on("data", (obj: IPlotterData) => {
+        worker.load(obj);
+      })
+      .on("end", () => {
+        worker.commit();
+      });
+*/
+/*
+
     const plotterWorker = new PlotterWorker();
 
     plotterWorker.postMessage({
@@ -435,6 +601,7 @@ export default class WizardIsolation extends Vue {
       .on("end", () => {
         plotterWorker.postMessage({ type: IWorkerDataType.END });
       });
+      */
   }
 }
 </script>
@@ -445,11 +612,13 @@ export default class WizardIsolation extends Vue {
   width: 100%;
 }
 
+/*
 svg #outline {
   stroke: red;
   stroke-width: var(--isolation-width);
   stroke-linecap: round;
 }
+*/
 
 .hljs {
   max-height: 40em;

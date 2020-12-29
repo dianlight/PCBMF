@@ -22,8 +22,9 @@ export default class SvgViewer extends Vue {
   updated() {
     this.$nextTick(() => {
       const svg = this.$refs.svgelement as HTMLDivElement; //.querySelector("g");
+
       if (svg && this.panzoom) {
-        //      console.log("u SVG is",svg);
+    //    console.log("u SVG is",svg);
         panzoom(svg, {
           zoomSpeed: 0.065,
         });

@@ -170,12 +170,12 @@ import {
   IPlotterDataStroke,
   IPlotterDataTypes,
 } from "@/models/plotterData";
-import { IWorkerData, IWorkerDataType } from "@/models/workerData";
-import PlotterWorker from "_/workers/plotterDataToModel.worker";
+//import { IWorkerData, IWorkerDataType } from "@/models/workerData";
+//import PlotterWorker from "_/workers/plotterDataToModel.worker";
 import { IProject, IProjectOutline } from "@/models/project";
 import { Store } from "vuex";
 import { Tooldb } from "@/typings/tooldb";
-import { IPlotterOptions } from "@/workers/plotterDataToModel.worker";
+//import { IPlotterOptions } from "@/workers/plotterDataToModel.worker";
 import { Form } from "element-ui";
 
 interface IDictionary<T> {
@@ -376,6 +376,7 @@ export default class Wizardoutline extends Vue {
     };
 
     let index = 0;
+    /*
     const plotterWorker = new PlotterWorker();
 
     plotterWorker.postMessage({
@@ -423,6 +424,7 @@ export default class Wizardoutline extends Vue {
       .on("end", () => {
         plotterWorker.postMessage({ type: IWorkerDataType.END });
       });
+      */
   }
 }
 </script>

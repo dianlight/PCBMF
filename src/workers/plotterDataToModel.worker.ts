@@ -1,6 +1,6 @@
 import { IPlotterData, IPlotterDataCircle, IPlotterDataFill, IPlotterDataLine, IPlotterDataPad, IPlotterDataRect, IPlotterDataShape, IPlotterDataSize, IPlotterDataStroke, IPlotterDataTypes } from "@/models/plotterData";
 import makerjs, { IPath, IPathMap, isPath, isPathCircle } from "makerjs";
-import { IWorkerData, IWorkerDataType } from "@/models/workerData";
+//import { IWorkerData, IWorkerDataType } from "@/models/workerData";
 import { GCodeParser } from '@/parsers/gcodeparser';
 //import fs from "fs";
 //import path from "path";
@@ -172,7 +172,7 @@ export interface IPlotterOptions {
         }
     }
 
-
+/*
     // Respond to message from parent thread
     ctx.addEventListener("message", (event) => {
        // console.log("From main", event)
@@ -310,7 +310,7 @@ export interface IPlotterOptions {
                                         i:pathArc.origin[0]-cord.origin[0],
                                         j:cord.origin[1]-pathArc.origin[0],
                                     })
-                                    */
+                                    * /
                                 } else if(makerjs.isPathCircle(path[1])){
                                     const pathCircle = path[1] as unknown as makerjs.IPathCircle;
                                     const segments = pathCircle.radius*2*Math.PI / (1/10*code.options.precision);
@@ -338,7 +338,7 @@ export interface IPlotterOptions {
                                 /*
                                 } else if(makerjs.isPathArcInBezierCurve(path[1])){
                                     // TODO: Please implements
-                                    */
+                                    * /
                                 } else {
                                     console.warn("Unknown path type", path);
                                 }
@@ -365,4 +365,5 @@ export interface IPlotterOptions {
                 break;
         }
     });
+    */
 }

@@ -1,4 +1,5 @@
 // Generate GCode instructions
+import * as jsts from "jsts";
 
 export interface IGCodePosition {
     x?: number,
@@ -386,4 +387,16 @@ export class GCodeParser {
     toString() {
       return this.eval();
     }
+
+    parse(geometry: jsts.geom.Geometry,cut_deep:number): void{
+      this.feedRapid(geometry.getCoordinate());
+      geometry.getCoordinates().forEach( coordinate => {
+        this.feedLinear({
+          x: coordinate.x,
+          y: coordinate.y,
+          z: -cut_deep,
+        })
+      }); 
+    }
+
   }
