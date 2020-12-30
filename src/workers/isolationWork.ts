@@ -29,7 +29,7 @@ let _options: IIsolationWorkOption = {
     doutline: undefined,
 }
 
-//let factory = new jsts.geom.GeometryFactory(new jsts.geom.PrecisionModel(jsts.geom.PrecisionModel.FLOATING_SINGLE));
+let factory = new jsts.geom.GeometryFactory(new jsts.geom.PrecisionModel(jsts.geom.PrecisionModel.FLOATING_SINGLE));
 
 const _isolationWork = {
     create(options: IIsolationWorkOption,data: FeatureCollection): Promise<IIsolationWorkResult> {
@@ -66,12 +66,23 @@ const _isolationWork = {
                         },
                         "geometry": writer.write(i_geometry) as Geometry
                     } as Feature);
-                    if(_options.dthickness){
-                        // TODO: Order Geometry from distance from drillPark.?
-                        code.parse(i_geometry, _options.dthickness);
-                    }
+//                    if(_options.dthickness){
+//                        // TODO: Order Geometry from distance from drillPark.?
+//                        code.parse(i_geometry, _options.dthickness);
+//                    }
                 }
             });
+
+            // GCODE
+            if(_options.dthickness){
+            const point = factory.createPoint(new jsts.geom.Coordinate(_options.drillPark.x,_options.drillPark.y));
+            data.features
+                .filter( feature => feature.properties!.userData === "isolation")
+                .map( feature => reader.read(feature.geometry))
+                .sort( (a,b)=> a.distance(point) - b.distance(point)/* + b.distance(a)*/ )
+                .forEach( i_gometry => code.parse(i_gometry, _options.dthickness as number));
+            }
+
             const gcode = String(code);
             console.log(gcode);
 
