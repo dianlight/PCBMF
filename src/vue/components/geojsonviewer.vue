@@ -40,10 +40,9 @@ export default class GeoJsonViewer extends Vue {
   @Watch("geojson")
   onGeoJsonChange(val: Object, old: Object): void {
 //    console.log("------------------->", val);
-//    console.log("Drawing....", this.geojson);
+//    console.log("Drawing....", JSON.stringify(this.geojson));
     const renderer = geojson2svg()
     this.svgdata = renderer
-//      .type("userData")
       .styles( (feature:Feature,bbox:any,featureBound:any) => { 
 //        console.log(JSON.stringify(feature.geometry.type));
         switch(feature.properties!.userData){
@@ -51,11 +50,12 @@ export default class GeoJsonViewer extends Vue {
             return { weight: feature.properties!.width, color:"red" ,fill:"#000000", fillOpacity: 0.0, stroke: "orange"} 
             break;
           default:
-            return extend({}, renderer._selectStyle(feature), feature.properties);
+//            return renderer._selectStyle(feature), feature.properties;
+            return { weight: 0.25 ,fill:"#000000", opacity: 0.5, stroke: "black"} 
             break;  
         }
-       })
-      .data(this.geojson)
+       })       
+      .data(this.geojson) 
       .render();
     this.$forceUpdate();
   }
