@@ -2,7 +2,7 @@
   <el-container direction="vertical">
     <h1 v-if="isolations.length == 0">No isolation layer to process</h1>
     <el-row
-      v-for="(isolation) in isolations"
+      v-for="isolation in isolations"
       :key="isolation.layer"
       type="flex"
       align="middle"
@@ -52,36 +52,28 @@
       <el-col :span="8">
         <h1></h1>
         <el-form :model="isolation" ref="formx" label-width="11em">
-          <!--
-          <el-form-item label="Show Border">
-            <el-switch
-              v-model="isolation.showOutline"
-              @input="redrawpcb(isolation)"
-            ></el-switch>
-          </el-form-item>
-          -->
-          <el-form-item label="Union Elements">
+          <el-form-item
+            label="Union elements"
+            :rules="[
+              {
+                required: true,
+                trigger: 'change',
+                type: 'enum',
+                enum: [true],
+                message: '*Debug Option please Enable*',
+              },
+            ]"
+          >
             <el-switch
               v-model="isolation.unionDraw"
               @input="redrawpcb(isolation)"
             ></el-switch>
           </el-form-item>
-          <!--
-          <el-form-item label="Fill Elements Outline">
-            <el-input-number
-              size="mini"
-              v-model="isolation.useFillPitch"
-              :min="0.0001"
-              :max="1"
-              :precision="4"
-              :step="0.001"
-              :disabled="!isolation.useFill"
-              @change="redrawpcb(isolation)"
-            ></el-input-number>
-          </el-form-item>
-          -->
-          <el-form-item label="Isolation Tool" :rules="[{ required: true, trigger:'change' }]" 
-          prop="toolType">
+          <el-form-item
+            label="Isolation Tool"
+            :rules="[{ required: true, trigger: 'change' }]"
+            prop="toolType"
+          >
             <el-select
               v-model="isolation.toolType"
               value-key="name"
@@ -100,7 +92,9 @@
           </el-form-item>
           <el-form-item
             label="Isolation thickness"
-            :rules="[{ required: true, trigger:'blur', type: 'number', min: 0.0001 }]"
+            :rules="[
+              { required: true, trigger: 'blur', type: 'number', min: 0.0001 },
+            ]"
             prop="dthickness"
           >
             <el-input-number
@@ -116,7 +110,9 @@
           </el-form-item>
           <el-form-item
             label="Isolation width"
-            :rules="[{ required: true,trigger:'blur', type: 'number', min: 0.0001 }]"
+            :rules="[
+              { required: true, trigger: 'blur', type: 'number', min: 0.0001 },
+            ]"
             prop="doutline"
           >
             <el-input-number
@@ -147,7 +143,7 @@ import FSStore from "@/fsstore";
 import Component from "vue-class-component";
 import { Inject, VModel } from "vue-property-decorator";
 import GCode from "@/vue/components/gcode.vue";
-import SvgViewer from "@/vue/components/svgviewer.vue";
+//import SvgViewer from "@/vue/components/svgviewer.vue";
 import GeoJsonViewer from "@/vue/components/geojsonviewer.vue";
 import fs from "fs";
 import { PcbLayers } from "@/models/pcblayer";
@@ -172,12 +168,15 @@ import { IProject, IProjectIsolation } from "@/models/project";
 import { Store } from "vuex";
 import { Tooldb } from "@/typings/tooldb";
 import { Form } from "element-ui";
-import {GerberParser, IGerberParserOption,IGerberParserResult}  from "@/workers/gerberParser";
+import {
+  GerberParser,
+  IGerberParserOption,
+  IGerberParserResult,
+} from "@/workers/gerberParser";
 import { IsolationWork } from "@/workers/isolationWork";
 import { spawn, Thread, Worker, Transfer } from "threads";
 import { IDictionary } from "@/models/dictionary";
 import { FeatureCollection } from "geojson";
-//import {GeoJsonObject} from "geojson";
 
 interface Options {
   renderTime: number;
@@ -187,16 +186,13 @@ interface Options {
 @Component({
   components: {
     GCode,
-    SvgViewer,
+//    SvgViewer,
     GeoJsonViewer,
   },
   computed: {
     ...mapFields(["layers", "config.pcb.width", "config.pcb.height"]),
     ...mapMultiRowFields(["config.isolations"]),
   },
-  //  inject: [
-  //    'setTabStatus'
-  //  ]
 })
 export default class WizardIsolation extends Vue {
   toolTypes: Tooldb[] = [];
@@ -221,22 +217,21 @@ export default class WizardIsolation extends Vue {
       if (type === "skip" || type == "back") return Promise.resolve(true);
       // Validazione
       //console.log(this.$refs.formx);
-      let formArray: Form[] = ((this.$refs.formx as unknown) as Form[]);
- 
+      let formArray: Form[] = (this.$refs.formx as unknown) as Form[];
+
       return new Promise((resovedall) => {
         const results = Promise.all(
           formArray.map(
             (form) =>
               new Promise<boolean>((resolve) => {
                 form.validate((valid) => {
-                  console.log(valid,form);
+                  console.log(valid, form);
                   if (valid) resolve(true);
                   else resolve(false);
                 });
               })
           )
         ).then((results) => {
- //           resovedall(false);
           resovedall(results.every((value, index, all) => value == true));
         });
       });
@@ -252,14 +247,13 @@ export default class WizardIsolation extends Vue {
           const ret: IProjectIsolation = {
             layer: layer.name,
             showOutline: false,
-            unionDraw: false,
-//            useFillPitch: 0.005,
+            unionDraw: true,
             toolType: undefined,
             dthickness: undefined,
             doutline: undefined,
             svg: undefined,
             gcode: undefined,
-            geojson: undefined
+            geojson: undefined,
           };
           const oldrecord = (this.$store
             .state as IProject).config.isolations.find(
@@ -279,7 +273,9 @@ export default class WizardIsolation extends Vue {
 
     new Promise((resolve) => {
       FSStore.get("data.tool.types", []).then((data) => {
-        this.toolTypes = data.filter((tool:Tooldb)=>tool.type === 'V-Shape' || tool.type === 'Mill');
+        this.toolTypes = data.filter(
+          (tool: Tooldb) => tool.type === "V-Shape" || tool.type === "Mill"
+        );
       });
     });
 
@@ -363,245 +359,58 @@ export default class WizardIsolation extends Vue {
       }
     );
 
-
-spawn<GerberParser>(new Worker("../../workers/gerberParser")).then(async (gerberParser)=>{
-    await gerberParser.create({
-      unionDraw: isolation.unionDraw
-    });
-    await gerberParser.load((_layer as PcbLayers).gerber);
-    gerberParser.commit().then( async data => {
-        const index = (this.$store
-          .state as IProject).config.isolations.findIndex(
-          (iso) => iso.layer === isolation.layer
-        );    
-        this.$store.commit("updateField", {
-          path: `config.isolations.${index}.geojson`,
-          value: data.geojson,
+    spawn<GerberParser>(new Worker("../../workers/gerberParser")).then(
+      async (gerberParser) => {
+        await gerberParser.create({
+          unionDraw: isolation.unionDraw,
         });
-
-        if(isolation.doutline){
-          const isolationWork = await spawn<IsolationWork>(new Worker("../../workers/isolationWork"));
-          const data2 = await isolationWork.create({
-            "name": isolation.layer,
-            "unit": "mm",
-            "drillPark": {
-              x:0,
-              y:0
-            },
-            "feedrate": 50,
-            "safeHtravel": 10,
-            "doutline": isolation.doutline,
-            "dthickness": isolation.dthickness,
-            },data.geojson as FeatureCollection);
+        await gerberParser.load((_layer as PcbLayers).gerber);
+        gerberParser.commit().then(async (data) => {
+          const index = (this.$store
+            .state as IProject).config.isolations.findIndex(
+            (iso) => iso.layer === isolation.layer
+          );
           this.$store.commit("updateField", {
             path: `config.isolations.${index}.geojson`,
-            value: data2.geojson,
-          }); 
-          this.$store.commit("updateField", {
-            path: `config.isolations.${index}.gcode`,
-            value: data2.gcode,
+            value: data.geojson,
           });
 
-        }
+          if (isolation.doutline) {
+            const isolationWork = await spawn<IsolationWork>(
+              new Worker("../../workers/isolationWork")
+            );
+            const data2 = await isolationWork.create(
+              {
+                name: isolation.layer,
+                unit: "mm",
+                drillPark: {
+                  x: 0,
+                  y: 0,
+                },
+                feedrate: 50,
+                safeHtravel: 10,
+                doutline: isolation.doutline,
+                dthickness: isolation.dthickness,
+              },
+              data.geojson as FeatureCollection
+            );
+            this.$store.commit("updateField", {
+              path: `config.isolations.${index}.geojson`,
+              value: data2.geojson,
+            });
+            this.$store.commit("updateField", {
+              path: `config.isolations.${index}.gcode`,
+              value: data2.gcode,
+            });
+          }
 
-        this.options[_layer.name].renderTime = Date.now() - startTime;
-        this.options[_layer.name].busy = false;
-        this.$forceUpdate(); 
-        Thread.terminate(gerberParser);    
-    })
-});
-
-/**
- * 
- */
-/*
-  const worker = new class extends JobWorkerClient<IGerberParserResult,IGerberParserOption | string>{
-
-      nthis:any;
-
-      constructor(nthis:any, worker: GerberParserWorker, initialData: IGerberParserOption){
-        super(worker,initialData);
-        this.nthis = nthis;
-      }
-
-      chunk(data: any): void {
-        throw new Error("Method not implemented.");
-      }
-      progress(loaded: number,done: number): void {
-       // console.warn("Proress",loaded,done);
-      }
-      info(data: any): boolean {
-        throw new Error("Method not implemented.");
-      }
-      end(data: IGerberParserResult): void {
-        const index = (this.nthis.$store
-          .state as IProject).config.isolations.findIndex(
-          (iso) => iso.layer === isolation.layer
-        );
-    
-        console.log(data);
-
-        //
-        this.nthis.$store.commit("updateField", {
-          path: `config.isolations.${index}.svg`,
-          value: data.svg,
+          this.options[_layer.name].renderTime = Date.now() - startTime;
+          this.options[_layer.name].busy = false;
+          this.$forceUpdate();
+          Thread.terminate(gerberParser);
         });
-        this.nthis.$store.commit("updateField", {
-          path: `config.isolations.${index}.geojson`,
-          value: data.geojson,
-        });
-        this.nthis.options[_layer.name].renderTime = Date.now() - startTime;
-        this.nthis.options[_layer.name].busy = false;
-        this.nthis.$forceUpdate();
       }
-    }(this,new GerberParserWorker(),{
-//      useFill: isolation.useFill,
-//      useFillPitch: isolation.useFillPitch,
-    });
-
-
-
-
-    worker.load((_layer as PcbLayers).gerber);
-    worker.commit();
-*/
-/*
-    const stream = new Duplex();
-    stream.push((_layer as PcbLayers).gerber);
-    stream.push(null);
-
-    var parser = gerberParser({
-      filetype: "gerber",
-    });
-    var plotter = gerberPlotter({
-      optimizePaths: false,
-      plotAsOutline: 0.001, // or mm?!?!?
-    });
-
-    plotter.on("warning", function (w) {
-      console.warn("plotter warning at line " + w.line + ": " + w.message);
-    });
-
-    plotter.once("error", function (e) {
-      console.error("plotter error: " + e.message);
-    });
-
-    let model: makerjs.IModel = {
-      origin: [0, 0],
-      units: makerjs.unitType.Millimeter,
-    };
-
-    let index = 0;
-    const worker = new class extends JobWorkerClient<IPlotterToSvgResult,IPlotterToSvgOption | IPlotterData>{
-
-      nthis:any;
-
-      constructor(nthis:any, worker: GerberToSvgWorker, initialData: IPlotterToSvgOption){
-        super(worker,initialData);
-        this.nthis = nthis;
-      }
-
-      chunk(data: any): void {
-        throw new Error("Method not implemented.");
-      }
-      progress(loaded: number,done: number): void {
-       // console.warn("Proress",loaded,done);
-      }
-      info(data: any): boolean {
-        throw new Error("Method not implemented.");
-      }
-      end(data: IPlotterToSvgResult): void {
-
-        const index = (this.nthis.$store
-          .state as IProject).config.isolations.findIndex(
-          (iso) => iso.layer === isolation.layer
-        );
-
-        // Perform Outline
-
-
-        //
-        this.nthis.$store.commit("updateField", {
-          path: `config.isolations.${index}.svg`,
-          value: data.svg,
-        });
-        /*
-        this.nthis.$store.commit("updateField", {
-          path: `config.isolations.${index}.gcode`,
-          value: data.gcode,
-        });
-        * /
-        this.nthis.options[_layer.name].renderTime = Date.now() - startTime;
-        this.nthis.options[_layer.name].busy = false;
-        this.nthis.$forceUpdate();
-      }
-    }(this,new GerberToSvgWorker(),{
-      useFill: isolation.useFill,
-      useFillPitch: isolation.useFillPitch,
-    });
-
-
-    stream
-      .pipe(parser)
-      .pipe(plotter)
-      .on("error", (error) => console.error(error))
-      .on("data", (obj: IPlotterData) => {
-        worker.load(obj);
-      })
-      .on("end", () => {
-        worker.commit();
-      });
-*/
-/*
-
-    const plotterWorker = new PlotterWorker();
-
-    plotterWorker.postMessage({
-      type: IWorkerDataType.START,
-      data: {
-        name: isolation.layer,
-        showOutline: isolation.showOutline,
-        useFill: isolation.useFill,
-        useFillPitch: isolation.useFillPitch,
-        outlineTick: isolation.doutline,
-        cutdepth: isolation.dthickness
-      } as IPlotterOptions,
-    });
-    plotterWorker.onmessage = (event) => {
-      //  console.log("From Render Warker!", event);
-      const data = event.data as IWorkerData<{ svg: string; gcode: string }>;
-      if (data.type === IWorkerDataType.END) {
-        const index = (this.$store
-          .state as IProject).config.isolations.findIndex(
-          (iso) => iso.layer === isolation.layer
-        );
-        this.$store.commit("updateField", {
-          path: `config.isolations.${index}.svg`,
-          value: (event.data as IWorkerData<{ svg: string; gcode: string }>)
-            .data.svg,
-        });
-        this.$store.commit("updateField", {
-          path: `config.isolations.${index}.gcode`,
-          value: (event.data as IWorkerData<{ svg: string; gcode: string }>)
-            .data.gcode,
-        });
-        this.options[_layer.name].renderTime = Date.now() - startTime;
-        this.options[_layer.name].busy = false;
-        this.$forceUpdate();
-      }
-    };
-
-    stream
-      .pipe(parser)
-      .pipe(plotter)
-      .on("error", (error) => console.error(error))
-      .on("data", (obj: IPlotterData) => {
-        plotterWorker.postMessage({ type: IWorkerDataType.CHUNK, data: obj });
-      })
-      .on("end", () => {
-        plotterWorker.postMessage({ type: IWorkerDataType.END });
-      });
-      */
+    );
   }
 }
 </script>

@@ -26,12 +26,19 @@
 
         <el-tabs type="border-card">
           <el-tab-pane label="Model">
+            <geo-json-viewer
+              :panzoom="true"
+              _class="fullframe"
+              :data.sync="drill.geojson"
+            ></geo-json-viewer>
+            <!--
             <svg-viewer
               :panzoom="true"
               _class="fullframe"
               :data="drill.svg"
               :style="{ '--drill-width': drill.doutline * 2 + 'mm' }"
             ></svg-viewer>
+            -->
           </el-tab-pane>
           <el-tab-pane label="Work (3d)" :disabled="!drill.gcode" lazy>
             <g-code
@@ -58,26 +65,6 @@
               @input="redrawpcb(drill)"
             ></el-switch>
           </el-form-item>
-          <!--
-          <el-form-item label="Use Fill Elements">
-            <el-switch
-              v-model="drill.useFill"
-              @input="redrawpcb(drill)"
-            ></el-switch>
-          </el-form-item>
-          <el-form-item label="Fill Elements Outline">
-            <el-input-number
-              size="mini"
-              v-model="drill.useFillPitch"
-              :min="0.0001"
-              :max="1"
-              :precision="4"
-              :step="0.001"
-              :disabled="!drill.useFill"
-              @change="redrawpcb(drill)"
-            ></el-input-number>
-          </el-form-item>
-          -->
           <el-form-item label="drill Tool" :rules="[{ required: true, trigger:'change' }]" 
           prop="toolType">
             <el-select
@@ -137,8 +124,7 @@
 <script lang="ts">
 import Vue from "vue";
 import store from "../store";
-//import pcbStackup from "pcb-stackup";
-import gerberToSvg from "gerber-to-svg";
+//import gerberToSvg from "gerber-to-svg";
 import whatsThatGerber from "whats-that-gerber";
 import { mapGetters, mapMutations, mapState } from "vuex";
 import { mapFields, mapMultiRowFields } from "vuex-map-fields";
@@ -147,16 +133,13 @@ import FSStore from "@/fsstore";
 import Component from "vue-class-component";
 import { Inject, VModel } from "vue-property-decorator";
 import GCode from "@/vue/components/gcode.vue";
-import SvgViewer from "@/vue/components/svgviewer.vue";
-import fs from "fs";
+//import SvgViewer from "@/vue/components/svgviewer.vue";
+import GeoJsonViewer from "@/vue/components/geojsonviewer.vue";
+//import fs from "fs";
 import { PcbLayers } from "@/models/pcblayer";
-import { GerberSide, GerberType } from "whats-that-gerber";
-import makerjs from "makerjs";
-import { Duplex } from "stream";
-import gerberParser from "gerber-parser";
-import gerberPlotter from "gerber-plotter";
-import colornames from "colornames";
-import * as Trigonomerty from "@/utils/trigonometry";
+//import { GerberSide, GerberType } from "whats-that-gerber";
+//import colornames from "colornames";
+//import * as Trigonomerty from "@/utils/trigonometry";
 import {
   IPlotterData,
   IPlotterDataCircle,
@@ -170,17 +153,15 @@ import {
   IPlotterDataStroke,
   IPlotterDataTypes,
 } from "@/models/plotterData";
-//import { IWorkerData, IWorkerDataType } from "@/models/workerData";
-//import PlotterWorker from "_/workers/plotterDataToModel.worker";
 import { IProject, IProjectDrill } from "@/models/project";
 import { Store } from "vuex";
 import { Tooldb } from "@/typings/tooldb";
-//import { IPlotterOptions } from "@/workers/plotterDataToModel.worker";
 import { Form } from "element-ui";
-
-interface IDictionary<T> {
-  [index: string]: T;
-}
+import { IDictionary } from "@/models/dictionary";
+import { GerberParser } from "@/workers/gerberParser";
+import { spawn, Thread, Worker, Transfer } from "threads";
+import { IsolationWork } from "@/workers/isolationWork";
+import { FeatureCollection } from "geojson";
 
 interface Options {
   renderTime: number;
@@ -190,7 +171,7 @@ interface Options {
 @Component({
   components: {
     GCode,
-    SvgViewer,
+    GeoJsonViewer,
   },
   computed: {
     ...mapFields(["layers", "config.pcb.width", "config.pcb.height"]),
@@ -250,13 +231,12 @@ export default class WizardDrill extends Vue {
           const ret: IProjectDrill = {
             layer: layer.name,
             showOutline: false,
-//            useFill: false,
-//            useFillPitch: 0.005,
             toolType: undefined,
             dthickness: undefined,
             doutline: undefined,
             svg: undefined,
             gcode: undefined,
+            geojson: undefined
           };
           const oldrecord = (this.$store
             .state as IProject).config.drills.find(
@@ -350,6 +330,66 @@ export default class WizardDrill extends Vue {
       }
     );
 
+    spawn<GerberParser>(new Worker("../../workers/gerberParser")).then(
+      async (gerberParser) => {
+        await gerberParser.create({
+          unionDraw: false,
+          filetype: "drill",
+        });
+        await gerberParser.load((_layer as PcbLayers).gerber);
+        gerberParser.commit().then(async (data) => {
+          const index = (this.$store
+            .state as IProject).config.drills.findIndex(
+            (iso) => iso.layer === drill.layer
+          );
+          this.$store.commit("updateField", {
+            path: `config.drills.${index}.geojson`,
+            value: data.geojson,
+          });
+
+          if (drill.doutline) {
+            const isolationWork = await spawn<IsolationWork>(
+              new Worker("../../workers/isolationWork")
+            );
+            const data2 = await isolationWork.create(
+              {
+                name: drill.layer,
+                unit: "mm",
+                drillPark: {
+                  x: 0,
+                  y: 0,
+                },
+                feedrate: 50,
+                safeHtravel: 10,
+                doutline: -drill.doutline,
+                dthickness: drill.dthickness,
+              },
+              data.geojson as FeatureCollection
+            );
+            this.$store.commit("updateField", {
+              path: `config.drills.${index}.geojson`,
+              value: data2.geojson,
+            });
+            this.$store.commit("updateField", {
+              path: `config.drills.${index}.gcode`,
+              value: data2.gcode,
+            });
+          }
+           
+
+          this.options[_layer.name].renderTime = Date.now() - startTime;
+          this.options[_layer.name].busy = false;
+          this.$forceUpdate();
+          Thread.terminate(gerberParser);
+        });
+      }
+    );
+  }
+
+
+
+
+/*
     const stream = new Duplex();
     stream.push((_layer as PcbLayers).gerber);
     stream.push(null);
@@ -423,8 +463,9 @@ export default class WizardDrill extends Vue {
       .on("end", () => {
         plotterWorker.postMessage({ type: IWorkerDataType.END });
       });
-      */
+      * /
   }
+  */
 }
 </script>
 
@@ -433,12 +474,13 @@ export default class WizardDrill extends Vue {
   height: 100%;
   width: 100%;
 }
-
+/*
 svg #outline {
   stroke: red;
   stroke-width: var(--drill-width);
   stroke-linecap: round;
 }
+*/
 
 .hljs {
   max-height: 40em;

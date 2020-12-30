@@ -61,7 +61,7 @@ const _isolationWork = {
                         "type": "Feature",
                         "properties": {
                             "userData": i_geometry.getUserData(),
-                            "width": _options.doutline,
+                            "width": Math.abs(_options.doutline),
                             "cut_deep": _options.dthickness
                         },
                         "geometry": writer.write(i_geometry) as Geometry
