@@ -7,8 +7,8 @@ export enum IPlotterDataTypes {
     FILL="fill",
     SHAPE="shape",
     SIZE="size",
-    CIRCLE="circle"
-
+    CIRCLE="circle",
+    ARC="arc"
 }
 export interface IPlotterData {
     type: string;
@@ -46,6 +46,16 @@ export interface IPlotterDataCircle extends IPlotterData {
     cx: number,
     cy: number,
     r: number,
+}
+
+export interface IPlotterDataArc extends IPlotterData {
+    type: IPlotterDataTypes.ARC,
+    start: [number,number,number],
+    end: [number,number,number],
+    center: [number,number]
+    radius: number,
+    sweep: number,
+    dir: "cw"|"ccw",
 }
 
 export interface IPlotterDataPad extends IPlotterData {

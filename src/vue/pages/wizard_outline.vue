@@ -26,12 +26,19 @@
 
         <el-tabs type="border-card">
           <el-tab-pane label="Model">
+            <geo-json-viewer
+              :panzoom="true"
+              _class="fullframe"
+              :data.sync="outline.geojson"
+            ></geo-json-viewer>
+            <!--
             <svg-viewer
               :panzoom="true"
               _class="fullframe"
               :data="outline.svg"
               :style="{ '--outline-width': outline.doutline * 2 + 'mm' }"
             ></svg-viewer>
+            -->
           </el-tab-pane>
           <el-tab-pane label="Work (3d)" :disabled="!outline.gcode" lazy>
             <g-code
@@ -58,26 +65,6 @@
               @input="redrawpcb(outline)"
             ></el-switch>
           </el-form-item>
-          <!--
-          <el-form-item label="Use Fill Elements">
-            <el-switch
-              v-model="outline.useFill"
-              @input="redrawpcb(outline)"
-            ></el-switch>
-          </el-form-item>
-          <el-form-item label="Fill Elements Outline">
-            <el-input-number
-              size="mini"
-              v-model="outline.useFillPitch"
-              :min="0.0001"
-              :max="1"
-              :precision="4"
-              :step="0.001"
-              :disabled="!outline.useFill"
-              @change="redrawpcb(outline)"
-            ></el-input-number>
-          </el-form-item>
-          -->
           <el-form-item label="outline Tool" :rules="[{ required: true, trigger:'change' }]" 
           prop="toolType">
             <el-select
@@ -86,6 +73,7 @@
               placeholder="Tool..."
               @change="toolChange(outline)"
               size="mini"
+              clearable
             >
               <el-option
                 v-for="item in toolTypes"
@@ -138,7 +126,7 @@
 import Vue from "vue";
 import store from "../store";
 //import pcbStackup from "pcb-stackup";
-import gerberToSvg from "gerber-to-svg";
+//import gerberToSvg from "gerber-to-svg";
 import whatsThatGerber from "whats-that-gerber";
 import { mapGetters, mapMutations, mapState } from "vuex";
 import { mapFields, mapMultiRowFields } from "vuex-map-fields";
@@ -147,16 +135,17 @@ import FSStore from "@/fsstore";
 import Component from "vue-class-component";
 import { Inject, VModel } from "vue-property-decorator";
 import GCode from "@/vue/components/gcode.vue";
-import SvgViewer from "@/vue/components/svgviewer.vue";
-import fs from "fs";
+//import SvgViewer from "@/vue/components/svgviewer.vue";
+import GeoJsonViewer from "@/vue/components/geojsonviewer.vue";
+//import fs from "fs";
 import { PcbLayers } from "@/models/pcblayer";
-import { GerberSide, GerberType } from "whats-that-gerber";
-import makerjs from "makerjs";
-import { Duplex } from "stream";
-import gerberParser from "gerber-parser";
-import gerberPlotter from "gerber-plotter";
+//import { GerberSide, GerberType } from "whats-that-gerber";
+//import makerjs from "makerjs";
+//import { Duplex } from "stream";
+//import gerberParser from "gerber-parser";
+//import gerberPlotter from "gerber-plotter";
 import colornames from "colornames";
-import * as Trigonomerty from "@/utils/trigonometry";
+//import * as Trigonomerty from "@/utils/trigonometry";
 import {
   IPlotterData,
   IPlotterDataCircle,
@@ -177,10 +166,12 @@ import { Store } from "vuex";
 import { Tooldb } from "@/typings/tooldb";
 //import { IPlotterOptions } from "@/workers/plotterDataToModel.worker";
 import { Form } from "element-ui";
+import { IDictionary } from "@/models/dictionary";
+import { GerberParser } from "@/workers/gerberParser";
+import { spawn, Thread, Worker, Transfer } from "threads";
+import { IsolationWork } from "@/workers/isolationWork";
+import { FeatureCollection } from "geojson";
 
-interface IDictionary<T> {
-  [index: string]: T;
-}
 
 interface Options {
   renderTime: number;
@@ -190,7 +181,7 @@ interface Options {
 @Component({
   components: {
     GCode,
-    SvgViewer,
+    GeoJsonViewer,
   },
   computed: {
     ...mapFields(["layers", "config.pcb.width", "config.pcb.height"]),
@@ -257,6 +248,7 @@ export default class Wizardoutline extends Vue {
             doutline: undefined,
             svg: undefined,
             gcode: undefined,
+            geojson: undefined,
           };
           const oldrecord = (this.$store
             .state as IProject).config.outlines.find(
@@ -350,82 +342,64 @@ export default class Wizardoutline extends Vue {
       }
     );
 
-    const stream = new Duplex();
-    stream.push((_layer as PcbLayers).gerber);
-    stream.push(null);
-
-    var parser = gerberParser({
-      filetype: "gerber",
-    });
-    var plotter = gerberPlotter({
-      optimizePaths: true,
-      plotAsOutline: false, // or mm?!?!?
-    });
-
-    plotter.on("warning", function (w) {
-      console.warn("plotter warning at line " + w.line + ": " + w.message);
-    });
-
-    plotter.once("error", function (e) {
-      console.error("plotter error: " + e.message);
-    });
-
-    let model: makerjs.IModel = {
-      origin: [0, 0],
-      units: makerjs.unitType.Millimeter,
-    };
-
-    let index = 0;
-    /*
-    const plotterWorker = new PlotterWorker();
-
-    plotterWorker.postMessage({
-      type: IWorkerDataType.START,
-      data: {
-        name: outline.layer,
-        showOutline: outline.showOutline,
-//        useFill: outline.useFill,
-//        useFillPitch: outline.useFillPitch,
-        outlineTick: outline.doutline,
-        cutdepth: outline.dthickness,
-      } as IPlotterOptions,
-    });
-    plotterWorker.onmessage = (event) => {
-      //  console.log("From Render Warker!", event);
-      const data = event.data as IWorkerData<{ svg: string; gcode: string }>;
-      if (data.type === IWorkerDataType.END) {
-        const index = (this.$store
-          .state as IProject).config.outlines.findIndex(
-          (iso) => iso.layer === outline.layer
-        );
-        this.$store.commit("updateField", {
-          path: `config.outlines.${index}.svg`,
-          value: (event.data as IWorkerData<{ svg: string; gcode: string }>)
-            .data.svg,
+    spawn<GerberParser>(new Worker("../../workers/gerberParser")).then(
+      async (gerberParser) => {
+        await gerberParser.create({
+          unionDraw: false,
+          filetype: "gerber",
         });
-        this.$store.commit("updateField", {
-          path: `config.outlines.${index}.gcode`,
-          value: (event.data as IWorkerData<{ svg: string; gcode: string }>)
-            .data.gcode,
+        await gerberParser.load((_layer as PcbLayers).gerber);
+        gerberParser.commit().then(async (data) => {
+          const index = (this.$store
+            .state as IProject).config.outlines.findIndex(
+            (iso) => iso.layer === outline.layer
+          );
+          this.$store.commit("updateField", {
+            path: `config.outlines.${index}.geojson`,
+            value: data.geojson,
+          });
+
+          console.log("----------------------");
+          if (outline.doutline) {
+            const isolationWork = await spawn<IsolationWork>(
+              new Worker("../../workers/isolationWork")
+            );
+            const data2 = await isolationWork.create(
+              {
+                name: outline.layer,
+                unit: "mm",
+                drillPark: {
+                  x: 0,
+                  y: 0,
+                },
+                feedrate: 50,
+                safeHtravel: 10,
+                doutline: outline.doutline,
+                dthickness: outline.dthickness,
+              },
+              data.geojson as FeatureCollection
+            );
+            this.$store.commit("updateField", {
+              path: `config.outlines.${index}.geojson`,
+              value: data2.geojson,
+            });
+            this.$store.commit("updateField", {
+              path: `config.outlines.${index}.gcode`,
+              value: data2.gcode,
+            });
+            Thread.terminate(isolationWork);
+          }
+           
+
+          this.options[_layer.name].renderTime = Date.now() - startTime;
+          this.options[_layer.name].busy = false;
+          this.$forceUpdate();
+          Thread.terminate(gerberParser);
         });
-        this.options[_layer.name].renderTime = Date.now() - startTime;
-        this.options[_layer.name].busy = false;
-        this.$forceUpdate();
       }
-    };
-
-    stream
-      .pipe(parser)
-      .pipe(plotter)
-      .on("error", (error) => console.error(error))
-      .on("data", (obj: IPlotterData) => {
-        plotterWorker.postMessage({ type: IWorkerDataType.CHUNK, data: obj });
-      })
-      .on("end", () => {
-        plotterWorker.postMessage({ type: IWorkerDataType.END });
-      });
-      */
+    );
   }
+
 }
 </script>
 
@@ -435,11 +409,13 @@ export default class Wizardoutline extends Vue {
   width: 100%;
 }
 
+/*
 svg #outline {
   stroke: red;
   stroke-width: var(--outline-width);
   stroke-linecap: round;
 }
+*/
 
 .hljs {
   max-height: 40em;

@@ -80,6 +80,7 @@
               placeholder="Tool..."
               @change="toolChange(isolation)"
               size="mini"
+              clearable
             >
               <el-option
                 v-for="item in toolTypes"
@@ -402,6 +403,7 @@ export default class WizardIsolation extends Vue {
               path: `config.isolations.${index}.gcode`,
               value: data2.gcode,
             });
+            Thread.terminate(isolationWork);
           }
 
           this.options[_layer.name].renderTime = Date.now() - startTime;

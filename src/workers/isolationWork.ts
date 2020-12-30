@@ -51,6 +51,7 @@ const _isolationWork = {
             });
     
         return new Promise<IIsolationWorkResult>((resolve, reject) => {
+            console.log("Working on ",data.features.length, "features!");
             data.features.forEach( (feature,index,all) => {
                 const o_geometry = reader.read(feature.geometry);
 //                console.log(JSON.stringify(o_geometry));
@@ -84,7 +85,7 @@ const _isolationWork = {
             }
 
             const gcode = String(code);
-            console.log(gcode);
+//            console.log(gcode);
 
             // End
             resolve({

@@ -31,14 +31,6 @@
               _class="fullframe"
               :data.sync="drill.geojson"
             ></geo-json-viewer>
-            <!--
-            <svg-viewer
-              :panzoom="true"
-              _class="fullframe"
-              :data="drill.svg"
-              :style="{ '--drill-width': drill.doutline * 2 + 'mm' }"
-            ></svg-viewer>
-            -->
           </el-tab-pane>
           <el-tab-pane label="Work (3d)" :disabled="!drill.gcode" lazy>
             <g-code
@@ -59,12 +51,14 @@
       <el-col :span="8">
         <h1></h1>
         <el-form :model="drill" ref="formx" label-width="11em">
+          <!--
           <el-form-item label="Show Border">
             <el-switch
               v-model="drill.showOutline"
               @input="redrawpcb(drill)"
             ></el-switch>
           </el-form-item>
+          -->
           <el-form-item label="drill Tool" :rules="[{ required: true, trigger:'change' }]" 
           prop="toolType">
             <el-select
@@ -73,6 +67,7 @@
               placeholder="Tool..."
               @change="toolChange(drill)"
               size="mini"
+              clearable
             >
               <el-option
                 v-for="item in toolTypes"
@@ -374,6 +369,7 @@ export default class WizardDrill extends Vue {
               path: `config.drills.${index}.gcode`,
               value: data2.gcode,
             });
+            Thread.terminate(isolationWork);
           }
            
 
@@ -386,86 +382,6 @@ export default class WizardDrill extends Vue {
     );
   }
 
-
-
-
-/*
-    const stream = new Duplex();
-    stream.push((_layer as PcbLayers).gerber);
-    stream.push(null);
-
-    var parser = gerberParser({
-      filetype: "drill",
-    });
-    var plotter = gerberPlotter({
-      optimizePaths: true,
-      plotAsOutline: false, // or mm?!?!?
-    });
-
-    plotter.on("warning", function (w) {
-      console.warn("plotter warning at line " + w.line + ": " + w.message);
-    });
-
-    plotter.once("error", function (e) {
-      console.error("plotter error: " + e.message);
-    });
-
-    let model: makerjs.IModel = {
-      origin: [0, 0],
-      units: makerjs.unitType.Millimeter,
-    };
-/*
-    let index = 0;
-    const plotterWorker = new PlotterWorker();
-
-    plotterWorker.postMessage({
-      type: IWorkerDataType.START,
-      data: {
-        name: drill.layer,
-        showOutline: drill.showOutline,
-//        useFill: drill.useFill,
-//        useFillPitch: drill.useFillPitch,
-        outlineTick: -(drill.doutline||0),
-        cutdepth: drill.dthickness,
-      } as IPlotterOptions,
-    });
-    plotterWorker.onmessage = (event) => {
-      //  console.log("From Render Warker!", event);
-      const data = event.data as IWorkerData<{ svg: string; gcode: string }>;
-      if (data.type === IWorkerDataType.END) {
-        const index = (this.$store
-          .state as IProject).config.drills.findIndex(
-          (iso) => iso.layer === drill.layer
-        );
-        this.$store.commit("updateField", {
-          path: `config.drills.${index}.svg`,
-          value: (event.data as IWorkerData<{ svg: string; gcode: string }>)
-            .data.svg,
-        });
-        this.$store.commit("updateField", {
-          path: `config.drills.${index}.gcode`,
-          value: (event.data as IWorkerData<{ svg: string; gcode: string }>)
-            .data.gcode,
-        });
-        this.options[_layer.name].renderTime = Date.now() - startTime;
-        this.options[_layer.name].busy = false;
-        this.$forceUpdate();
-      }
-    };
-
-    stream
-      .pipe(parser)
-      .pipe(plotter)
-      .on("error", (error) => console.error(error))
-      .on("data", (obj: IPlotterData) => {
-        plotterWorker.postMessage({ type: IWorkerDataType.CHUNK, data: obj });
-      })
-      .on("end", () => {
-        plotterWorker.postMessage({ type: IWorkerDataType.END });
-      });
-      * /
-  }
-  */
 }
 </script>
 
