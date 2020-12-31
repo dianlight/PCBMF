@@ -1,5 +1,5 @@
 diff --git a/node_modules/@types/jsts/index.d.ts b/node_modules/@types/jsts/index.d.ts
-index 1ddc491..ade0843 100644
+index 1ddc491..2c92eef 100644
 --- a/node_modules/@types/jsts/index.d.ts
 +++ b/node_modules/@types/jsts/index.d.ts
 @@ -115,6 +115,14 @@ declare namespace jsts {
@@ -85,3 +85,116 @@ index 1ddc491..ade0843 100644
              /**
               * Tests whether this {@link Geometry} is simple. In general, the SFS
               * specification of simplicity follows the rule:
+@@ -2322,6 +2384,112 @@ declare namespace jsts {
+         }
+     }
+ 
++    namespace util {
++        /**
++         * Computes various kinds of common geometric shapes. 
++         * Provides various ways of specifying the location and extent and rotations of the generated shapes,
++         * as well as number of line segments used to form them.
++         */
++        export class GeometricShapeFactory {
++            constructor(geometryFactory?: jsts.geom.GeometryFactory);
++            /**
++             * Creates an elliptical arc, as a LineString.
++             * 
++             * @param {number} startAng 
++             * @param {number} angExtent 
++             */
++            createArc(startAng:number, angExtent:number):jsts.geom.LineString;
++            
++            /**
++             * Creates an elliptical arc polygon.
++             * @param startAng 
++             * @param angExtent 
++             */
++            createArcPolygon(startAng:number,angExtent:number):jsts.geom.Polygon;
++            
++            /**
++             * Creates a circular or elliptical Polygon.
++             */
++            createCircle():jsts.geom.Polygon;
++            
++            /**
++             * Creates an elliptical Polygon.
++             */
++            createEllipse():jsts.geom.Polygon;
++            
++            /**
++             * Creates a rectangular Polygon.
++             */
++            createRectangle():jsts.geom.Polygon;
++            
++            /**
++             * Creates a squircular Polygon.
++             */
++            createSquircle():jsts.geom.Polygon;
++            
++            /**
++             * Creates a supercircular Polygon of a given positive power.
++             * @param power 
++             */
++            createSupercircle(power:number):Polygon;
++            
++            /**
++             * Sets the location of the shape by specifying the base 
++             * coordinate (which in most cases is the lower left point of the envelope containing the shape).
++             * @param base 
++             */
++            setBase(base:jsts.geom.Coordinate):void;
++            
++            /**
++             * Sets the location of the shape by specifying the centre of the shape's bounding box
++             * 
++             * @param centre 
++             */
++            setCentre(centre:jsts.geom.Coordinate):void;
++            
++            /**
++             * 
++             * @param env 
++             */
++            setEnvelope(env:jsts.geom.Envelope):void;
++
++            /**
++             * Sets the height of the shape.
++             * 
++             * @param height 
++             */
++            setHeight(height:number):void;
++            
++            /**
++             * Sets the total number of points in the created Geometry.
++             * 
++             * @param nPts 
++             */
++            setNumPoints(nPts:number):void;
++            
++            /**
++             * Sets the rotation angle to use for the shape.
++             * 
++             * @param radians 
++             */
++            setRotation(radians:number):void;
++            
++            /**
++             * Sets the size of the extent of the shape in both x and y directions.
++             * 
++             * @param size 
++             */
++            setSize(size:number):void;
++            
++            /**
++             * Sets the width of the shape.    
++             * @param width 
++             */
++            setWidth(width:number):void;
++                    
++        }
++    }
++
+     namespace io {
+ 
+ 
