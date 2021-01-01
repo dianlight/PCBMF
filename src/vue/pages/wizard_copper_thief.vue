@@ -17,9 +17,7 @@
           <small
             >Render Time:
             {{
-              options[copper.layer]
-                ? options[copper.layer].renderTime
-                : "-"
+              options[copper.layer] ? options[copper.layer].renderTime : "-"
             }}ms</small
           >
         </h4>
@@ -68,8 +66,11 @@
               @input="redrawpcb(copper)"
             ></el-switch>
           </el-form-item>
-          <el-form-item label="Thief Mode" :rules="[{ required: true, trigger:'change' }]" 
-          prop="mode">
+          <el-form-item
+            label="Thief Mode"
+            :rules="[{ required: true, trigger: 'change' }]"
+            prop="mode"
+          >
             <el-select
               v-model="copper.mode"
               value-key="name"
@@ -79,25 +80,26 @@
               clearable
             >
               <el-option label="Outline" value="Outline" />
-              <el-option label="Box" value="Box"/>
-              <el-option label="Line" value="Line"/>
-              <el-option label="Spiral" value="Spiral"/>
-              <el-option label="Voronoi" value="Voronoi"/>
+              <el-option label="Box" value="Box" />
+              <el-option label="Line" value="Line" />
+              <el-option label="Spiral" value="Spiral" />
+              <el-option label="Voronoi" value="Voronoi" disabled />
             </el-select>
-          </el-form-item>   
+          </el-form-item>
 
           <el-form-item
-            label="copper Tool"
+            label="Copper Tools"
             :rules="[{ required: true, trigger: 'change' }]"
-            prop="toolType"
+            prop="toolTypes"
           >
             <el-select
-              v-model="copper.toolType"
+              v-model="copper.toolTypes"
               value-key="name"
               placeholder="Tool..."
               @change="toolChange(copper)"
               size="mini"
               clearable
+              multiple
             >
               <el-option
                 v-for="item in toolTypes"
@@ -109,7 +111,7 @@
             </el-select>
           </el-form-item>
           <el-form-item
-            label="copper thickness"
+            label="Copper thickness"
             :rules="[
               { required: true, trigger: 'blur', type: 'number', min: 0.0001 },
             ]"
@@ -123,24 +125,23 @@
               :precision="4"
               :step="0.1"
               :disabled="!copper.toolType"
-              @change="changeThickness(copper)"
+              @change="redrawpcb(copper)"
             ></el-input-number>
           </el-form-item>
           <el-form-item
-            label="copper width"
+            label="Cycles for Tools"
             :rules="[
               { required: true, trigger: 'blur', type: 'number', min: 0.0001 },
             ]"
-            prop="dthief"
+            prop="toolCycles"
           >
             <el-input-number
               size="mini"
-              v-model="copper.dthief"
-              :min="0.0001"
-              :max="5"
-              :precision="4"
-              :step="0.001"
-              :disabled="true"
+              v-model="copper.toolCycles"
+              :min="1"
+              :max="10"
+              :precision="0"
+              :step="1"
               @change="redrawpcb(copper)"
             ></el-input-number>
           </el-form-item>
@@ -205,7 +206,7 @@ interface Options {
 @Component({
   components: {
     GCode,
-//    SvgViewer,
+    //    SvgViewer,
     GeoJsonViewer,
   },
   computed: {
@@ -266,16 +267,15 @@ export default class WizardCopper extends Vue {
           const ret: IProjectCopper = {
             layer: layer.name,
             unionDraw: true,
-            toolType: undefined,
+            toolTypes: [],
             dthickness: undefined,
-            dthief: undefined,
+            toolCycles: 1,
             svg: undefined,
             gcode: undefined,
             geojson: undefined,
-            mode: undefined
+            mode: undefined,
           };
-          const oldrecord = (this.$store
-            .state as IProject).config.coppers.find(
+          const oldrecord = (this.$store.state as IProject).config.coppers.find(
             (layer) => layer.layer === ret.layer
           );
           if (oldrecord) {
@@ -292,41 +292,13 @@ export default class WizardCopper extends Vue {
 
     new Promise((resolve) => {
       FSStore.get("data.tool.types", []).then((data) => {
-        this.toolTypes = data.filter(
-          (tool: Tooldb) => tool.type === "Mill"
-        );
+        this.toolTypes = data.filter((tool: Tooldb) => tool.type === "Mill");
       });
     });
 
     if ((this.$store.state as IProject).config.coppers.length == 0) {
       console.log("No copper need to skip");
       this.wizardPushSkip!();
-    }
-  }
-
-  changeThickness(copper: IProjectCopper) {
-    const index = (this.$store.state as IProject).config.coppers.findIndex(
-      (iso) => iso.layer === copper.layer
-    );
-    const state = (this.$store as Store<IProject>).state;
-    const tool = copper!.toolType;
-    if (this.$store && this.$store.state) {
-      if (tool && tool.type === "V-Shape") {
-        this.$store.commit("updateField", {
-          path: `config.coppers[${index}].dthief`,
-          value: Trigonomerty.getTipDiamaterForVTool(
-            tool.size as number,
-            tool.angle as number,
-            copper.dthickness as number
-          ),
-        });
-      } else if (tool) {
-        this.$store.commit("updateField", {
-          path: `config.coppers[${index}].dthief`,
-          value: tool.size as number,
-        });
-      }
-      this.redrawpcb(copper);
     }
   }
 
@@ -345,7 +317,7 @@ export default class WizardCopper extends Vue {
         path: `config.coppers[${index}].dthickness`,
         value: state!.config!.pcb!.blankType.cthickness as number,
       });
-      this.changeThickness(copper);
+      this.redrawpcb(copper);
     } else {
       console.error("Error instate object", state);
     }
@@ -394,7 +366,8 @@ export default class WizardCopper extends Vue {
             value: data.geojson,
           });
 
-          if (copper.dthief && copper.mode) {
+          if (copper.toolTypes && copper.toolTypes.length > 0 && copper.mode) {
+            console.log("Starting Tool calculation!");
             const thiefWork = await spawn<ThiefWork>(
               new Worker("../../workers/thiefWork")
             );
@@ -408,9 +381,10 @@ export default class WizardCopper extends Vue {
                 },
                 feedrate: 50,
                 safeHtravel: 10,
-                dthief: copper.dthief,
+                tools: copper.toolTypes,
                 dthickness: copper.dthickness || 0,
                 mode: copper.mode,
+                cycles: copper.toolCycles || 1,
               },
               data.geojson as FeatureCollection
             );

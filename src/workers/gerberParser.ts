@@ -92,7 +92,7 @@ const _gerberParser = {
                     } as FeatureCollection;
 
                     for (let i = 0; i < single_geometry.getNumGeometries(); i++) {
-                        console.log(single_geometry.getGeometryN(i));
+                      //  console.log(single_geometry.getGeometryN(i));
                         geojson.features.push({
                             "type": "Feature",
                             "properties": {
@@ -112,7 +112,7 @@ const _gerberParser = {
 // Real Work
 
 function unionOverlapping(a_geometry:jsts.geom.Geometry[]):jsts.geom.Geometry[]{
-    console.log("Start Geometries:", a_geometry.length);
+   // console.log("Start Geometries:", a_geometry.length);
     let startg;
     do {
         startg = a_geometry.length;
@@ -149,7 +149,7 @@ function unionOverlapping(a_geometry:jsts.geom.Geometry[]):jsts.geom.Geometry[]{
                     }, geom);
             }
         });
-        console.log("Geometries:", a_geometry.length);
+    //    console.log("Geometries:", a_geometry.length);
     } while (startg != a_geometry.length);
     return a_geometry;
 }
@@ -263,15 +263,16 @@ function iPlotterToModel(
                     return acc.concat(...iPlotterToModel(data));
                 },[] as jsts.geom.Geometry[]);
 
-                console.log("All Linstring geometry:",lineStrings.length);
+                //console.log("All Linstring geometry:",lineStrings.length);
                 unionOverlapping(lineStrings);
-                console.log("Reduced geometry:",lineStrings.length);
+                //console.log("Reduced geometry:",lineStrings.length);
 
 
-
+                /*
                 if(lineStrings.length == 1 && lineStrings[0].isValid()){
                     console.log(JSON.stringify(lineStrings[0],undefined,2));
                 }
+                */
 
 
                 lineStrings = lineStrings.map( lineString=>

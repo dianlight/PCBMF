@@ -17,6 +17,7 @@ module.exports = [
             },
         },
     },
+    /*
     {
         test: /\.worker\.ts$/i,
         use: [
@@ -24,7 +25,8 @@ module.exports = [
             loader: "worker-loader",
           }
         ]   
-    },      
+    },    
+    */  
     {
         test: /\.tsx?$/,
         exclude: /(node_modules|\.webpack)/,

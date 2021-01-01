@@ -8,7 +8,6 @@ import { ThiefWorkMode } from "@/workers/thiefWork";
 
 export interface IProjectWork {
     layer: string,
-    toolType: Tooldb | undefined,
     svg:string | undefined,
     gcode:string | undefined,
     geojson: Object | undefined
@@ -16,15 +15,15 @@ export interface IProjectWork {
 
 export interface IProjectCopper extends IProjectWork {
     unionDraw: boolean,
-//    useFill: boolean,
-//    useFillPitch: number,
+    toolTypes: Tooldb[] | undefined,
     dthickness:number | undefined,
-    dthief: number | undefined,
+    toolCycles: number | undefined,
     mode: ThiefWorkMode |undefined
 }
 
 export interface IProjectIsolation extends IProjectWork {
     showOutline: boolean,
+    toolType: Tooldb | undefined,
     unionDraw: boolean,
 //    useFillPitch: number,
     dthickness:number | undefined,
@@ -33,12 +32,14 @@ export interface IProjectIsolation extends IProjectWork {
 
 export interface IProjectDrill extends IProjectWork{
     showOutline: boolean,
+    toolType: Tooldb | undefined,
     dthickness:number | undefined,
     doutline: number | undefined,
 }
 
 export interface IProjectOutline extends IProjectWork{
     showOutline: boolean,
+    toolType: Tooldb | undefined,
     dthickness:number | undefined,
     doutline: number | undefined,
     mode: OutlineWorkMode | undefined,

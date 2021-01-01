@@ -3,7 +3,7 @@ import * as jsts from "jsts";
 import { featureCollectionToGeometries, geometryToFeature } from "@/utils/geometriesToFeatures";
 import { GeoJSON, FeatureCollection, Feature, Geometry } from "geojson";
 import { GCodeParser } from '@/parsers/gcodeparser';
-import hull from "hull.js";
+import { Tooldb } from "@/typings/tooldb";
 
 export type ThiefWorkMode = "Outline" | "Box" | "Line" | "Spiral" | "Voronoi";
 
@@ -14,9 +14,9 @@ export interface IThiefWorkOption {
     feedrate: number,
     safeHtravel: number,
     dthickness: number,
-    dthief: number,
+    tools: Tooldb[],
     mode: ThiefWorkMode | undefined,
-//    scale: number | undefined,
+    cycles: number
 }
 
 export interface IThiefWorkResult {
@@ -32,9 +32,9 @@ let _options: IThiefWorkOption = {
     feedrate: 50,
     safeHtravel: 10,
     dthickness: 1,
-    dthief: 1,
+    tools: [],
     mode: "Line",
-//    scale: 1
+    cycles: 1
 }
 
 let factory = new jsts.geom.GeometryFactory(new jsts.geom.PrecisionModel(jsts.geom.PrecisionModel.FLOATING_SINGLE));
@@ -88,17 +88,28 @@ const _thiefWork = {
                 }
                     break;
                 case "Outline": {
-                    const geometry = factory.createGeometryCollection(geometries)
-                        .buffer(_options.dthief / 2, 60 /*$fn from config?*/, jsts.operation.buffer.BufferParameters.CAP_ROUND);
-                    geometry.setUserData("thief");
-                    data.features.push(
-                        geometryToFeature(
-                            geometry
-                            , {
-                                "width": Math.abs(_options.dthief),
-                                "cut_deep": _options.dthickness
-                            }, writer)
-                    );
+
+                    _options.tools
+                        .sort((a, b) => (a.size || 0) - (b.size || 0))
+                        .forEach(tool => {
+                            for (let i = 0; i < _options.cycles; i++) {
+                                const geometry = factory.createGeometryCollection(geometries)
+                                    .union()
+                                    .buffer((tool.size || 1) / 2, 60 /*$fn from config?*/, jsts.operation.buffer.BufferParameters.CAP_ROUND);
+                                geometry.setUserData("thief");
+                                console.log("After buffer");
+                                data.features.push(
+                                    geometryToFeature(
+                                        geometry
+                                        , {
+                                            "width": tool.size,
+                                            "cut_deep": _options.dthickness
+                                        }, writer)
+                                );
+                                geometries.push(geometry);
+                            }
+                        });
+
                 }
                     break;
                 case "Voronoi":

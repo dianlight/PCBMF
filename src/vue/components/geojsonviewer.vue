@@ -53,7 +53,7 @@ export default class GeoJsonViewer extends Vue {
             return { weight: feature.properties!.width, color:"blue" ,fill:"#000000", opacity: 0.5, stroke: "red"} 
             break;
           case "thief":
-            return { weight: feature.properties!.width, color:"orange" ,fill:"#000000", opacity: 0.5, stroke: "blue"} 
+            return { weight: feature.properties!.width, color:"orange" ,fill:"#000000",fillOpacity:0.0, opacity: 0.1, stroke: "blue"} 
             break;
           default:
 //            return renderer._selectStyle(feature), feature.properties;

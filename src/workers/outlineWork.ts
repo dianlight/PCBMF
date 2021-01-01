@@ -3,7 +3,8 @@ import * as jsts from "jsts";
 import { featureCollectionToGeometries, geometryToFeature } from "@/utils/geometriesToFeatures";
 import { GeoJSON, FeatureCollection, Feature, Geometry } from "geojson";
 import { GCodeParser } from '@/parsers/gcodeparser';
-import hull from "hull.js";
+//import hull from "hull.js";
+import concavamen from "concaveman";
 
 export type OutlineWorkMode = "Buffer" | "MergedBuffer" | "Scale" | "ConvexHull" | "Hull" | "Box";
 
@@ -69,7 +70,8 @@ const _outlineWork = {
                         .union()
                         .getCoordinates();
 
-                    var hullPoints = hull(coordinates.map( (coord)=>[coord.x,coord.y]),1) as unknown as number[][];
+//                    var hullPoints = hull(coordinates.map( (coord)=>[coord.x,coord.y]),1) as unknown as number[][];
+                    let hullPoints = concavamen(coordinates.map( (coord)=>[coord.x,coord.y]));
                     console.log(JSON.stringify(hullPoints));
 
                     const geometry = factory.createPolygon(
