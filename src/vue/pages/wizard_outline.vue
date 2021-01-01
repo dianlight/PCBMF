@@ -59,13 +59,50 @@
       <el-col :span="8">
         <h1></h1>
         <el-form :model="outline" ref="formx" label-width="11em">
+          <!--
           <el-form-item label="Square Border">
             <el-switch
               v-model="outline.showOutline"
               @input="redrawpcb(outline)"
             ></el-switch>
           </el-form-item>
-          <el-form-item label="outline Tool" :rules="[{ required: true, trigger:'change' }]" 
+          -->
+          <el-alert v-if="foundGeometries > 1" type="warning" :closable="false">Multiple Geometry ({{foundGeometries}}) on outline.<br/>Some modes are not available and the result can be wrong!</el-alert>
+          <el-form-item label="Outline Mode" :rules="[{ required: true, trigger:'change' }]" 
+          prop="mode">
+            <el-select
+              v-model="outline.mode"
+              value-key="name"
+              placeholder="Mode..."
+              @change="redrawpcb(outline)"
+              size="mini"
+              clearable
+            >
+              <el-option label="Buffer" value="Buffer" :disabled="foundGeometries > 1"/>
+              <el-option label="MergedBuffer" value="MergedBuffer" :disabled="foundGeometries == 1"/>
+              <el-option label="Scale" value="Scale"/>
+              <el-option label="ConvexHull" value="ConvexHull"/>
+              <el-option label="Hull" value="Hull"/>
+              <el-option label="Box" value="Box"/>
+            </el-select>
+          </el-form-item>   
+          <el-form-item
+            label="Scale"
+            :rules="[{ required: true,trigger:'blur', type: 'number', min: 1, max: 5 }]"
+            prop="scale"
+          >
+            <el-input-number
+              size="mini"
+              v-model="outline.scale"
+              :min="1"
+              :max="5"
+              :precision="2"
+              :step="0.01"
+              :disabled="outline.mode !== 'Scale'"
+              @change="redrawpcb(outline)"
+            ></el-input-number>       
+          </el-form-item>            
+          <el-form-item label="Outline Tool" :rules="[{ required: true, trigger:'change' }]" 
           prop="toolType">
             <el-select
               v-model="outline.toolType"
@@ -85,7 +122,7 @@
             </el-select>
           </el-form-item>
           <el-form-item
-            label="outline thickness"
+            label="Outline thickness"
             :rules="[{ required: true, trigger:'blur', type: 'number', min: 0.0001 }]"
             prop="dthickness"
           >
@@ -101,7 +138,7 @@
             ></el-input-number>
           </el-form-item>
           <el-form-item
-            label="outline width"
+            label="Outline width"
             :rules="[{ required: true,trigger:'blur', type: 'number', min: 0.0001 }]"
             prop="doutline"
           >
@@ -169,7 +206,7 @@ import { Form } from "element-ui";
 import { IDictionary } from "@/models/dictionary";
 import { GerberParser } from "@/workers/gerberParser";
 import { spawn, Thread, Worker, Transfer } from "threads";
-import { IsolationWork } from "@/workers/isolationWork";
+import { OutlineWork,OutlineWorkMode } from "@/workers/outlineWork";
 import { FeatureCollection } from "geojson";
 
 
@@ -191,6 +228,7 @@ interface Options {
 export default class Wizardoutline extends Vue {
   toolTypes: Tooldb[] = [];
   options: IDictionary<Options> = {};
+  foundGeometries: number = 0;
 
   @Inject() readonly registerNextCallback:
     | ((
@@ -249,6 +287,8 @@ export default class Wizardoutline extends Vue {
             svg: undefined,
             gcode: undefined,
             geojson: undefined,
+            mode: undefined,
+            scale: undefined,
           };
           const oldrecord = (this.$store
             .state as IProject).config.outlines.find(
@@ -358,11 +398,12 @@ export default class Wizardoutline extends Vue {
             path: `config.outlines.${index}.geojson`,
             value: data.geojson,
           });
+          this.foundGeometries = (data.geojson as FeatureCollection).features.length;
 
           console.log("----------------------");
-          if (outline.doutline) {
-            const isolationWork = await spawn<IsolationWork>(
-              new Worker("../../workers/isolationWork")
+          if (outline.doutline && outline.mode) {
+            const isolationWork = await spawn<OutlineWork>(
+              new Worker("../../workers/outlineWork")
             );
             const data2 = await isolationWork.create(
               {
@@ -375,7 +416,9 @@ export default class Wizardoutline extends Vue {
                 feedrate: 50,
                 safeHtravel: 10,
                 doutline: outline.doutline,
-                dthickness: outline.dthickness,
+                dthickness: outline.dthickness || 1,
+                mode: outline.mode, 
+                scale: outline.scale,
               },
               data.geojson as FeatureCollection
             );

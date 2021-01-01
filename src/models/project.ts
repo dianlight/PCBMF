@@ -2,6 +2,7 @@ import { Pcbdb } from "@/typings/pcbdb";
 import { Tooldb } from "@/typings/tooldb";
 import { IDictionary } from "./dictionary";
 import { PcbLayers } from "./pcblayer";
+import { OutlineWorkMode } from "@/workers/outlineWork";
 
 
 export interface IProjectWork {
@@ -38,6 +39,8 @@ export interface IProjectOutline extends IProjectWork{
     showOutline: boolean,
     dthickness:number | undefined,
     doutline: number | undefined,
+    mode: OutlineWorkMode | undefined,
+    scale: number | undefined,
 }
 export interface IProject {
     currentFile: string | undefined,
