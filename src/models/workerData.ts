@@ -1,12 +1,29 @@
-export enum IWorkerDataType {
-    START,
-    CHUNK,
-    END,
+export enum EWorkerDataTypeIn {
+    CREATE,
+    LOAD,
     ABORT,
-    RESET
+    RESET,
+    COMMIT
 }
 
-export interface IWorkerData<T> {
-    type: IWorkerDataType,
-    data: T,
+export enum EWorkerDataTypeOut {
+    CHUNK,
+    PROGRESS,
+    INFO,
+    END
+}
+
+export interface IWorkerDataProgress {
+    in: number,
+    done: number,
+}
+
+export interface IWorkerDataIn<T> {
+    type: EWorkerDataTypeIn,
+    data: T | IWorkerDataProgress,
+}
+
+export interface IWorkerDataOut<T> {
+    type: EWorkerDataTypeOut,
+    data: T | IWorkerDataProgress,
 }
