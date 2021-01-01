@@ -143,8 +143,7 @@
         "url-loader": "^4.1.1",
         "vue-devtools": "^5.1.4",
         "vue-loader": "^15.9.6",
-        "vue-template-compiler": "^2.6.12",
-        "worker-loader": "^3.0.7"
+        "vue-template-compiler": "^2.6.12"
     },
     "dependencies": {
         "@ncform/ncform": "^1.7.8",

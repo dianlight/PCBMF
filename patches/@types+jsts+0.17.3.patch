@@ -1,8 +1,8 @@
 diff --git a/node_modules/@types/jsts/index.d.ts b/node_modules/@types/jsts/index.d.ts
-index 1ddc491..2c92eef 100644
+index 1ddc491..3996972 100644
 --- a/node_modules/@types/jsts/index.d.ts
 +++ b/node_modules/@types/jsts/index.d.ts
-@@ -115,6 +115,14 @@ declare namespace jsts {
+@@ -115,11 +115,45 @@ declare namespace jsts {
              */
              createPolygon(shell: LinearRing, holes: Array<LinearRing>): Polygon;      
                    
@@ -17,10 +17,11 @@ index 1ddc491..2c92eef 100644
          }
  
          export class GeometryCollection extends jsts.geom.Geometry {
-@@ -122,6 +130,31 @@ declare namespace jsts {
-             constructor(geometries?: Array<Geometry>, factory?: GeometryFactory);
-         }
  
+             constructor(geometries?: Array<Geometry>, factory?: GeometryFactory);
++
++        }
++
 +        /**
 +         * Iterates over all Geometrys in a {@link Geometry}, (which may be either a collection or an atomic geometry). 
 +         * The iteration sequence follows a pre-order, depth-first traversal of the structure of the {@link GeometryCollection} 
@@ -44,12 +45,10 @@ index 1ddc491..2c92eef 100644
 +            */
 +           next():Geometry;
 +
-+        }
-+
+         }
+ 
          /**
-          * A lightweight class used to store coordinates on the 2-dimensional
-          * Cartesian plane. It is distinct from {@link Point}, which is a subclass of
-@@ -719,6 +752,35 @@ declare namespace jsts {
+@@ -719,6 +753,35 @@ declare namespace jsts {
               */
              getNumPoints(): number;
  
@@ -85,7 +84,16 @@ index 1ddc491..2c92eef 100644
              /**
               * Tests whether this {@link Geometry} is simple. In general, the SFS
               * specification of simplicity follows the rule:
-@@ -2322,6 +2384,112 @@ declare namespace jsts {
+@@ -1350,7 +1413,7 @@ declare namespace jsts {
+              * @throws IllegalArgumentException
+              *           if either input is a non-empty GeometryCollection
+              */
+-            union(other: Geometry): Geometry;
++            union(other?: Geometry): Geometry;
+ 
+             /**
+              * Computes a <code>Geometry</code> representing the points making up this
+@@ -2322,6 +2385,112 @@ declare namespace jsts {
          }
      }
  
