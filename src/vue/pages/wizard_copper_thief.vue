@@ -1,24 +1,24 @@
 <template>
   <el-container direction="vertical">
-    <h1 v-if="isolations.length == 0">No isolation layer to process</h1>
+    <h1 v-if="coppers.length == 0">No copper layer to process</h1>
     <el-row
-      v-for="isolation in isolations"
-      :key="isolation.layer"
+      v-for="copper in coppers"
+      :key="copper.layer"
       type="flex"
       align="middle"
-      v-loading="!options[isolation.layer] || options[isolation.layer].busy"
+      v-loading="!options[copper.layer] || options[copper.layer].busy"
       element-loading-text="Processing..."
       element-loading-spinner="el-icon-loading"
       element-loading-background="rgba(0, 0, 0, 0.8)"
     >
       <el-col :span="16">
         <h4>
-          {{ isolation.layer }}
+          {{ copper.layer }}
           <small
             >Render Time:
             {{
-              options[isolation.layer]
-                ? options[isolation.layer].renderTime
+              options[copper.layer]
+                ? options[copper.layer].renderTime
                 : "-"
             }}ms</small
           >
@@ -29,28 +29,28 @@
             <geo-json-viewer
               :panzoom="true"
               _class="fullframe"
-              :data.sync="isolation.geojson"
+              :data.sync="copper.geojson"
             ></geo-json-viewer>
           </el-tab-pane>
-          <el-tab-pane label="Work (3d)" :disabled="!isolation.gcode" lazy>
+          <el-tab-pane label="Work (3d)" :disabled="!copper.gcode" lazy>
             <g-code
-              :data="isolation.gcode"
+              :data="copper.gcode"
               :gcgrid="true"
               :width="width"
               :height="height"
             ></g-code>
           </el-tab-pane>
-          <el-tab-pane label="Gcode" :disabled="!isolation.gcode">
+          <el-tab-pane label="Gcode" :disabled="!copper.gcode">
             <highlightjs
               language="gcode"
-              :code="isolation.gcode || 'Loading...'"
+              :code="copper.gcode || 'Loading...'"
             />
           </el-tab-pane>
         </el-tabs>
       </el-col>
       <el-col :span="8">
         <h1></h1>
-        <el-form :model="isolation" ref="formx" label-width="11em">
+        <el-form :model="copper" ref="formx" label-width="11em">
           <el-form-item
             label="Union elements"
             :rules="[
@@ -64,20 +64,38 @@
             ]"
           >
             <el-switch
-              v-model="isolation.unionDraw"
-              @input="redrawpcb(isolation)"
+              v-model="copper.unionDraw"
+              @input="redrawpcb(copper)"
             ></el-switch>
           </el-form-item>
+          <el-form-item label="Thief Mode" :rules="[{ required: true, trigger:'change' }]" 
+          prop="mode">
+            <el-select
+              v-model="copper.mode"
+              value-key="name"
+              placeholder="Mode..."
+              @change="redrawpcb(copper)"
+              size="mini"
+              clearable
+            >
+              <el-option label="Outline" value="Outline" />
+              <el-option label="Box" value="Box"/>
+              <el-option label="Line" value="Line"/>
+              <el-option label="Spiral" value="Spiral"/>
+              <el-option label="Voronoi" value="Voronoi"/>
+            </el-select>
+          </el-form-item>   
+
           <el-form-item
-            label="Isolation Tool"
+            label="copper Tool"
             :rules="[{ required: true, trigger: 'change' }]"
             prop="toolType"
           >
             <el-select
-              v-model="isolation.toolType"
+              v-model="copper.toolType"
               value-key="name"
               placeholder="Tool..."
-              @change="toolChange(isolation)"
+              @change="toolChange(copper)"
               size="mini"
               clearable
             >
@@ -91,7 +109,7 @@
             </el-select>
           </el-form-item>
           <el-form-item
-            label="Isolation thickness"
+            label="copper thickness"
             :rules="[
               { required: true, trigger: 'blur', type: 'number', min: 0.0001 },
             ]"
@@ -99,31 +117,31 @@
           >
             <el-input-number
               size="mini"
-              v-model="isolation.dthickness"
+              v-model="copper.dthickness"
               :min="0"
               :max="5"
               :precision="4"
               :step="0.1"
-              :disabled="!isolation.toolType"
-              @change="changeThickness(isolation)"
+              :disabled="!copper.toolType"
+              @change="changeThickness(copper)"
             ></el-input-number>
           </el-form-item>
           <el-form-item
-            label="Isolation width"
+            label="copper width"
             :rules="[
               { required: true, trigger: 'blur', type: 'number', min: 0.0001 },
             ]"
-            prop="doutline"
+            prop="dthief"
           >
             <el-input-number
               size="mini"
-              v-model="isolation.doutline"
+              v-model="copper.dthief"
               :min="0.0001"
               :max="5"
               :precision="4"
               :step="0.001"
               :disabled="true"
-              @change="redrawpcb(isolation)"
+              @change="redrawpcb(copper)"
             ></el-input-number>
           </el-form-item>
         </el-form>
@@ -164,7 +182,7 @@ import {
   IPlotterDataTypes,
 } from "@/models/plotterData";
 //import { IWorkerDataIn, EWorkerDataTypeIn } from "@/models/workerData";
-import { IProject, IProjectIsolation } from "@/models/project";
+import { IProject, IProjectCopper } from "@/models/project";
 import { Store } from "vuex";
 import { Tooldb } from "@/typings/tooldb";
 import { Form } from "element-ui";
@@ -177,6 +195,7 @@ import { IsolationWork } from "@/workers/isolationWork";
 import { spawn, Thread, Worker, Transfer } from "threads";
 import { IDictionary } from "@/models/dictionary";
 import { FeatureCollection } from "geojson";
+import { ThiefWork } from "@/workers/thiefWork";
 
 interface Options {
   renderTime: number;
@@ -191,10 +210,10 @@ interface Options {
   },
   computed: {
     ...mapFields(["layers", "config.pcb.width", "config.pcb.height"]),
-    ...mapMultiRowFields(["config.isolations"]),
+    ...mapMultiRowFields(["config.coppers"]),
   },
 })
-export default class WizardIsolation extends Vue {
+export default class WizardCopper extends Vue {
   toolTypes: Tooldb[] = [];
   options: IDictionary<Options> = {};
 
@@ -238,25 +257,25 @@ export default class WizardIsolation extends Vue {
     });
 
     this.$store.commit("updateField", {
-      path: "config.isolations",
+      path: "config.coppers",
       value: (this.$store.state.layers as PcbLayers[])
         .filter((layer) => {
           return layer.type === whatsThatGerber.TYPE_COPPER && layer.enabled;
         })
         .map((layer, index) => {
-          const ret: IProjectIsolation = {
+          const ret: IProjectCopper = {
             layer: layer.name,
-            showOutline: false,
             unionDraw: true,
             toolType: undefined,
             dthickness: undefined,
-            doutline: undefined,
+            dthief: undefined,
             svg: undefined,
             gcode: undefined,
             geojson: undefined,
+            mode: undefined
           };
           const oldrecord = (this.$store
-            .state as IProject).config.isolations.find(
+            .state as IProject).config.coppers.find(
             (layer) => layer.layer === ret.layer
           );
           if (oldrecord) {
@@ -274,46 +293,46 @@ export default class WizardIsolation extends Vue {
     new Promise((resolve) => {
       FSStore.get("data.tool.types", []).then((data) => {
         this.toolTypes = data.filter(
-          (tool: Tooldb) => tool.type === "V-Shape" || tool.type === "Mill"
+          (tool: Tooldb) => tool.type === "Mill"
         );
       });
     });
 
-    if ((this.$store.state as IProject).config.isolations.length == 0) {
-      console.log("No isolation need to skip");
+    if ((this.$store.state as IProject).config.coppers.length == 0) {
+      console.log("No copper need to skip");
       this.wizardPushSkip!();
     }
   }
 
-  changeThickness(isolation: IProjectIsolation) {
-    const index = (this.$store.state as IProject).config.isolations.findIndex(
-      (iso) => iso.layer === isolation.layer
+  changeThickness(copper: IProjectCopper) {
+    const index = (this.$store.state as IProject).config.coppers.findIndex(
+      (iso) => iso.layer === copper.layer
     );
     const state = (this.$store as Store<IProject>).state;
-    const tool = isolation!.toolType;
+    const tool = copper!.toolType;
     if (this.$store && this.$store.state) {
       if (tool && tool.type === "V-Shape") {
         this.$store.commit("updateField", {
-          path: `config.isolations[${index}].doutline`,
+          path: `config.coppers[${index}].dthief`,
           value: Trigonomerty.getTipDiamaterForVTool(
             tool.size as number,
             tool.angle as number,
-            isolation.dthickness as number
+            copper.dthickness as number
           ),
         });
       } else if (tool) {
         this.$store.commit("updateField", {
-          path: `config.isolations[${index}].doutline`,
+          path: `config.coppers[${index}].dthief`,
           value: tool.size as number,
         });
       }
-      this.redrawpcb(isolation);
+      this.redrawpcb(copper);
     }
   }
 
-  toolChange(isolation: IProjectIsolation) {
-    const index = (this.$store.state as IProject).config.isolations.findIndex(
-      (iso) => iso.layer === isolation.layer
+  toolChange(copper: IProjectCopper) {
+    const index = (this.$store.state as IProject).config.coppers.findIndex(
+      (iso) => iso.layer === copper.layer
     );
     const state = (this.$store as Store<IProject>).state;
     if (
@@ -323,25 +342,25 @@ export default class WizardIsolation extends Vue {
       state.config.pcb.blankType
     ) {
       this.$store.commit("updateField", {
-        path: `config.isolations[${index}].dthickness`,
+        path: `config.coppers[${index}].dthickness`,
         value: state!.config!.pcb!.blankType.cthickness as number,
       });
-      this.changeThickness(isolation);
+      this.changeThickness(copper);
     } else {
       console.error("Error instate object", state);
     }
   }
 
-  redrawpcb(isolation: IProjectIsolation) {
-    this.options[isolation.layer].busy = true;
-    this.options[isolation.layer].renderTime = 0;
+  redrawpcb(copper: IProjectCopper) {
+    this.options[copper.layer].busy = true;
+    this.options[copper.layer].renderTime = 0;
     this.$forceUpdate();
     const startTime = Date.now();
 
     const _layer = JSON.parse(
       JSON.stringify(
         (this.$store.state.layers as PcbLayers[]).filter(
-          (layer) => layer.name === isolation.layer
+          (layer) => layer.name === copper.layer
         )[0]
       ),
       (k, v) => {
@@ -362,26 +381,26 @@ export default class WizardIsolation extends Vue {
     spawn<GerberParser>(new Worker("../../workers/gerberParser")).then(
       async (gerberParser) => {
         await gerberParser.create({
-          unionDraw: isolation.unionDraw,
+          unionDraw: copper.unionDraw,
         });
         await gerberParser.load((_layer as PcbLayers).gerber);
         gerberParser.commit().then(async (data) => {
           const index = (this.$store
-            .state as IProject).config.isolations.findIndex(
-            (iso) => iso.layer === isolation.layer
+            .state as IProject).config.coppers.findIndex(
+            (iso) => iso.layer === copper.layer
           );
           this.$store.commit("updateField", {
-            path: `config.isolations.${index}.geojson`,
+            path: `config.coppers.${index}.geojson`,
             value: data.geojson,
           });
 
-          if (isolation.doutline) {
-            const isolationWork = await spawn<IsolationWork>(
-              new Worker("../../workers/isolationWork")
+          if (copper.dthief && copper.mode) {
+            const thiefWork = await spawn<ThiefWork>(
+              new Worker("../../workers/thiefWork")
             );
-            const data2 = await isolationWork.create(
+            const data2 = await thiefWork.create(
               {
-                name: isolation.layer,
+                name: copper.layer,
                 unit: "mm",
                 drillPark: {
                   x: 0,
@@ -389,20 +408,21 @@ export default class WizardIsolation extends Vue {
                 },
                 feedrate: 50,
                 safeHtravel: 10,
-                doutline: isolation.doutline,
-                dthickness: isolation.dthickness,
+                dthief: copper.dthief,
+                dthickness: copper.dthickness || 0,
+                mode: copper.mode,
               },
               data.geojson as FeatureCollection
             );
             this.$store.commit("updateField", {
-              path: `config.isolations.${index}.geojson`,
+              path: `config.coppers.${index}.geojson`,
               value: data2.geojson,
             });
             this.$store.commit("updateField", {
-              path: `config.isolations.${index}.gcode`,
+              path: `config.coppers.${index}.gcode`,
               value: data2.gcode,
             });
-            Thread.terminate(isolationWork);
+            Thread.terminate(thiefWork);
           }
 
           this.options[_layer.name].renderTime = Date.now() - startTime;
@@ -421,6 +441,14 @@ export default class WizardIsolation extends Vue {
   height: 100%;
   width: 100%;
 }
+
+/*
+svg #outline {
+  stroke: red;
+  stroke-width: var(--copper-width);
+  stroke-linecap: round;
+}
+*/
 
 .hljs {
   max-height: 40em;

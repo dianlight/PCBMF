@@ -3,6 +3,7 @@ import { Tooldb } from "@/typings/tooldb";
 import { IDictionary } from "./dictionary";
 import { PcbLayers } from "./pcblayer";
 import { OutlineWorkMode } from "@/workers/outlineWork";
+import { ThiefWorkMode } from "@/workers/thiefWork";
 
 
 export interface IProjectWork {
@@ -14,11 +15,12 @@ export interface IProjectWork {
 }
 
 export interface IProjectCopper extends IProjectWork {
-    useFill: boolean,
-    useFillPitch: number,
+    unionDraw: boolean,
+//    useFill: boolean,
+//    useFillPitch: number,
     dthickness:number | undefined,
     dthief: number | undefined,
-    thiefmode: 'Brick'|'Column'|'Grid'|'Honeycomb'|'Radial'|'Row'|undefined
+    mode: ThiefWorkMode |undefined
 }
 
 export interface IProjectIsolation extends IProjectWork {
