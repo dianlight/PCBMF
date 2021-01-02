@@ -6,6 +6,8 @@ import { OutlineWorkMode } from "@/workers/outlineWork";
 import { ThiefWorkMode } from "@/workers/thiefWork";
 
 
+export type MarginType = "Envelope"|"Board"|"ConvexHull";
+
 export interface IProjectWork {
     layer: string,
     svg:string | undefined,
@@ -18,7 +20,8 @@ export interface IProjectCopper extends IProjectWork {
     toolTypes: Tooldb[] | undefined,
     dthickness:number | undefined,
     toolCycles: number | undefined,
-    mode: ThiefWorkMode |undefined
+    mode: ThiefWorkMode |undefined,
+    margin: MarginType | undefined
 }
 
 export interface IProjectIsolation extends IProjectWork {

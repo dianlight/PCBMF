@@ -67,6 +67,24 @@
             ></el-switch>
           </el-form-item>
           <el-form-item
+            label="Margin"
+            :rules="[{ required: true, trigger: 'change' }]"
+            prop="margin"
+          >
+            <el-select
+              v-model="copper.margin"
+              value-key="name"
+              placeholder="Margins..."
+              @change="redrawpcb(copper)"
+              size="mini"
+              clearable
+            >
+              <el-option label="Envelope" value="Envelope" />
+              <el-option label="ConvexHull" value="ConvexHull" />
+              <el-option label="Board" value="Board"/>
+            </el-select>
+          </el-form-item>
+          <el-form-item
             label="Thief Mode"
             :rules="[{ required: true, trigger: 'change' }]"
             prop="mode"
@@ -80,12 +98,31 @@
               clearable
             >
               <el-option label="Outline" value="Outline" />
-              <el-option label="Box" value="Box" />
-              <el-option label="Line" value="Line" />
-              <el-option label="Spiral" value="Spiral" />
-              <el-option label="Voronoi" value="Voronoi" disabled />
+              <el-option label="Box (not yet implemented)" value="Box" :disabled="true" />
+              <el-option label="Line (not yet implemented)" value="Line" :disabled="true"/>
+              <el-option label="Spiral (not yet implemented)" value="Spiral" :disabled="true"/>
+              <el-option label="Voronoi (not yet implemented)" value="Voronoi" disabled />
             </el-select>
           </el-form-item>
+          <el-form-item
+            label="Cycles for Tools"
+            :rules="[
+              { required: true, trigger: 'blur', type: 'number', min: 0.0001 },
+            ]"
+            prop="toolCycles"
+          >
+            <el-input-number
+              size="mini"
+              v-model="copper.toolCycles"
+              :min="1"
+              :max="10"
+              :precision="0"
+              :step="1"
+              @change="redrawpcb(copper)"
+              :disabled="copper.mode !== 'Outline'"
+            ></el-input-number>
+          </el-form-item>
+
 
           <el-form-item
             label="Copper Tools"
@@ -124,24 +161,7 @@
               :max="5"
               :precision="4"
               :step="0.1"
-              :disabled="!copper.toolType"
-              @change="redrawpcb(copper)"
-            ></el-input-number>
-          </el-form-item>
-          <el-form-item
-            label="Cycles for Tools"
-            :rules="[
-              { required: true, trigger: 'blur', type: 'number', min: 0.0001 },
-            ]"
-            prop="toolCycles"
-          >
-            <el-input-number
-              size="mini"
-              v-model="copper.toolCycles"
-              :min="1"
-              :max="10"
-              :precision="0"
-              :step="1"
+              :disabled="copper.toolTypes == 0"
               @change="redrawpcb(copper)"
             ></el-input-number>
           </el-form-item>
@@ -274,6 +294,7 @@ export default class WizardCopper extends Vue {
             gcode: undefined,
             geojson: undefined,
             mode: undefined,
+            margin: undefined,
           };
           const oldrecord = (this.$store.state as IProject).config.coppers.find(
             (layer) => layer.layer === ret.layer
@@ -366,7 +387,7 @@ export default class WizardCopper extends Vue {
             value: data.geojson,
           });
 
-          if (copper.toolTypes && copper.toolTypes.length > 0 && copper.mode) {
+          if (copper.margin && copper.toolTypes && copper.toolTypes.length > 0 && copper.mode) {
             console.log("Starting Tool calculation!");
             const thiefWork = await spawn<ThiefWork>(
               new Worker("../../workers/thiefWork")
@@ -385,6 +406,11 @@ export default class WizardCopper extends Vue {
                 dthickness: copper.dthickness || 0,
                 mode: copper.mode,
                 cycles: copper.toolCycles || 1,
+                margin: copper.margin,
+                board: {
+                  w:(this.$store.state as IProject).config.pcb.width as number,
+                  h:(this.$store.state as IProject).config.pcb.height as number
+                },
               },
               data.geojson as FeatureCollection
             );

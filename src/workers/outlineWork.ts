@@ -72,7 +72,7 @@ const _outlineWork = {
 
 //                    var hullPoints = hull(coordinates.map( (coord)=>[coord.x,coord.y]),1) as unknown as number[][];
                     let hullPoints = concavamen(coordinates.map( (coord)=>[coord.x,coord.y]));
-                    console.log(JSON.stringify(hullPoints));
+//                    console.log(JSON.stringify(hullPoints));
 
                     const geometry = factory.createPolygon(
                         factory.createLinearRing(hullPoints.map( hp=>new jsts.geom.Coordinate(hp[0],hp[1]))),
