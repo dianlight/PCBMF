@@ -49,6 +49,9 @@ export interface IProjectOutline extends IProjectWork{
     scale: number | undefined,
 }
 export interface IProject {
+    md5: string | undefined,
+    basedir: string | undefined,
+    name: string | undefined,
     currentFile: string | undefined,
     layers: PcbLayers[] | undefined,
     config: {

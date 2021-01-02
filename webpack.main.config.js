@@ -12,6 +12,11 @@ module.exports = {
     module: {
         rules: require('./webpack.rules'),
     },
+    watchOptions: {
+        ignored: [
+            'test/**', 'node_modules/**'
+        ]
+    },
     plugins: [
         new CopyPlugin({
             patterns: [

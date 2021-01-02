@@ -1,7 +1,7 @@
 <template>
         <el-container>
             <el-header><statusbar/></el-header>
-            <el-aside></el-aside>
+            <!--el-aside></el-aside-->
             <el-main><router-view></router-view></el-main>
         </el-container>
 </template>
@@ -25,5 +25,9 @@ export default Vue.extend({
 <style scoped>
 .el-container {
     height: 100%;
+    min-height: 100%;
+}
+.el-main {
+    min-height: 100%;
 }
 </style>

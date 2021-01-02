@@ -10,9 +10,9 @@ export class ApplicationMenu {
         const isMac = process.platform === 'darwin'
 
         const template = [
-            // { role: 'appMenu' }
             ...(isMac ? [{
               label: name,
+              role: 'appMenu',
               submenu: [
                 { role: 'about' },
                 { type: 'separator' },
@@ -27,12 +27,41 @@ export class ApplicationMenu {
                 { role: 'quit' }
               ]
             }] : []),
-            // { role: 'fileMenu' }
             {
               label: 'File',
+              role: 'fileMenu',
               submenu: [
-                { label: "Open Gerber Zip...", click:()=>store.dispatch('openGerber')},
-                ...(isMac ? [                   
+                { label: "New Project", click:()=>store.dispatch('new')},
+                { label: "New Project from", 
+                  submenu:[
+                    { label: "Gerber Folder...",enabled:false},
+                    { label: "Gerber Zip...", click:()=>store.dispatch('openGerber')},
+                  ]},
+                { type: 'separator' },  
+                { label: "Open Project...", click:()=>store.dispatch('open') },
+                ...(isMac ? [
+                { label: "Open Recent", 
+                  role: "recentDocuments",
+                  submenu:[
+                     { type: 'separator' },
+                     { label: 'Clear Recently Opened' , role: "clearRecentDocuments"},
+                   ]
+                }]:[]),
+                { type: 'separator' },  
+                { id:"save", label: "Save Project", click:()=>store.dispatch('save'), enabled:false},
+                { label: "Save Project As...", click:()=>store.dispatch('saveAs')},
+                { type: 'separator' },  
+                { id:"import", label: "Import", enabled: false, 
+                  submenu:[
+                    { label: "Gerber File...",enabled:false},
+                    { label: "Drill file...",enabled:false},
+                    { type: 'separator' },
+                    { label: "Gerber Folder...",enabled:false},
+                    { label: "Gerber Zip...", click:()=>store.dispatch('importGerber')},
+                  ]},
+                { type: 'separator' }, 
+                { id:"close", label: "Close Project", click:()=>store.dispatch('close'), enabled:false},
+                  ...(isMac ? [                   
                 ]:[
                   { type: 'separator' },  
                   { label: "Preferences...", click:()=>router.push('/preferencies')},
@@ -41,9 +70,9 @@ export class ApplicationMenu {
                 isMac ? { role: 'close' } : { role: 'quit' }
               ]
             },
-            // { role: 'editMenu' }
             {
               label: 'Edit',
+              role: 'editMenu',
               submenu: [
                 { role: 'undo' },
                 { role: 'redo' },
@@ -70,9 +99,9 @@ export class ApplicationMenu {
                 ])
               ]
             },
-            // { role: 'viewMenu' }
             {
               label: 'View',
+              role: 'viewMenu',
               submenu: [
                 { role: 'reload' },
                 { role: 'forceReload' },
@@ -85,9 +114,9 @@ export class ApplicationMenu {
                 { role: 'togglefullscreen' }
               ]
             },
-            // { role: 'windowMenu' }
             {
               label: 'Window',
+              role: 'windowMenu',
               submenu: [
                 { role: 'minimize' },
                 { role: 'zoom' },

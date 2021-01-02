@@ -14,6 +14,11 @@ module.exports = {
     module: {
         rules,
     },
+    watchOptions: {
+        ignored: [
+            'test/**', 'node_modules/**'
+        ]
+    },
     plugins: plugins,
     resolve: {
         alias: {

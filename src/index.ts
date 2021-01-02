@@ -6,6 +6,7 @@ import { fork, spawn, ChildProcess } from "child_process";
 import yaml from "yaml";
 import fs from "fs";
 import FSStore from "@/fsstore";
+import packagejson from "../package.json";
 declare const MAIN_WINDOW_WEBPACK_ENTRY: any;
 
 
@@ -30,6 +31,8 @@ if (require('electron-squirrel-startup')) { // eslint-disable-line global-requir
   console.error(err.message);
 }); */
 
+let mainWindow:BrowserWindow;
+
 async function createWindow() {
   let opts = {
     height: 600,
@@ -48,7 +51,8 @@ async function createWindow() {
   Object.assign(opts, await FSStore.get('winBounds'));
   //console.log("winBounds:",opts);
   // Create the browser window.
-  const mainWindow = new BrowserWindow(opts);
+  mainWindow = new BrowserWindow(opts);
+  mainWindow.setTitle(packagejson.productName);
 
   // and load the index.html of the app.
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
@@ -139,14 +143,31 @@ ipcMain.handle('StartTightCNC', (event, ...args) => {
     tightcnc.kill("SIGTERM");
   });
 
-
-
   return tightcnc.pid;
+});
+
+ipcMain.handle("changeTitle",(event,...args) => {
+  if(args.length == 0 || !args[0]){
+    mainWindow.setTitle(packagejson.productName);
+  } else {
+    mainWindow.setTitle(packagejson.productName+" | "+args[0]);
+  }
+});
+
+ipcMain.handle("dirty",(event,...args) => {
+  let title = mainWindow.getTitle();
+  console.log("Message for file dirty?",args[0]);
+  if(args[0]){
+    mainWindow.setTitle(title.replace(" | "," |*"));
+  } else {
+    mainWindow.setTitle(title.replace(" |*"," | "))
+  }
 });
 
 /**
  * Save a TMP file.
- */
+ *
 ipcMain.handle('saveTempFile', (event, ...args) => {
 
 });
+*/
