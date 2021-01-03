@@ -12,12 +12,15 @@ jobs:
         os: [macos-latest , ubuntu-latest, windows-latest]
         arch: [x64]
 #        arch: [ia32, armv7l, x64, arm64, mips64el]
-      include:
+        include:
         - os: macos-11.0
           arch: arm64
           experimental: true
         - os: windows-latest
-          arch: [ia32,arm64]
+          arch: ia32 
+          experimantal: true
+        - os: windows-latest
+          arch: arm64 
           experimantal: true
       fail-fast: false
 
