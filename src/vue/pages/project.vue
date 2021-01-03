@@ -3,20 +3,20 @@
     <el-card>
         <el-main>
           <el-tabs ref="tab" tab-position="left" style="height: 100%;" @tab-click="tab_refresh()" stretch>
-            <el-tab-pane label="Config" lazy>
+            <el-tab-pane name="config" label="Config" lazy>
               <wizard-config/>
             </el-tab-pane>
             <el-tab-pane name="isolation" label="Isolation" lazy>
-              <wizard-isolation :key="doTabRefresh"/>
+              <wizard-isolation :key="doIsolationRefresh"/>
             </el-tab-pane>
             <el-tab-pane name="drill" label="Drill" lazy>
-              <wizard-drill :key="doTabRefresh"/>
+              <wizard-drill :key="doDrillRefresh"/>
             </el-tab-pane>
             <el-tab-pane name="outline" label="Outline" lazy>
-              <wizard-outline :key="doTabRefresh"/>
+              <wizard-outline :key="doOutlineRefresh"/>
             </el-tab-pane>
             <el-tab-pane name="copper" label="Copper Thief" lazy>
-              <wizard-copper-thief :key="doTabRefresh"/>
+              <wizard-copper-thief :key="doCopperRefresh"/>
             </el-tab-pane>
           </el-tabs>
         </el-main>         
@@ -35,6 +35,7 @@ import WizardDrill from "@/vue/pages/wizard_drill.vue";
 import WizardOutline from "@/vue/pages/wizard_outline.vue";
 import WizardCopperThief from "@/vue/pages/wizard_copper_thief.vue";
 import { mapFields } from "vuex-map-fields";
+import crypto from "crypto";
 
 @Component({
   components: {
@@ -51,7 +52,10 @@ import { mapFields } from "vuex-map-fields";
 })
 export default class Project extends Vue {
 
-  doTabRefresh:boolean = false;
+  doIsolationRefresh:string = "";
+  doDrillRefresh:string = "";
+  doOutlineRefresh:string = "";
+  doCopperRefresh:string = "";
 
   @Provide()
   enableButtons(prev: boolean, skip: boolean, next: boolean) {
@@ -66,8 +70,24 @@ export default class Project extends Vue {
   }
 
   tab_refresh(){
+    const actualHash = crypto.createHash('sha1').update(JSON.stringify(this.$store.state)).digest("hex");
     console.log("Refresh!",(this.$refs.tab as any).currentName);
-    this.doTabRefresh = !this.doTabRefresh;
+    switch((this.$refs.tab as any).currentName){
+      case "isolation":
+        if(this.doIsolationRefresh === actualHash)return;
+        this.doIsolationRefresh=actualHash; 
+      case "drill":
+        if(this.doDrillRefresh === actualHash)return;
+        this.doDrillRefresh=actualHash; 
+      case "outline":
+        if(this.doOutlineRefresh === actualHash)return;
+        this.doOutlineRefresh=actualHash; 
+      case "copper":
+        if(this.doCopperRefresh === actualHash)return;
+        this.doCopperRefresh=actualHash; 
+      default:
+        break;
+    }
   }
 
 }
