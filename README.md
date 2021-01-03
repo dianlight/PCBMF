@@ -1,4 +1,4 @@
-<h1 align="center">Welcome to pcbmf 👋</h1>
+<h1 align="center">Welcome to PCB Mini Factory (pcbmf) 👋</h1>
 <p>
   <img alt="Version" src="https://img.shields.io/badge/version-0.0.1-blue.svg?cacheSeconds=2592000" />
   <a href="https://github.com/dianlight/PCBMF/wiki" target="_blank">
@@ -8,10 +8,13 @@
     <img alt="License: GPL3" src="https://img.shields.io/badge/License-GPL3-yellow.svg" />
   </a>
 </p>
-
-> A Minimal Software for Milling and Drilling PCB with simple CNC
-
+![Build](https://github.com/dianlight/PCBMF/workflows/Build/badge.svg)
 ![Build/release](https://github.com/dianlight/PCBMF/workflows/Build/release/badge.svg)
+
+> A Minimal Software for Milling and Drilling PCB with low cost CNC
+
+
+
 
 ### 🏠 [Homepage](https://github.com/dianlight/PCBMF#readme)
 

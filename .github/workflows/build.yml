@@ -8,8 +8,8 @@ jobs:
 
     strategy:
       matrix:
-        # ubuntu-latest macos-11.0
-        os: [macos-latest , Ubuntu-20.04, windows-latest]
+        # macos-11.0 ?
+        os: [macos-latest , ubuntu-latest, windows-latest]
       fail-fast: false
 
 
@@ -36,7 +36,12 @@ jobs:
         run: |
           npm install
           npm run make
+      - name: nodejs project information
+        id: projectinfo
+        uses: gregoranders/nodejs-project-info@v0.0.12          
       - uses: actions/upload-artifact@v2
         with:
-          name: my-artifact-${{ runner.os }}
-          path: out/make/   
+          name: ${{ steps.projectinfo.outputs.name }}-${{ steps.projectinfo.outputs.version }}-${{ runner.os }}
+          path: |
+            out/make/**/x64/*.[exe|zip]   
+            out/make/**/x64/*.[tgz]               
