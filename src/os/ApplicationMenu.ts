@@ -108,6 +108,16 @@ export class ApplicationMenu {
               ]
             },
             {
+              label: 'Project',
+              id: 'project',
+              submenu: [
+                { label: 'Properties...', enabled:false ,click:()=>router.push('/project') },
+                { label: 'Wizard...', enabled:false ,click:()=>router.push('/wizard/config') },
+                { type: 'separator' },
+                { label: 'Run...', enabled:false },
+              ]
+            },
+            {
               label: 'Window',
               role: 'windowMenu',
               submenu: [

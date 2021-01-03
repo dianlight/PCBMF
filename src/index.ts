@@ -162,7 +162,7 @@ ipcMain.handle("changeTitle",(event,...args) => {
 
 ipcMain.handle("dirty",(event,...args) => {
   let title = mainWindow.getTitle();
-  console.log("Message for file dirty?",args[0]);
+//  console.log("Message for file dirty?",args[0]);
   if(args[0]){
     mainWindow.setTitle(title.replace(" | "," |*"));
   } else {

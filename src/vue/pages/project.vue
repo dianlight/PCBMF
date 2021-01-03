@@ -2,7 +2,7 @@
   <el-container direction="vertical">
     <el-card>
         <el-main>
-          <el-tabs ref="tab" tab-position="left" style="height: 100%;" @tab-click="tab_refresh()" stretch>
+          <el-tabs ref="tab" value="config" tab-position="left" style="height: 100%;" @tab-click="tab_refresh()" stretch>
             <el-tab-pane name="config" label="Config" lazy>
               <wizard-config/>
             </el-tab-pane>

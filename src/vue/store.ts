@@ -156,6 +156,7 @@ export default new Vuex.Store<IProject>({
                 state.basedir = path.dirname(cpath);
                 state.name = path.basename(cpath, path.extname(cpath));
                 ipcRenderer.invoke("changeTitle", state.name);
+                ((remote.Menu.getApplicationMenu() as Menu).getMenuItemById("project") as MenuItem).submenu?.items.forEach( menu=>menu.enabled = true);
                 ((remote.Menu.getApplicationMenu() as Menu).getMenuItemById("save") as MenuItem).enabled = true;
                 ((remote.Menu.getApplicationMenu() as Menu).getMenuItemById("import") as MenuItem).enabled = true;
                 ((remote.Menu.getApplicationMenu() as Menu).getMenuItemById("close") as MenuItem).enabled = true;
@@ -163,6 +164,7 @@ export default new Vuex.Store<IProject>({
                 state.basedir = undefined;
                 state.name = undefined;
                 ipcRenderer.invoke("changeTitle", undefined);
+                ((remote.Menu.getApplicationMenu() as Menu).getMenuItemById("project") as MenuItem).submenu?.items.forEach( menu=>menu.enabled = false);
                 ((remote.Menu.getApplicationMenu() as Menu).getMenuItemById("save") as MenuItem).enabled = false;
                 ((remote.Menu.getApplicationMenu() as Menu).getMenuItemById("import") as MenuItem).enabled = false;
                 ((remote.Menu.getApplicationMenu() as Menu).getMenuItemById("close") as MenuItem).enabled = false;
@@ -188,6 +190,7 @@ export default new Vuex.Store<IProject>({
                     coppers: [],
                 }
             });
+            ((remote.Menu.getApplicationMenu() as Menu).getMenuItemById("project") as MenuItem).submenu?.items.forEach( menu=>menu.enabled = true);
             ((remote.Menu.getApplicationMenu() as Menu).getMenuItemById("import") as MenuItem).enabled = true;
             ((remote.Menu.getApplicationMenu() as Menu).getMenuItemById("close") as MenuItem).enabled = true;
         },
