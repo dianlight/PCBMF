@@ -51,7 +51,10 @@ jobs:
             ${{ steps.Changelog.outputs.changelog }}
           draft: true
           prerelease: false  
-      - uses: AButler/upload-release-assets@v2.0
+      - uses: xresloader/upload-to-github-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          files: '${{ steps.projectinfo.outputs.name }}-${{ steps.projectinfo.outputs.version }}*/**/*.zip;./**/*.nupkg'
-          repo-token: ${{ secrets.GITHUB_TOKEN }} 
+          file: "./**/*.exe;./**/*.zip;./**/*.nupkg"
+          tags: true
+          draft: false
