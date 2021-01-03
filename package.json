@@ -48,24 +48,19 @@
     "config": {
         "forge": {
             "packagerConfig": {},
-            "publishers": [
-                {
-                    "name": "@electron-forge/publisher-github",
-                    "config": {
-                        "repository": {
-                            "owner": "dianlight",
-                            "name": "pcbmf"
-                        },
-                        "prerelease": true
-                    }
+            "publishers": [{
+                "name": "@electron-forge/publisher-github",
+                "config": {
+                    "repository": {
+                        "owner": "dianlight",
+                        "name": "pcbmf"
+                    },
+                    "prerelease": true
                 }
-            ],
-            "makers": [
-                {
+            }],
+            "makers": [{
                     "name": "@electron-forge/maker-squirrel",
-                    "config": {
-                        "name": "my_new_app"
-                    }
+                    "config": {}
                 },
                 {
                     "name": "@electron-forge/maker-zip",
@@ -74,12 +69,29 @@
                     ]
                 },
                 {
+                    "name": "@electron-forge/maker-dmg",
+                    "config": {
+                        "background": "./assets/dmg-background.png",
+                        "format": "ULZO"
+                    }
+                },
+                {
                     "name": "@electron-forge/maker-deb",
-                    "config": {}
+                    "config": {
+                        "options": {
+                            "maintainer": "Lucio Tarantino",
+                            "homepage": "https://github.com/dianlight"
+                        }
+                    }
                 },
                 {
                     "name": "@electron-forge/maker-rpm",
-                    "config": {}
+                    "config": {
+                        "options": {
+                            "maintainer": "Lucio Tarantino",
+                            "homepage": "https://github.com/dianlight"
+                        }
+                    }
                 }
             ],
             "plugins": [
@@ -89,13 +101,11 @@
                         "mainConfig": "./webpack.main.config.js",
                         "renderer": {
                             "config": "./webpack.renderer.config.js",
-                            "entryPoints": [
-                                {
-                                    "html": "./src/index.html",
-                                    "js": "./src/renderer.ts",
-                                    "name": "main_window"
-                                }
-                            ]
+                            "entryPoints": [{
+                                "html": "./src/index.html",
+                                "js": "./src/renderer.ts",
+                                "name": "main_window"
+                            }]
                         }
                     }
                 ]

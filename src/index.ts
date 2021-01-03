@@ -16,9 +16,9 @@ if (require('electron-squirrel-startup')) { // eslint-disable-line global-requir
 }
 
 /** Auto Update Feature **NEED APP SIGNED** */
-//require('update-electron-app')({
-//  logger: log
-//});
+require('update-electron-app')({
+  logger: log
+});
 
 
 /* SerialPort.list().then((ports) => {

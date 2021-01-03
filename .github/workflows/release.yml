@@ -55,6 +55,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          file: "./**/*.exe;./**/*.zip;./**/*.nupkg"
+          file: "./**/*.exe;./**/*.rpm;./**/*.deb;./**/*.app;./**/*.dmg;./**/*.zip;./**/*.nupkg"
           tags: false
           draft: true
