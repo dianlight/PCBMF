@@ -56,5 +56,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           file: "./**/*.exe;./**/*.zip;./**/*.nupkg"
-          tags: true
-          draft: false
+          tags: false
+          draft: true
