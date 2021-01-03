@@ -113,10 +113,9 @@
             @select-all="changeSelectionAll"
             ref="table"
           >
-            <el-table-column label="" type="selection"> </el-table-column>
-            <el-table-column label="Filename" prop="filename">
-            </el-table-column>
-            <el-table-column label="Type">
+            <el-table-column label="" type="selection" width="39"></el-table-column>
+            <el-table-column label="Filename" prop="filename"></el-table-column>
+            <el-table-column label="Type" width="140">
               <template slot-scope="scope">
                 <el-select
                   @change="redrawpcb"
@@ -134,7 +133,7 @@
                 </el-select>
               </template>
             </el-table-column>
-            <el-table-column label="Side">
+            <el-table-column label="Side" width="120">
               <template slot-scope="scope">
                 <el-select
                   @change="redrawpcb"
@@ -150,6 +149,26 @@
                   >
                   </el-option>
                 </el-select>
+              </template>
+            </el-table-column>
+            <el-table-column label="" width="55">
+              <template #header>
+                <el-button
+                  @click="load"
+                  type="success"
+                  size="small"
+                  icon="el-icon-document-add"
+                  circle
+                ></el-button>
+              </template>
+              <template slot-scope="scope">
+              <el-button
+                  @click="remove(scope.$index, scope.row)"
+                  type="danger"
+                  size="small"
+                  circle
+                  icon="el-icon-document-remove"   
+          ></el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -171,9 +190,10 @@ import FSStore from "@/fsstore";
 import Component from "vue-class-component";
 import { Inject, VModel } from "vue-property-decorator";
 import SvgViewer from "@/vue/components/svgviewer.vue";
-import { PcbLayers } from "@/models/pcblayer";
+import { PcbLayer } from "@/models/pcblayer";
 import { IProject } from "@/models/project";
 import { config } from "vue/types/umd";
+import { remote } from "electron";
 
 let svg_top: string, svg_bottom: string;
 
@@ -235,7 +255,7 @@ export default class WizardConfig extends Vue {
         (this.$refs.form as any).validate((valid: boolean): void => {
           if (valid) {
             // Check selected PCB rules
-            const layers = this.$store.state.layers as PcbLayers[];
+            const layers = this.$store.state.layers as PcbLayer[];
             if(layers.filter( layer=>layer.enabled ).length == 0){
               this.$message.error('No Layers selected!');
               resolve(false);              
@@ -270,6 +290,24 @@ export default class WizardConfig extends Vue {
           (this.$refs.table as ElTable).toggleRowSelection(elem);
       });
     });
+  }
+
+  load(){
+    store.dispatch('importGerber');
+  }
+
+  remove(index:number, row:PcbLayer){
+    remote.dialog.showMessageBox(remote.getCurrentWindow(),
+    {
+      message: `Remove ${row.filename} from project?`,
+      buttons: ["OK","Cancel"]
+    }
+    ).then( (value)=>{
+      if(value.response == 0){
+        store.commit("removeGerber",row);
+      }
+    });
+    console.log("Removed ",index,row);
   }
 
   redrawpcb() {
@@ -315,9 +353,9 @@ export default class WizardConfig extends Vue {
       .catch((err) => console.error(err));
   }
 
-  changeSelectionAll(selection: PcbLayers[]) {
+  changeSelectionAll(selection: PcbLayer[]) {
     //    console.log(selection.length, selection.map( (layer)=> layer.id));
-    (this.$store.state.layers as PcbLayers[]).forEach((layer, index) => {
+    (this.$store.state.layers as PcbLayer[]).forEach((layer, index) => {
       //    console.log(selection && selection.includes(layer),index,JSON.stringify(layer),JSON.stringify(selection));
       store.commit("updateField", {
         path: "layers[" + index + "].enabled",
@@ -330,16 +368,16 @@ export default class WizardConfig extends Vue {
     (this as any).redrawpcb();
   }
 
-  changeSelection(selection: PcbLayers[], row: PcbLayers) {
+  changeSelection(selection: PcbLayer[], row: PcbLayer) {
     // row.enabled = selection && selection.includes(row);
-    //    console.log((this.$store.state.layers as PcbLayers[]).length, selection.length, selection.map( (layer)=> layer.id));
+    //    console.log((this.$store.state.layers as PcbLayer[]).length, selection.length, selection.map( (layer)=> layer.id));
 
     //    console.log(row.enabled,selection && selection.findIndex( (layer) => layer.id === row.id) >= 0, selection[0].id );
 
     store.commit("updateField", {
       path:
         "layers[" +
-        (this.$store.state.layers as PcbLayers[]).findIndex(
+        (this.$store.state.layers as PcbLayer[]).findIndex(
           (layer) => layer.id === row.id
         ) +
         "].enabled",

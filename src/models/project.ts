@@ -1,7 +1,7 @@
 import { Pcbdb } from "@/typings/pcbdb";
 import { Tooldb } from "@/typings/tooldb";
 import { IDictionary } from "./dictionary";
-import { PcbLayers } from "./pcblayer";
+import { PcbLayer } from "./pcblayer";
 import { OutlineWorkMode } from "@/workers/outlineWork";
 import { ThiefWorkMode } from "@/workers/thiefWork";
 
@@ -53,7 +53,7 @@ export interface IProject {
     basedir: string | undefined,
     name: string | undefined,
     currentFile: string | undefined,
-    layers: PcbLayers[] | undefined,
+    layers: PcbLayer[] | undefined,
     config: {
         useOutline: boolean;
         pcb: {

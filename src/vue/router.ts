@@ -15,18 +15,7 @@ Vue.use(VueRouter);
 export default new VueRouter({
     routes:[
         { path: '/', component: home },
-        { path: '/project/', component: project, children: [
-            {
-                path: 'config',
-                component: wizard_config,
-                meta: { step: 0 }
-            },
-            {
-                path: 'isolation',
-                component: wizard_isolation,
-                meta: { step: 1 }
-            },
-        ] },
+        { path: '/project', component: project },
         { path: '/preferencies', component: preferencies },
         { path: '/wizard/', component: wizard, children: [
             {

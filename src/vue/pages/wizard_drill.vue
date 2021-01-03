@@ -131,7 +131,7 @@ import GCode from "@/vue/components/gcode.vue";
 //import SvgViewer from "@/vue/components/svgviewer.vue";
 import GeoJsonViewer from "@/vue/components/geojsonviewer.vue";
 //import fs from "fs";
-import { PcbLayers } from "@/models/pcblayer";
+import { PcbLayer, PcbLayer } from "@/models/pcblayer";
 //import { GerberSide, GerberType } from "whats-that-gerber";
 //import colornames from "colornames";
 //import * as Trigonomerty from "@/utils/trigonometry";
@@ -218,7 +218,7 @@ export default class WizardDrill extends Vue {
 
     this.$store.commit("updateField", {
       path: "config.drills",
-      value: (this.$store.state.layers as PcbLayers[])
+      value: (this.$store.state.layers as PcbLayer[])
         .filter((layer) => {
           return layer.type === whatsThatGerber.TYPE_DRILL && layer.enabled;
         })
@@ -306,7 +306,7 @@ export default class WizardDrill extends Vue {
 
     const _layer = JSON.parse(
       JSON.stringify(
-        (this.$store.state.layers as PcbLayers[]).filter(
+        (this.$store.state.layers as PcbLayer[]).filter(
           (layer) => layer.name === drill.layer
         )[0]
       ),
@@ -331,7 +331,7 @@ export default class WizardDrill extends Vue {
           unionDraw: false,
           filetype: "drill",
         });
-        await gerberParser.load((_layer as PcbLayers).gerber);
+        await gerberParser.load((_layer as PcbLayer).gerber);
         gerberParser.commit().then(async (data) => {
           const index = (this.$store
             .state as IProject).config.drills.findIndex(

@@ -185,7 +185,7 @@ import GCode from "@/vue/components/gcode.vue";
 //import SvgViewer from "@/vue/components/svgviewer.vue";
 import GeoJsonViewer from "@/vue/components/geojsonviewer.vue";
 import fs from "fs";
-import { PcbLayers } from "@/models/pcblayer";
+import { PcbLayer } from "@/models/pcblayer";
 import { GerberSide, GerberType } from "whats-that-gerber";
 import colornames from "colornames";
 import * as Trigonomerty from "@/utils/trigonometry";
@@ -279,7 +279,7 @@ export default class WizardCopper extends Vue {
 
     this.$store.commit("updateField", {
       path: "config.coppers",
-      value: (this.$store.state.layers as PcbLayers[])
+      value: (this.$store.state.layers as PcbLayer[])
         .filter((layer) => {
           return layer.type === whatsThatGerber.TYPE_COPPER && layer.enabled;
         })
@@ -352,7 +352,7 @@ export default class WizardCopper extends Vue {
 
     const _layer = JSON.parse(
       JSON.stringify(
-        (this.$store.state.layers as PcbLayers[]).filter(
+        (this.$store.state.layers as PcbLayer[]).filter(
           (layer) => layer.name === copper.layer
         )[0]
       ),
@@ -376,7 +376,7 @@ export default class WizardCopper extends Vue {
         await gerberParser.create({
           unionDraw: copper.unionDraw,
         });
-        await gerberParser.load((_layer as PcbLayers).gerber);
+        await gerberParser.load((_layer as PcbLayer).gerber);
         gerberParser.commit().then(async (data) => {
           const index = (this.$store
             .state as IProject).config.coppers.findIndex(

@@ -175,7 +175,7 @@ import GCode from "@/vue/components/gcode.vue";
 //import SvgViewer from "@/vue/components/svgviewer.vue";
 import GeoJsonViewer from "@/vue/components/geojsonviewer.vue";
 //import fs from "fs";
-import { PcbLayers } from "@/models/pcblayer";
+import { PcbLayer } from "@/models/pcblayer";
 //import { GerberSide, GerberType } from "whats-that-gerber";
 //import makerjs from "makerjs";
 //import { Duplex } from "stream";
@@ -271,7 +271,7 @@ export default class Wizardoutline extends Vue {
 
     this.$store.commit("updateField", {
       path: "config.outlines",
-      value: (this.$store.state.layers as PcbLayers[])
+      value: (this.$store.state.layers as PcbLayer[])
         .filter((layer) => {
           return layer.type === whatsThatGerber.TYPE_OUTLINE && layer.enabled;
         })
@@ -363,7 +363,7 @@ export default class Wizardoutline extends Vue {
 
     const _layer = JSON.parse(
       JSON.stringify(
-        (this.$store.state.layers as PcbLayers[]).filter(
+        (this.$store.state.layers as PcbLayer[]).filter(
           (layer) => layer.name === outline.layer
         )[0]
       ),
@@ -388,7 +388,7 @@ export default class Wizardoutline extends Vue {
           unionDraw: false,
           filetype: "gerber",
         });
-        await gerberParser.load((_layer as PcbLayers).gerber);
+        await gerberParser.load((_layer as PcbLayer).gerber);
         gerberParser.commit().then(async (data) => {
           const index = (this.$store
             .state as IProject).config.outlines.findIndex(

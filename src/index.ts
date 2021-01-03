@@ -143,12 +143,18 @@ ipcMain.handle('StartTightCNC', (event, ...args) => {
     tightcnc.kill("SIGTERM");
   });
 
+  // MacOs Specific
+  app.on("open-file", (event,path)=>{
+    console.log("Richiesto openfile",path);
+    ipcMain.emit("open",[path])
+  })
+
   return tightcnc.pid;
 });
 
 ipcMain.handle("changeTitle",(event,...args) => {
   if(args.length == 0 || !args[0]){
-    mainWindow.setTitle(packagejson.productName);
+    mainWindow.setTitle(packagejson.productName+" | ");
   } else {
     mainWindow.setTitle(packagejson.productName+" | "+args[0]);
   }

@@ -1,6 +1,6 @@
 import { GerberSide, GerberType } from 'whats-that-gerber'
 
-export interface PcbLayers { 
+export interface PcbLayer { 
     id: number,
     enabled:boolean, 
     name: string,

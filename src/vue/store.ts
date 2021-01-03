@@ -1,16 +1,16 @@
 import Vue from "vue";
-import Vuex, { Plugin } from "vuex";
+import Vuex, { Plugin, Store } from "vuex";
 import { contentTracing, OpenDialogReturnValue, SaveDialogReturnValue, remote, BrowserWindow } from "electron";
 import router from "./router";
 import AdmZip from "adm-zip";
 import { getField, updateField } from 'vuex-map-fields';
 import VuexPersistence from 'vuex-persist';
-//import { PcbLayers } from "@/models/pcblayer";
 import { IProject } from "@/models/project";
 import path from "path";
 import fs from 'fs';
 import { Menu, MenuItem, ipcRenderer } from "electron";
 import crypto from "crypto";
+import { PcbLayer } from "@/models/pcblayer";
 
 
 Vue.use(Vuex);
@@ -35,7 +35,6 @@ class VuexDirtyStatus {
                     return;
                 case 'save':
                 case 'open':
-                case 'new':
                 case 'setProjectName':
                     newDirty = false;
                     break;
@@ -99,19 +98,48 @@ export default new Vuex.Store<IProject>({
             state.md5 = md5;
         },
         openGerber(state, filePath: string) {
-            state.currentFile = filePath;
-            const zip = new AdmZip(filePath);
-            const zipEntries = zip.getEntries();
-            state.layers = zipEntries.map((zipe, index) => ({
-                id: index,
-                name: zipe.name.replace(/[^a-zA-Z]/g, "_"),
-                enabled: true,
-                filename: zipe.name,
-                gerber: zipe.getData(),
-                side: undefined,
-                type: undefined
-            }));
-            //console.log(state.layers);
+            switch(path.extname(filePath).toLowerCase()){
+                case "":
+                    console.log("OpenFolder?");
+                    break;
+                case ".zip":
+                    const zip = new AdmZip(filePath);
+                    const zipEntries = zip.getEntries();
+                 
+                    zipEntries.map((zipe, index) => ({
+                        id: index,
+                        name: zipe.name.replace(/[^a-zA-Z]/g, "_"),
+                        enabled: true,
+                        filename: zipe.name,
+                        gerber: zipe.getData(),
+                        side: undefined,
+                        type: undefined
+                    }))
+                    .forEach( pcb => (this as unknown as Store<IProject>).commit("addGerber",pcb));        
+                    break;
+                case ".gtl":
+                case ".gbl":
+                case ".gto":
+                case ".gts":
+                case ".gbs":
+                case ".gko":
+                case ".drl":
+                default:    
+                        fs.readFile(filePath,(err,data)=>{
+                        (this as unknown as Store<IProject>).commit("addGerber",{
+                            id: state.layers?.length,
+                            name: path.basename(filePath).replace(/[^a-zA-Z]/g, "_"),
+                            enabled: true,
+                            filename: path.basename(filePath),
+                            gerber: data,
+                            side: undefined,
+                            type: undefined
+                        }); 
+                    });
+                    break;
+                }
+//            state.currentFile = filePath;
+//            console.log(this,state.layers);
         },
         updateLayer(state, layer: any) {
             let clayer = state!.layers?.find(clayer => clayer.filename === layer.filename);
@@ -137,7 +165,7 @@ export default new Vuex.Store<IProject>({
                 ipcRenderer.invoke("changeTitle", undefined);
                 ((remote.Menu.getApplicationMenu() as Menu).getMenuItemById("save") as MenuItem).enabled = false;
                 ((remote.Menu.getApplicationMenu() as Menu).getMenuItemById("import") as MenuItem).enabled = false;
-                ((remote.Menu.getApplicationMenu() as Menu).getMenuItemById("close") as MenuItem).enabled = true;
+                ((remote.Menu.getApplicationMenu() as Menu).getMenuItemById("close") as MenuItem).enabled = false;
             }
         },
         new(state) {
@@ -160,6 +188,8 @@ export default new Vuex.Store<IProject>({
                     coppers: [],
                 }
             });
+            ((remote.Menu.getApplicationMenu() as Menu).getMenuItemById("import") as MenuItem).enabled = true;
+            ((remote.Menu.getApplicationMenu() as Menu).getMenuItemById("close") as MenuItem).enabled = true;
         },
         open(state, filePath: string) {
             const zip = new AdmZip(filePath);
@@ -187,40 +217,63 @@ export default new Vuex.Store<IProject>({
                 "Main project file");
             zip.writeZip(path.join(state.basedir as string, (state.name as string) + ".pcbmf"));
             remote.app.addRecentDocument(path.join(state.basedir as string, (state.name as string) + ".pcbmf"));
-        }
-        /*
-        update_gerber(state, values){
-            console.log("--> Store received!", values);
-            Object.assign(state.gerber,values);
-        }
-        */
+        },
+        removeGerber(state,pcb:PcbLayer){
+            state.layers?.splice(state.layers.findIndex(layer=>layer.filename === pcb.filename),1);
+        },
+        addGerber(state,pcb:PcbLayer){
+            const index = state.layers?.findIndex(layer=>layer.filename === pcb.filename);
+            console.log(pcb.filename,index);
+            if(index != undefined && index >= 0){
+                pcb.id = index;
+                state.layers?.splice(index,1,pcb);
+            } else {
+                pcb.id = state.layers?.length || 0;
+                state.layers?.push(pcb);
+            }
+        },
     },
     actions: {
-        open(context) {
+        open(context,payload) {
+            console.log(payload);
+            if(payload){
+                context.commit('open', payload);
+                context.commit('setProjectName', payload);
+                if (router.currentRoute.path !== '/project')
+                    router.push('/project');
+            } else {
             context.commit('new');
             remote.dialog.showOpenDialog({ filters: [{ name: "PCBMF Progject", extensions: ['pcbmf', 'PCBMF'] }], properties: ['openFile'] })
                 .then((value: OpenDialogReturnValue) => {
                     if (!value.canceled) {
                         context.commit('open', value.filePaths[0]);
                         context.commit('setProjectName', value.filePaths[0]);
-                        if (router.currentRoute.path !== '/project/config')
-                            router.push('/project/config');
+                        if (router.currentRoute.path !== '/project')
+                            router.push('/project');
                     }
                 });
+            }
         },
         importGerber(context) {
-            remote.dialog.showOpenDialog({ filters: [{ name: "Gerber Zip", extensions: ['zip', 'ZIP'] }], properties: ['openFile'] })
+            remote.dialog.showOpenDialog({ filters: [
+                { name: "All supported", extensions: ['zip','drl','gtl', 'gbl','gto','gts','gbs','gko'] },
+                { name: "Gerber Zip", extensions: ['zip'] },
+                { name: "Gerber Files", extensions: ['gtl', 'gbl','gto','gts','gbs','gko'] },
+                { name: "Drill Files", extensions: ['drl'] },
+                ], properties: ['openFile','multiSelections'] })
                 .then((value: OpenDialogReturnValue) => {
                     if (!value.canceled) {
-                        context.commit('openGerber', value.filePaths[0]);
-                        if (router.currentRoute.path !== '/wizard/config')
-                            router.push('/wizard/config');
+                        value.filePaths.forEach( path=>{
+                            context.commit('openGerber', path);
+                        });
+                        if (router.currentRoute.path !== '/project')
+                            router.push('/project');
                     }
                 });
         },
-        openGerber(context) {
+        openGerberZip(context) {
             context.commit('new');
-            remote.dialog.showOpenDialog({ filters: [{ name: "Gerber Zip", extensions: ['zip', 'ZIP'] }], properties: ['openFile'] })
+            remote.dialog.showOpenDialog({ filters: [{ name: "Gerber Zip", extensions: ['zip'] }], properties: ['openFile'] })
                 .then((value: OpenDialogReturnValue) => {
                     if (!value.canceled) {
                         context.commit('setProjectName', value.filePaths[0]);
@@ -232,8 +285,8 @@ export default new Vuex.Store<IProject>({
         },
         new(context) {
             context.commit('new');
-            if (router.currentRoute.path !== '/project/config')
-                router.push('/project/config');
+            if (router.currentRoute.path !== '/project')
+                router.push('/project');
         },
         save(context) {
             context.commit('save');

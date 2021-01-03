@@ -35,7 +35,7 @@ export class ApplicationMenu {
                 { label: "New Project from", 
                   submenu:[
                     { label: "Gerber Folder...",enabled:false},
-                    { label: "Gerber Zip...", click:()=>store.dispatch('openGerber')},
+                    { label: "Gerber Zip...", click:()=>store.dispatch('openGerberZip')},
                   ]},
                 { type: 'separator' },  
                 { label: "Open Project...", click:()=>store.dispatch('open') },
@@ -51,14 +51,7 @@ export class ApplicationMenu {
                 { id:"save", label: "Save Project", click:()=>store.dispatch('save'), enabled:false},
                 { label: "Save Project As...", click:()=>store.dispatch('saveAs')},
                 { type: 'separator' },  
-                { id:"import", label: "Import", enabled: false, 
-                  submenu:[
-                    { label: "Gerber File...",enabled:false},
-                    { label: "Drill file...",enabled:false},
-                    { type: 'separator' },
-                    { label: "Gerber Folder...",enabled:false},
-                    { label: "Gerber Zip...", click:()=>store.dispatch('importGerber')},
-                  ]},
+                { id:"import", label: "Import...", click:()=>store.dispatch('importGerber'), enabled:false }, 
                 { type: 'separator' }, 
                 { id:"close", label: "Close Project", click:()=>store.dispatch('close'), enabled:false},
                   ...(isMac ? [                   
