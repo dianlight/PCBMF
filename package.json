@@ -24,7 +24,10 @@
         "watch": "npm-watch",
         "licence": "electron-license list --json --production",
         "test": "npm run package",
-        "gen:patch": "patch-package --exclude '' gcode-toolpath vuex-map-fields @types/jsts jsts"
+        "gen:patch": "patch-package --exclude '' gcode-toolpath vuex-map-fields @types/jsts jsts",
+        "release:major": "changelog -M && git add CHANGELOG.md && git commit -m 'updated CHANGELOG.md' && npm version major && git push origin && git push origin --tags",
+        "release:minor": "changelog -m && git add CHANGELOG.md && git commit -m 'updated CHANGELOG.md' && npm version minor && git push origin && git push origin --tags",
+        "release:patch": "changelog -p && git add CHANGELOG.md && git commit -m 'updated CHANGELOG.md' && npm version patch && git push origin && git push origin --tags"
     },
     "keywords": [
         "CNC",
@@ -45,20 +48,17 @@
     "config": {
         "forge": {
             "packagerConfig": {},
-            "publishers": [
-                {
-                    "name": "@electron-forge/publisher-github",
-                    "config": {
-                        "repository": {
-                            "owner": "dianlight",
-                            "name": "pcbmf"
-                        },
-                        "prerelease": true
-                    }
+            "publishers": [{
+                "name": "@electron-forge/publisher-github",
+                "config": {
+                    "repository": {
+                        "owner": "dianlight",
+                        "name": "pcbmf"
+                    },
+                    "prerelease": true
                 }
-            ],
-            "makers": [
-                {
+            }],
+            "makers": [{
                     "name": "@electron-forge/maker-squirrel",
                     "config": {
                         "name": "my_new_app"
@@ -86,13 +86,11 @@
                         "mainConfig": "./webpack.main.config.js",
                         "renderer": {
                             "config": "./webpack.renderer.config.js",
-                            "entryPoints": [
-                                {
-                                    "html": "./src/index.html",
-                                    "js": "./src/renderer.ts",
-                                    "name": "main_window"
-                                }
-                            ]
+                            "entryPoints": [{
+                                "html": "./src/index.html",
+                                "js": "./src/renderer.ts",
+                                "name": "main_window"
+                            }]
                         }
                     }
                 ]
@@ -129,6 +127,7 @@
         "eslint-plugin-import": "^2.22.1",
         "file-loader": "^6.2.0",
         "fork-ts-checker-webpack-plugin": "^6.0.8",
+        "generate-changelog": "^1.8.0",
         "json-schema-to-typescript": "^10.0.3",
         "node-loader": "^1.0.2",
         "npm-watch": "^0.7.0",

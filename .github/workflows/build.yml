@@ -3,12 +3,14 @@ name: Build/release
 on: push
 
 jobs:
-  release:
+  build:
     runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
+      fail-fast: false
+
 
     steps:
       - name: Check out Git repository
@@ -33,9 +35,30 @@ jobs:
       - name: Build/release Electron app
         run: |
           npm install
-          npm run make 
-    
-      - name: Release if tagged version
-        if: startsWith(github.ref, 'refs/tags/v')
+          npm run make
+          
+  #Action only on release (tag starting with v)
+  release:
+    after: build
+    if: startsWith(github.ref, 'refs/tags/v') 
+    steps:
+      - name: Changelog
+        uses: scottbrenner/generate-changelog-action@master
+        id: Changelog
+        env:
+          REPO: ${{ github.repository }} 
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          body: |
+            ${{ steps.Changelog.outputs.changelog }}
+          draft: false
+          prerelease: false                   
+      - name: Publish
         run: |
           GITHUB_TOKEN=${{ secrets.github_token }} npm run publish
