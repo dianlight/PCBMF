@@ -11,6 +11,8 @@
 
 > A Minimal Software for Milling and Drilling PCB with simple CNC
 
+![Build/release](https://github.com/dianlight/PCBMF/workflows/Build/release/badge.svg)
+
 ### 🏠 [Homepage](https://github.com/dianlight/PCBMF#readme)
 
 
