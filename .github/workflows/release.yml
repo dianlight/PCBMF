@@ -16,7 +16,7 @@ on:
 jobs:        
   #Action only on release (tag starting with v)
   release:
-    if: startsWith(github.ref, 'refs/tags/v') 
+#    if: startsWith(github.ref, 'refs/tags/v') 
     runs-on: ubuntu-latest
     steps:
       - name: Download artifact
