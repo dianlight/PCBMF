@@ -7,9 +7,13 @@
   <a href="https://github.com/dianlight/PCBMF/blob/main/LICENSE" target="_blank">
     <img alt="License: GPL3" src="https://img.shields.io/badge/License-GPL3-yellow.svg" />
   </a>
+  <a href="https://github.com/dianlight/PCBMF/blob/main/LICENSE" target="_blank">
+    <img alt="License: GPL3" src="https://github.com/dianlight/PCBMF/workflows/Build/badge.svg" />
+  </a>
+  <a href="https://github.com/dianlight/PCBMF/releases" target="_blank">
+    <img alt="License: GPL3" src="https://github.com/dianlight/PCBMF/workflows/Release/badge.svg" />
+  </a>
 </p>
-![Build](https://github.com/dianlight/PCBMF/workflows/Build/badge.svg)
-![Build/release](https://github.com/dianlight/PCBMF/workflows/Build/release/badge.svg)
 
 > A Minimal Software for Milling and Drilling PCB with low cost CNC
 

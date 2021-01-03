@@ -10,6 +10,15 @@ jobs:
       matrix:
         # macos-11.0 ?
         os: [macos-latest , ubuntu-latest, windows-latest]
+        arch: [x64]
+#        arch: [ia32, armv7l, x64, arm64, mips64el]
+      include:
+        - os: macos-11.0
+          arch: arm64
+          experimental: true
+        - os: windows-latest
+          arch: [ia32,arm64]
+          experimantal: true
       fail-fast: false
 
 
@@ -33,9 +42,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
       - name: Build/release Electron app
+#        with:
+#          arch: ${{ matrix.arch }}
         run: |
           npm install
-          npm run make
+          npm run make -- --arch ${{ matrix.arch }}
       - name: nodejs project information
         id: projectinfo
         uses: gregoranders/nodejs-project-info@v0.0.12          
@@ -43,5 +54,8 @@ jobs:
         with:
           name: ${{ steps.projectinfo.outputs.name }}-${{ steps.projectinfo.outputs.version }}-${{ runner.os }}
           path: |
-            out/make/**/x64/*.[exe|zip]   
-            out/make/**/x64/*.[tgz]               
+            out/make/**/ia32/*             
+            out/make/**/armv7l/*             
+            out/make/**/x64/*             
+            out/make/**/arm64/*  
+            out/make/**/mips64el/*             
