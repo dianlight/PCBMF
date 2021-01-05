@@ -50,17 +50,20 @@
     "config": {
         "forge": {
             "packagerConfig": {},
-            "publishers": [{
-                "name": "@electron-forge/publisher-github",
-                "config": {
-                    "repository": {
-                        "owner": "dianlight",
-                        "name": "pcbmf"
-                    },
-                    "prerelease": true
+            "publishers": [
+                {
+                    "name": "@electron-forge/publisher-github",
+                    "config": {
+                        "repository": {
+                            "owner": "dianlight",
+                            "name": "pcbmf"
+                        },
+                        "prerelease": true
+                    }
                 }
-            }],
-            "makers": [{
+            ],
+            "makers": [
+                {
                     "name": "@electron-forge/maker-squirrel",
                     "config": {}
                 },
@@ -103,11 +106,13 @@
                         "mainConfig": "./webpack.main.config.js",
                         "renderer": {
                             "config": "./webpack.renderer.config.js",
-                            "entryPoints": [{
-                                "html": "./src/index.html",
-                                "js": "./src/renderer.ts",
-                                "name": "main_window"
-                            }]
+                            "entryPoints": [
+                                {
+                                    "html": "./src/index.html",
+                                    "js": "./src/renderer.ts",
+                                    "name": "main_window"
+                                }
+                            ]
                         }
                     }
                 ]
@@ -117,6 +122,7 @@
     "devDependencies": {
         "@electron-forge/cli": "^6.0.0-beta.54",
         "@electron-forge/maker-deb": "^6.0.0-beta.54",
+        "@electron-forge/maker-dmg": "^6.0.0-beta.54",
         "@electron-forge/maker-rpm": "^6.0.0-beta.54",
         "@electron-forge/maker-squirrel": "^6.0.0-beta.54",
         "@electron-forge/maker-zip": "^6.0.0-beta.54",
