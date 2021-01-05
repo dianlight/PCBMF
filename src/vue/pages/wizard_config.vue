@@ -4,7 +4,7 @@
       <el-col :span="10">
         <el-form>
           <div class="clearfix">
-            <el-form-item label="Top Layer">
+            <el-form-item :label="$t('pages.wizard.config.top-layer')">
               <el-switch
                 active-text="Include"
                 inactive-text="Ignore"
@@ -19,7 +19,7 @@
           ></svg-viewer>
 
           <div class="clearfix">
-            <el-form-item label="Bottom Layer">
+            <el-form-item :label="$t('pages.wizard.config.bottom-layer')">
               <el-switch
                 active-text="Include"
                 inactive-text="Ignore"
@@ -34,12 +34,12 @@
       <el-col :span="14">
         <el-form :model="pcb" _v-model="pcb" ref="form" label-width="120px">
           <el-form-item
-            label="PCB blank type"
+            :label="$t('pages.wizard.config.pcb-blank-type')"
             prop="blankType"
             :rules="[
               {
                 required: true,
-                message: 'Please select a valid PCB type',
+                message: $t('pages.wizard.config.please-select-a-valid-pcb-type'),
               },
             ]"
           >
@@ -60,7 +60,7 @@
           </el-form-item>
           <el-form-item
             style="float: right"
-            label="(h)"
+            :label="$t('pages.wizard.config.h')"
             :rules="[
               {
                 required: true,
@@ -75,7 +75,7 @@
             <el-input-number size="mini" v-model="height"></el-input-number>
           </el-form-item>
           <el-form-item
-            label="PCB Size (w)"
+            :label="$t('pages.wizard.config.pcb-size-w')"
             :rules="[
               {
                 required: true,
@@ -89,7 +89,7 @@
           >
             <el-input-number size="mini" v-model="width"></el-input-number>
           </el-form-item>
-          <el-form-item label="Use PCB Outline">
+          <el-form-item label="$t('pages.wizard.config.use-pcb-outline')">
             <el-switch
               size="mini"
               v-model="useOutline"
@@ -114,13 +114,13 @@
             ref="table"
           >
             <el-table-column label="" type="selection" width="39"></el-table-column>
-            <el-table-column label="Filename" prop="filename"></el-table-column>
-            <el-table-column label="Type" width="140">
+            <el-table-column :label="$t('pages.wizard.config.filename')" prop="filename"></el-table-column>
+            <el-table-column :label="$t('pages.wizard.config.type')" width="140">
               <template slot-scope="scope">
                 <el-select
                   @change="redrawpcb"
                   v-model="scope.row.type"
-                  placeholder="Select"
+                  :placeholder="$t('base.select')"
                   size="mini"
                 >
                   <el-option
@@ -133,12 +133,12 @@
                 </el-select>
               </template>
             </el-table-column>
-            <el-table-column label="Side" width="120">
+            <el-table-column :label="$t('base.side')" width="120">
               <template slot-scope="scope">
                 <el-select
                   @change="redrawpcb"
                   v-model="scope.row.side"
-                  placeholder="Select"
+                  :placeholder="$t('base.select')"
                   size="mini"
                 >
                   <el-option
@@ -257,7 +257,7 @@ export default class WizardConfig extends Vue {
             // Check selected PCB rules
             const layers = this.$store.state.layers as PcbLayer[];
             if(layers.filter( layer=>layer.enabled ).length == 0){
-              this.$message.error('No Layers selected!');
+              this.$message.error(this.$t('pages.wizard.config.no-layers-selected').toString());
               resolve(false);              
             } else {
               resolve(true);
@@ -300,7 +300,7 @@ export default class WizardConfig extends Vue {
     remote.dialog.showMessageBox(remote.getCurrentWindow(),
     {
       message: `Remove ${row.filename} from project?`,
-      buttons: ["OK","Cancel"]
+      buttons: [this.$t('base.ok').toString(),this.$t('base.cancel').toString()]
     }
     ).then( (value)=>{
       if(value.response == 0){

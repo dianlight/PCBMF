@@ -3,19 +3,19 @@
     <el-card>
         <el-main>
           <el-tabs ref="tab" value="config" tab-position="left" style="height: 100%;" @tab-click="tab_refresh()" stretch>
-            <el-tab-pane name="config" label="Config" lazy>
+            <el-tab-pane name="config" :label="$t('pages.project.config')" lazy>
               <wizard-config/>
             </el-tab-pane>
-            <el-tab-pane name="isolation" label="Isolation" lazy>
+            <el-tab-pane name="isolation" :label="$t('pages.project.isolation')" lazy>
               <wizard-isolation :key="doIsolationRefresh"/>
             </el-tab-pane>
-            <el-tab-pane name="drill" label="Drill" lazy>
+            <el-tab-pane name="drill" :label="$t('pages.project.drill')" lazy>
               <wizard-drill :key="doDrillRefresh"/>
             </el-tab-pane>
-            <el-tab-pane name="outline" label="Outline" lazy>
+            <el-tab-pane name="outline" :label="$t('pages.project.outline')" lazy>
               <wizard-outline :key="doOutlineRefresh"/>
             </el-tab-pane>
-            <el-tab-pane name="copper" label="Copper Thief" lazy>
+            <el-tab-pane name="copper" :label="$t('pages.project.copper-thief')" lazy>
               <wizard-copper-thief :key="doCopperRefresh"/>
             </el-tab-pane>
           </el-tabs>
@@ -71,7 +71,7 @@ export default class Project extends Vue {
 
   tab_refresh(){
     const actualHash = crypto.createHash('sha1').update(JSON.stringify(this.$store.state)).digest("hex");
-    console.log("Refresh!",(this.$refs.tab as any).currentName);
+//    console.log("Refresh!",(this.$refs.tab as any).currentName);
     switch((this.$refs.tab as any).currentName){
       case "isolation":
         if(this.doIsolationRefresh === actualHash)return;

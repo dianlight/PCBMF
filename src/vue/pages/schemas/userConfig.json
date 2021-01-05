@@ -6,24 +6,23 @@
             "ui": {
                 "columns": 7,
                 "required": true,
-                "label": "Serial",
+                "label": "dx: {{$const.serial-port-label}}",
                 "widget": "select",
                 "widgetConfig": {
                     "suffixIcon": "el-icon-date",
                     "size": "mini",
-                    "placeholder": "select your choice",
+                    "placeholder": "dx: {{$const.serial-port-placeholder}}",
                     "enumSource": []
                 },
                 "help": {
                     "show": true,
                     "text": "?",
-                    "content": "Only GRBL 1.1 firmware is supported - See documentation"
+                    "content": "dx: {{$const.serial-port-placeholder}}"
                 }
             },
             "rules": {
                 "required": {
-                    "value": true,
-                    "errMsg": "it is required!"
+                    "value": true
                 }
             }
         },
@@ -39,8 +38,7 @@
                 "widgetConfig": {
                     "size": "mini",
                     "placeholder": "select your choice",
-                    "enumSource": [
-                        {
+                    "enumSource": [{
                             "value": 1,
                             "label": "GRBL 1.1"
                         },
@@ -57,7 +55,7 @@
                 "help": {
                     "show": true,
                     "text": "!",
-                    "content": "Only GRBL 1.1 firmware - See documentation"
+                    "content": "dx: {{$i18n.yes}}"
                 }
             },
             "rules": {
@@ -79,8 +77,7 @@
                 "widgetConfig": {
                     "size": "mini",
                     "placeholder": "select your choice",
-                    "enumSource": [
-                        {
+                    "enumSource": [{
                             "value": 1,
                             "label": "mm"
                         },
@@ -107,11 +104,11 @@
             "type": "boolean",
             "ui": {
                 "columns": 4,
-                "label": "Homing",
+                "label": "dx: {{$const.homing-label}}",
                 "help": {
                     "show": true,
                     "text": "?",
-                    "content": "Send home before start job"
+                    "content": "dx: {{$const.homing-help}}"
                 },
                 "widgetConfig": {
                     "size": "mini"
@@ -142,7 +139,7 @@
             "rules": {
                 "required": {
                     "value": true,
-                    "errMsg": "it is required!"
+                    "errMsg": "dx: {{$i18n.error.required}}"
                 }
             }
         },
@@ -306,6 +303,12 @@
         "widgetConfig": {
             "layout": "h",
             "labelWidth": "10em"
+        }
+    },
+    "globalConfig": {
+        "constants": {
+            "name": "va"
+
         }
     }
 }

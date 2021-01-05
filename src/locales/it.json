@@ -1,0 +1,10 @@
+{
+    "statusbar": {
+        "setting": "Impostazioni"
+    },
+    "pages": {
+        "home": {
+            "new_project_from_gerber_zip": "Nuovo progetto da Zip Gerber..."
+        }
+    }
+}

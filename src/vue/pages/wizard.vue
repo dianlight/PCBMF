@@ -3,17 +3,17 @@
     <el-card>
       <el-header>
         <el-steps ref="step" :active="active - 1" finish-status="success" align-center>
-          <el-step title="Step 1" description="Config"></el-step>
-          <el-step title="Step 2" description="Isolation"></el-step>
-          <el-step title="Step 3" description="Drill"></el-step>
-          <el-step title="Step 4" description="Outline"></el-step>
-          <el-step title="Step 5" description="Copper thief"></el-step>
-          <el-step title="Step 6" description="Solder mask"></el-step>
+          <el-step :title="$tc('base.step',1)" :description="$t('pages.project.config')"></el-step>
+          <el-step :title="$tc('base.step',2)" :description="$t('pages.project.isolation')"></el-step>
+          <el-step :title="$tc('base.step',3)" :description="$t('pages.project.drill')"></el-step>
+          <el-step :title="$tc('base.step',4)" :description="$t('pages.project.outline')"></el-step>
+          <el-step :title="$tc('base.step',5)" :description="$t('pages.project.copper-thief')"></el-step>
           <!--
+          <el-step title="Step 6" :description="Solder mask"></el-step>
           <el-step title="Step 7" description="Two side guide"></el-step>
           <el-step title="Step 7" description="Mask removal"></el-step>
-          -->
           <el-step title="Result" description="Done"></el-step>
+          -->
         </el-steps>
       </el-header>
     </el-card>
@@ -33,7 +33,7 @@
               type="primary"
               round
               icon="el-icon-arrow-left"
-              >Back</el-button
+              >{{$t('base.back')}}</el-button
             >
             <el-button
               @click="nextPage(+1,skip)"
@@ -42,7 +42,7 @@
               round
               type="warning"
               icon="el-icon-d-arrow-right"
-              >Skip</el-button
+              >{{$t('base.skip')}}</el-button
             >
             <el-button
               @click="nextPage(+1)"
@@ -51,7 +51,7 @@
               type="primary"
               round
               icon="el-icon-arrow-right"
-              >Next</el-button
+              >{{$t('base.next')}}</el-button
             >
           </el-button-group>
         </el-col>
@@ -96,7 +96,7 @@ export default class Wizard extends Vue {
           );
           */
           if (route.meta.step == this.active - 1) {
-            console.log("Visualize Path:", route.path);
+//            console.log("Visualize Path:", route.path);
             this.nextCallback = () => true;
             (this.prev = true), (this.next = true), (this.skip = true);
             this.$router.push(route.path);
@@ -125,7 +125,7 @@ export default class Wizard extends Vue {
 
   @Provide()
   wizardPushSkip(){
-    console.log("Skip to ",this.lastinc);
+//    console.log("Skip to ",this.lastinc);
     this.nextPage(this.lastinc,true);
   }
 }

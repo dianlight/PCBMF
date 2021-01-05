@@ -1,13 +1,13 @@
 <template>
   <el-container direction="vertical">
-    <h1 v-if="coppers.length == 0">No copper layer to process</h1>
+    <h1 v-if="coppers.length == 0">{{$t('pages.wizard.copper-thief.no-copper-layer-to-process')}}</h1>
     <el-row
       v-for="copper in coppers"
       :key="copper.layer"
       type="flex"
       align="middle"
       v-loading="!options[copper.layer] || options[copper.layer].busy"
-      element-loading-text="Processing..."
+      :element-loading-text="$t('base.processing')"
       element-loading-spinner="el-icon-loading"
       element-loading-background="rgba(0, 0, 0, 0.8)"
     >
@@ -23,14 +23,14 @@
         </h4>
 
         <el-tabs type="border-card">
-          <el-tab-pane label="Model">
+          <el-tab-pane :label="$t('pages.wizard.model')">
             <geo-json-viewer
               :panzoom="true"
               _class="fullframe"
               :data.sync="copper.geojson"
             ></geo-json-viewer>
           </el-tab-pane>
-          <el-tab-pane label="Work (3d)" :disabled="!copper.gcode" lazy>
+          <el-tab-pane :label="$t('pages.wizard.work-3d')" :disabled="!copper.gcode" lazy>
             <g-code
               :data="copper.gcode"
               :gcgrid="true"
@@ -38,10 +38,10 @@
               :height="height"
             ></g-code>
           </el-tab-pane>
-          <el-tab-pane label="Gcode" :disabled="!copper.gcode">
+          <el-tab-pane :label="$t('pages.wizard.gcode')" :disabled="!copper.gcode">
             <highlightjs
               language="gcode"
-              :code="copper.gcode || 'Loading...'"
+              :code="copper.gcode || $t('base.loading')"
             />
           </el-tab-pane>
         </el-tabs>
@@ -50,14 +50,14 @@
         <h1></h1>
         <el-form :model="copper" ref="formx" label-width="11em">
           <el-form-item
-            label="Union elements"
+            :label="$t('pages.wizard.copper-thief.union-elements')"
             :rules="[
               {
                 required: true,
                 trigger: 'change',
                 type: 'enum',
                 enum: [true],
-                message: '*Debug Option please Enable*',
+                message: $t('pages.wizard.copper-thief.debug-option-please-enable'),
               },
             ]"
           >
@@ -67,37 +67,37 @@
             ></el-switch>
           </el-form-item>
           <el-form-item
-            label="Margin"
+            :label="$t('base.margin')"
             :rules="[{ required: true, trigger: 'change' }]"
             prop="margin"
           >
             <el-select
               v-model="copper.margin"
               value-key="name"
-              placeholder="Margins..."
+              :placeholder="$t('pages.wizard.copper-thief.margins')"
               @change="redrawpcb(copper)"
               size="mini"
               clearable
             >
-              <el-option label="Envelope" value="Envelope" />
-              <el-option label="ConvexHull" value="ConvexHull" />
-              <el-option label="Board" value="Board"/>
+              <el-option :label="$t('base.envelope')" value="Envelope" />
+              <el-option :label="$t('base.convexhull')" value="ConvexHull" />
+              <el-option :label="$t('base.board')" value="Board"/>
             </el-select>
           </el-form-item>
           <el-form-item
-            label="Thief Mode"
+            :label="$t('pages.wizard.copper-thief.thief-mode')"
             :rules="[{ required: true, trigger: 'change' }]"
             prop="mode"
           >
             <el-select
               v-model="copper.mode"
               value-key="name"
-              placeholder="Mode..."
+              :placeholder="$t('pages.wizard.copper-thief.mode')"
               @change="redrawpcb(copper)"
               size="mini"
               clearable
             >
-              <el-option label="Outline" value="Outline" />
+              <el-option :label="$t('base.outline')" value="Outline" />
               <el-option label="Box (not yet implemented)" value="Box" :disabled="true" />
               <el-option label="Line (not yet implemented)" value="Line" :disabled="true"/>
               <el-option label="Spiral (not yet implemented)" value="Spiral" :disabled="true"/>
@@ -105,7 +105,7 @@
             </el-select>
           </el-form-item>
           <el-form-item
-            label="Cycles for Tools"
+            :label="$t('pages.wizard.copper-thief.cycles-for-tools')"
             :rules="[
               { required: true, trigger: 'blur', type: 'number', min: 0.0001 },
             ]"
@@ -125,14 +125,14 @@
 
 
           <el-form-item
-            label="Copper Tools"
+            :label="$t('pages.wizard.copper-thief.copper-tools')"
             :rules="[{ required: true, trigger: 'change' }]"
             prop="toolTypes"
           >
             <el-select
               v-model="copper.toolTypes"
               value-key="name"
-              placeholder="Tool..."
+              :placeholder="$t('pages.wizard.copper-thief.tool')"
               @change="toolChange(copper)"
               size="mini"
               clearable
@@ -148,7 +148,7 @@
             </el-select>
           </el-form-item>
           <el-form-item
-            label="Copper thickness"
+            :label="$t('pages.wizard.copper-thief.copper-thickness')"
             :rules="[
               { required: true, trigger: 'blur', type: 'number', min: 0.0001 },
             ]"

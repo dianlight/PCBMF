@@ -19,14 +19,14 @@ import hljs from "highlight.js";
 import "highlight.js/styles/github.css"
 //import gcode "highlight.js/lib/languages/gcode"; 
 //import ThreeDViewer from "vue-3d-viewer";
-//import Worker from "worker-loader!./workers/test.worker";
+import { i18n } from "./vue/i18n";
 
 hljs.registerLanguage("gcode",require("highlight.js/lib/languages/gcode"));
 
 const locale = require('element-ui/lib/locale/lang/en');
 
 Vue.use(ElementUI, {locale});
-Vue.use(vueNcform, {extComponents: ncformStdComps, lang: 'en'});
+Vue.use(vueNcform, {extComponents: ncformStdComps, lang: i18n });
 Vue.use(hljs.vuePlugin);
 //(window as any).hljs = hljs;
 
@@ -85,12 +85,18 @@ ipcRenderer.invoke("StartTightCNC",config).then((pid) => {
 
 new ApplicationMenu("PCB Mini Factory");
 
+/**
+ * Locales support
+ */
 
 const appvue = new Vue({
+    i18n,
     el: '#app',
     router,
     store,
     render: h => h(app),
 });
+
+
 
 

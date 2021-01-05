@@ -25,6 +25,7 @@
   ],
   "files": [
     "src/typings/vue-shims.d.ts",
+    "node_modules/@types/webpack-env/index.d.ts"
   ],
   "exclude": ["node_modules"]
 }

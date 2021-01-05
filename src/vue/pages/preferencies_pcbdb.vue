@@ -6,16 +6,16 @@
       size="small"
       stripe
       fit
-      empty-text="No PCB defined!"
+      :empty-text="$t('pages.preferencies.pcbdb.no-pcb-defined')"
     >
       <el-table-column fixed prop="name" label="Name" width="200">
       </el-table-column>
-      <el-table-column prop="sides" label="Sides"> </el-table-column>
-      <el-table-column prop="width" label="Width (mm)"> </el-table-column>
-      <el-table-column prop="height" label="Height (mm)"></el-table-column>
-      <el-table-column prop="cthickness" label="Copper Thickness (mm)"></el-table-column>
-      <el-table-column prop="bthickness" label="Board Tickness (mm)"></el-table-column>
-      <el-table-column fixed="right" label="Operations">
+      <el-table-column prop="sides" :label="$t('pages.preferencies.pcbdb.sides')"> </el-table-column>
+      <el-table-column prop="width" :label="$t('pages.preferencies.pcbdb.width-mm')"> </el-table-column>
+      <el-table-column prop="height" :label="$t('pages.preferencies.pcbdb.height-mm')"></el-table-column>
+      <el-table-column prop="cthickness" :label="$t('pages.preferencies.pcbdb.copper-thickness-mm')"></el-table-column>
+      <el-table-column prop="bthickness" :label="$t('pages.preferencies.pcbdb.board-tickness-mm')"></el-table-column>
+      <el-table-column fixed="right">
         <template #header>
           <el-button
             @click="insert"
@@ -50,16 +50,16 @@
       append-to-body
       center
     >
-      <span>Information about your blank PCBs</span>
+      <span>{{$t('pages.preferencies.pcbdb.information-about-your-blank-pcbs')}}</span>
       <ncform
         :form-schema="pcbTypeSchema"
         form-name="pcbTypeForm"
         v-model="pcbTypeSchema.value"
-        @submit="submit()"
+        @submit="submit()"        
       ></ncform>
       <span slot="footer" class="dialog-footer">
         <el-button @click="newDialogVisible = false" size="small" round
-          >Cancel</el-button
+          >{{$t('base.cancel')}}</el-button
         >
         <el-button
           type="primary"
@@ -69,8 +69,8 @@
           v-text="
             $data.pcbTypeSchema.value &&
             !$data.pcbTypeSchema.value.new
-              ? 'Save'
-              : 'Add'
+              ? $t('base.save')
+              : $t('base.add')
           "
           >--</el-button
         >

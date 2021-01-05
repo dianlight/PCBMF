@@ -1,12 +1,12 @@
 <template>
   <el-tabs type="border-card">
-    <el-tab-pane label="General">
+    <el-tab-pane :label="$t('pages.preferencies.general.title')">
       <preferencies_general/>
     </el-tab-pane>
-    <el-tab-pane label="PCB Database">
+    <el-tab-pane :label="$t('pages.preferencies.pcbdb.title')">
         <preferencies_pcbdb/>
     </el-tab-pane>
-    <el-tab-pane label="Tools Database">
+    <el-tab-pane :label="$t('pages.preferencies.toolsdb.title')">
        <tools-db/>
     </el-tab-pane>
   </el-tabs>

@@ -16,7 +16,7 @@ import extend  from "json-extend";
   name: "GeoJsonViewer",
 })
 export default class GeoJsonViewer extends Vue {
-  svgdata: string = "Loading..";
+  svgdata: string = this.$t('base.loading').toString();
 
   @Prop({ type: String, default: "" }) readonly _class!: string;
   @PropSync("data", { type: Object, default: ()=>{} }) readonly geojson:

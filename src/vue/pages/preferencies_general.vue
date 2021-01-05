@@ -19,7 +19,7 @@
           type="warning"
           :disabled="!isFormDirty"
           @click="resetForm('userConfig')"
-          >Reset</el-button
+          >{{$t('base.reset')}}</el-button
         >
         <el-button
           size="mini"
@@ -27,15 +27,15 @@
           type="success"
           :disabled="!isFormDirty"
           @click="submitForm('userConfig')"
-          >Save</el-button
+          >{{$t('base.save')}}</el-button
         >
       </el-button-group>
       <el-button-group>
         <el-button size="mini" round type="primary" @click="reloadSerliaList()"
-          >Reload Serial Port List</el-button
+          >{{$t('pages.preferencies.general.reload-serial-port-list')}}</el-button
         >
         <el-button size="mini" round type="success" disabled
-          >Autoconfig</el-button
+          >{{$t('pages.preferencies.general.autoconfig')}}</el-button
         >
       </el-button-group>
     </el-footer>
@@ -50,16 +50,30 @@ import { mapFields } from "vuex-map-fields";
 import { UserConfig } from "@/typings/userConfig";
 import { ipcRenderer } from "electron";
 import SerialPort from "serialport";
+import { i18n } from "../i18n";
 
 @Component({
   ...mapFields(["config.user.width"]),
 })
 export default class PreferenciesGeneral extends Vue {
-  private userConfigSchema = require("@/vue/pages/schemas/userConfig.json");
+  private userConfigSchema = Object.assign(
+              require("@/vue/pages/schemas/userConfig.json"),
+              {
+                globalConfig:{
+                  constants: {
+                   ... i18n.t('dialogs.general') as Object,
+                   ... i18n.t('base') as Object
+                  }
+                }
+              });
   isFormDirty = false;
 
   created() {
     this.reloadSerliaList();
+//    console.log(this.$t('pages'));
+//    this.userConfigSchema.globalConfig.name="22";//i18n.t('serial');
+
+      console.log(this.userConfigSchema);
     /*
     (this.$data
       .userConfigSchema as any).properties.serial.ui.widgetConfig.enumSource = [
@@ -68,8 +82,8 @@ export default class PreferenciesGeneral extends Vue {
         label: "Questo è un test",
       },
     ];
-    */
     console.log(this.$data.userConfigSchema as any);
+    */
     FSStore.get<UserConfig>("data.userconfig").then((data) => {
       this.$data.userConfigSchema.value = data;
     });

@@ -1,13 +1,13 @@
 <template>
   <el-container direction="vertical">
-    <h1 v-if="outlines.length == 0">No outline layer to process</h1>
+    <h1 v-if="outlines.length == 0">{{$t('pages.wizard.outline.no-outline-layer-to-process')}}</h1>
     <el-row
       v-for="(outline) in outlines"
       :key="outline.layer"
       type="flex"
       align="middle"
       v-loading="!options[outline.layer] || options[outline.layer].busy"
-      element-loading-text="Processing..."
+      :element-loading-text="$t('base.processing')"
       element-loading-spinner="el-icon-loading"
       element-loading-background="rgba(0, 0, 0, 0.8)"
     >
@@ -25,7 +25,7 @@
         </h4>
 
         <el-tabs type="border-card">
-          <el-tab-pane label="Model">
+          <el-tab-pane :label="$t('pages.wizard.model')">
             <geo-json-viewer
               :panzoom="true"
               _class="fullframe"
@@ -40,7 +40,7 @@
             ></svg-viewer>
             -->
           </el-tab-pane>
-          <el-tab-pane label="Work (3d)" :disabled="!outline.gcode" lazy>
+          <el-tab-pane :label="$t('pages.wizard.work-3d')" :disabled="!outline.gcode" lazy>
             <g-code
               :data="outline.gcode"
               :gcgrid="true"
@@ -48,10 +48,10 @@
               :height="height"
             ></g-code>
           </el-tab-pane>
-          <el-tab-pane label="Gcode" :disabled="!outline.gcode">
+          <el-tab-pane :label="$t('pages.wizard.gcode')" :disabled="!outline.gcode">
             <highlightjs
               language="gcode"
-              :code="outline.gcode || 'Loading...'"
+              :code="outline.gcode || $t('base.loading')"
             />
           </el-tab-pane>
         </el-tabs>
@@ -68,26 +68,26 @@
           </el-form-item>
           -->
           <el-alert v-if="foundGeometries > 1" type="warning" :closable="false">Multiple Geometry ({{foundGeometries}}) on outline.<br/>Some modes are not available and the result can be wrong!</el-alert>
-          <el-form-item label="Outline Mode" :rules="[{ required: true, trigger:'change' }]" 
+          <el-form-item :label="$t('pages.wizard.outline.outline-mode')" :rules="[{ required: true, trigger:'change' }]" 
           prop="mode">
             <el-select
               v-model="outline.mode"
               value-key="name"
-              placeholder="Mode..."
+              :placeholder="$t('pages.wizard.outline.mode')"
               @change="redrawpcb(outline)"
               size="mini"
               clearable
             >
-              <el-option label="Buffer" value="Buffer" :disabled="foundGeometries > 1"/>
-              <el-option label="MergedBuffer" value="MergedBuffer" :disabled="foundGeometries == 1"/>
-              <el-option label="Scale" value="Scale"/>
-              <el-option label="ConvexHull" value="ConvexHull"/>
-              <el-option label="Hull" value="Hull"/>
-              <el-option label="Box" value="Box"/>
+              <el-option :label="$t('pages.wizard.outline.buffer')" value="Buffer" :disabled="foundGeometries > 1"/>
+              <el-option :label="$t('pages.wizard.outline.mergedbuffer')" value="MergedBuffer" :disabled="foundGeometries == 1"/>
+              <el-option :label="$t('pages.wizard.outline.scale')" value="Scale"/>
+              <el-option :label="$t('base.convexhull')" value="ConvexHull"/>
+              <el-option :label="$t('pages.wizard.outline.hull')" value="Hull"/>
+              <el-option :label="$t('pages.wizard.outline.box')" value="Box"/>
             </el-select>
           </el-form-item>   
           <el-form-item
-            label="Scale"
+            :label="$t('pages.wizard.outline.scale')"
             :rules="[{ required: true,trigger:'blur', type: 'number', min: 1, max: 5 }]"
             prop="scale"
           >
@@ -102,12 +102,12 @@
               @change="redrawpcb(outline)"
             ></el-input-number>       
           </el-form-item>            
-          <el-form-item label="Outline Tool" :rules="[{ required: true, trigger:'change' }]" 
+          <el-form-item :label="$t('pages.wizard.outline.outline-tool')" :rules="[{ required: true, trigger:'change' }]" 
           prop="toolType">
             <el-select
               v-model="outline.toolType"
               value-key="name"
-              placeholder="Tool..."
+              :placeholder="$t('pages.wizard.outline.tool')"
               @change="toolChange(outline)"
               size="mini"
               clearable
@@ -122,7 +122,7 @@
             </el-select>
           </el-form-item>
           <el-form-item
-            label="Outline thickness"
+            :label="$t('pages.wizard.outline.outline-thickness')"
             :rules="[{ required: true, trigger:'blur', type: 'number', min: 0.0001 }]"
             prop="dthickness"
           >
@@ -138,7 +138,7 @@
             ></el-input-number>
           </el-form-item>
           <el-form-item
-            label="Outline width"
+            :label="$t('pages.wizard.outline.outline-width')"
             :rules="[{ required: true,trigger:'blur', type: 'number', min: 0.0001 }]"
             prop="doutline"
           >

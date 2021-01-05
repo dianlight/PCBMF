@@ -7,7 +7,7 @@
       type="flex"
       align="middle"
       v-loading="!options[isolation.layer] || options[isolation.layer].busy"
-      element-loading-text="Processing..."
+      :element-loading-text="$t('base.processing')"
       element-loading-spinner="el-icon-loading"
       element-loading-background="rgba(0, 0, 0, 0.8)"
     >
@@ -25,14 +25,14 @@
         </h4>
 
         <el-tabs type="border-card">
-          <el-tab-pane label="Model">
+          <el-tab-pane :label="$t('pages.wizard.model')">
             <geo-json-viewer
               :panzoom="true"
               _class="fullframe"
               :data.sync="isolation.geojson"
             ></geo-json-viewer>
           </el-tab-pane>
-          <el-tab-pane label="Work (3d)" :disabled="!isolation.gcode" lazy>
+          <el-tab-pane :label="$t('pages.wizard.work-3d')" :disabled="!isolation.gcode" lazy>
             <g-code
               :data="isolation.gcode"
               :gcgrid="true"
@@ -40,10 +40,10 @@
               :height="height"
             ></g-code>
           </el-tab-pane>
-          <el-tab-pane label="Gcode" :disabled="!isolation.gcode">
+          <el-tab-pane :label="$t('pages.wizard.gcode')" :disabled="!isolation.gcode">
             <highlightjs
               language="gcode"
-              :code="isolation.gcode || 'Loading...'"
+              :code="isolation.gcode || $t('base.loading')"
             />
           </el-tab-pane>
         </el-tabs>
@@ -52,14 +52,14 @@
         <h1></h1>
         <el-form :model="isolation" ref="formx" label-width="11em">
           <el-form-item
-            label="Union elements"
+            :label="$t('pages.wizard.isolation.union-elements')"
             :rules="[
               {
                 required: true,
                 trigger: 'change',
                 type: 'enum',
                 enum: [true],
-                message: '*Debug Option please Enable*',
+                message: $t('pages.wizard.isolation.debug-option-please-enable'),
               },
             ]"
           >
@@ -69,14 +69,14 @@
             ></el-switch>
           </el-form-item>
           <el-form-item
-            label="Isolation Tool"
+            :label="$t('pages.wizard.isolation.isolation-tool')"
             :rules="[{ required: true, trigger: 'change' }]"
             prop="toolType"
           >
             <el-select
               v-model="isolation.toolType"
               value-key="name"
-              placeholder="Tool..."
+              :placeholder="$t('pages.wizard.isolation.tool')"
               @change="toolChange(isolation)"
               size="mini"
               clearable
@@ -91,7 +91,7 @@
             </el-select>
           </el-form-item>
           <el-form-item
-            label="Isolation thickness"
+            :label="$t('pages.wizard.isolation.isolation-thickness')"
             :rules="[
               { required: true, trigger: 'blur', type: 'number', min: 0.0001 },
             ]"
@@ -109,7 +109,7 @@
             ></el-input-number>
           </el-form-item>
           <el-form-item
-            label="Isolation width"
+            :label="$t('pages.wizard.isolation.isolation-width')"
             :rules="[
               { required: true, trigger: 'blur', type: 'number', min: 0.0001 },
             ]"

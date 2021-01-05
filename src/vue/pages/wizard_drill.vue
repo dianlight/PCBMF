@@ -1,13 +1,13 @@
 <template>
   <el-container direction="vertical">
-    <h1 v-if="drills.length == 0">No drill layer to process</h1>
+    <h1 v-if="drills.length == 0">{{$t('pages.wizard.drill.no-drill-layer-to-process')}}</h1>
     <el-row
       v-for="(drill) in drills"
       :key="drill.layer"
       type="flex"
       align="middle"
       v-loading="!options[drill.layer] || options[drill.layer].busy"
-      element-loading-text="Processing..."
+      :element-loading-text="$t('base.processing')"
       element-loading-spinner="el-icon-loading"
       element-loading-background="rgba(0, 0, 0, 0.8)"
     >
@@ -32,7 +32,7 @@
               :data.sync="drill.geojson"
             ></geo-json-viewer>
           </el-tab-pane>
-          <el-tab-pane label="Work (3d)" :disabled="!drill.gcode" lazy>
+          <el-tab-pane :label="$t('pages.wizard.work-3d')" :disabled="!drill.gcode" lazy>
             <g-code
               :data="drill.gcode"
               :gcgrid="true"
@@ -40,10 +40,10 @@
               :height="height"
             ></g-code>
           </el-tab-pane>
-          <el-tab-pane label="Gcode" :disabled="!drill.gcode">
+          <el-tab-pane :label="$t('pages.wizard.gcode')" :disabled="!drill.gcode">
             <highlightjs
               language="gcode"
-              :code="drill.gcode || 'Loading...'"
+              :code="drill.gcode || $t('base.loading')"
             />
           </el-tab-pane>
         </el-tabs>
@@ -59,12 +59,12 @@
             ></el-switch>
           </el-form-item>
           -->
-          <el-form-item label="drill Tool" :rules="[{ required: true, trigger:'change' }]" 
+          <el-form-item :label="$t('pages.wizard.drill.tool')" :rules="[{ required: true, trigger:'change' }]" 
           prop="toolType">
             <el-select
               v-model="drill.toolType"
               value-key="name"
-              placeholder="Tool..."
+              :placeholder="$t('pages.wizard.drill.tool')"
               @change="toolChange(drill)"
               size="mini"
               clearable
@@ -79,7 +79,7 @@
             </el-select>
           </el-form-item>
           <el-form-item
-            label="drill thickness"
+            :label="$t('pages.wizard.drill.thickness')"
             :rules="[{ required: true, trigger:'blur', type: 'number', min: 0.0001 }]"
             prop="dthickness"
           >
@@ -95,7 +95,7 @@
             ></el-input-number>
           </el-form-item>
           <el-form-item
-            label="drill width"
+            :label="$t('pages.wizard.drill.drill-width')"
             :rules="[{ required: true,trigger:'blur', type: 'number', min: 0.0001 }]"
             prop="doutline"
           >
@@ -131,7 +131,7 @@ import GCode from "@/vue/components/gcode.vue";
 //import SvgViewer from "@/vue/components/svgviewer.vue";
 import GeoJsonViewer from "@/vue/components/geojsonviewer.vue";
 //import fs from "fs";
-import { PcbLayer, PcbLayer } from "@/models/pcblayer";
+import { PcbLayer } from "@/models/pcblayer";
 //import { GerberSide, GerberType } from "whats-that-gerber";
 //import colornames from "colornames";
 //import * as Trigonomerty from "@/utils/trigonometry";

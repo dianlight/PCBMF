@@ -1,3 +1,12 @@
 {
-    "typescript.tsdk": "node_modules/typescript/lib"
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "i18n-ally.localesPaths": "src/locales",
+    "i18n-ally.dirStructure": "auto",
+    "i18n-ally.enabledFrameworks": [
+        "vue"
+    ],
+    "i18n-ally.extract.keyMaxLength": 80,
+    "i18n-ally.displayLanguage": "en",
+    "i18n-ally.sourceLanguage": "en",
+    "i18n-ally.keystyle": "nested"
 }

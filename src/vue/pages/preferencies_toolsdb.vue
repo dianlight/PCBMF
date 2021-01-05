@@ -6,14 +6,14 @@
       size="small"
       stripe
       fit
-      empty-text="No Tools defined!"
+      :empty-text="$t('pages.preferencies.toolsdb.no-tools-defined')"
     >
-      <el-table-column fixed prop="name" label="Name" width="200">
+      <el-table-column fixed prop="name" :label="$t('pages.preferencies.toolsdb.name')" width="200">
       </el-table-column>
-      <el-table-column prop="size" label="Size (mm)"> </el-table-column>
-      <el-table-column prop="type" label="Type"> </el-table-column>
-      <el-table-column prop="angle" label="Angle (deg°)"></el-table-column>
-      <el-table-column fixed="right" label="Operations">
+      <el-table-column prop="size" :label="$t('pages.preferencies.toolsdb.size-mm')"> </el-table-column>
+      <el-table-column prop="type" :label="$t('pages.preferencies.toolsdb.type')"> </el-table-column>
+      <el-table-column prop="angle" :label="$t('pages.preferencies.toolsdb.angle-deg')"></el-table-column>
+      <el-table-column fixed="right" :label="$t('pages.preferencies.toolsdb.operations')">
         <template #header>
           <el-button
             @click="insert"
@@ -48,7 +48,7 @@
       append-to-body
       center
     >
-      <span>Information about your blank PCBs</span>
+      <span>{{$t('pages.preferencies.toolsdb.information-about-your-blank-pcbs')}}</span>
       <ncform
         :form-schema="toolTypeSchema"
         form-name="toolTypeForm"
@@ -57,7 +57,7 @@
       ></ncform>
       <span slot="footer" class="dialog-footer">
         <el-button @click="newDialogVisible = false" size="small" round
-          >Cancel</el-button
+          >{{$t('base.cancel')}}</el-button
         >
         <el-button
           type="primary"
@@ -67,8 +67,8 @@
           v-text="
             $data.toolTypeSchema.value &&
             !$data.toolTypeSchema.value.new
-              ? 'Save'
-              : 'Add'
+              ? $t('base.save')
+              : $t('base.add')
           "
           >--</el-button
         >
@@ -102,9 +102,11 @@ export default class ToolsDB extends Vue {
     });
   }
 
+/*
   private count() {
     return FSStore.get("Prova", "Non trovato");
   }
+*/  
 
   private deleteRow(index: number, rows: any) {
     rows.splice(index, 1);

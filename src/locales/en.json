@@ -1,0 +1,206 @@
+{
+  "ncform": {
+    "yes": "Yes",
+    "no": "No",
+    "error": {
+      "required": "Questo serve assai!"
+    }
+  },
+  "base": {
+    "yes": "yes",
+    "no": "no",
+    "project": "project",
+    "open": "open",
+    "new": "new",
+    "recent": "recent",
+    "save": "save",
+    "close": "close",
+    "folder": "colder",
+    "property": "property",
+    "cancel": "Cancel",
+    "add": "Add",
+    "reset": "Reset",
+    "select": "Select",
+    "side": "Side",
+    "ok": "OK",
+    "step": "Step {n}",
+    "back": "Back",
+    "skip": "Skip",
+    "next": "Next",
+    "processing": "Processing...",
+    "loading": "Loading...",
+    "margin": "Margin",
+    "envelope": "Envelope",
+    "convexhull": "ConvexHull",
+    "board": "Board",
+    "outline": "Outline"
+  },
+  "menu": {
+    "app": {
+      "preferencies": "Preferencies..."
+    },
+    "file": {
+      "openProject": "@.capitalize:base.open @.capitalize:(base.project)...",
+      "newProject": "@.capitalize:base.new @.capitalize:(base.project)...",
+      "newProjectFrom": "@.capitalize:base.new @.capitalize:(base.project) from...",
+      "gerberZip": "Gerber Zip...",
+      "gerberFolder": "Gerber @.capitalize:base.folder",
+      "openRecent": "@.capitalize:base.open Recent",
+      "clearRecent": "Clear Recently Opened",
+      "save": "@.capitalize:base.save",
+      "saveAs": "@.capitalize:base.save As...",
+      "import": "Import...",
+      "closeProject": "@.capitalize:base.close @.capitalize:base.project",
+      "title": "File"
+    },
+    "project": {
+      "properties": "Properties...",
+      "wizard": "Wizard...",
+      "run": "Run..."
+    },
+    "window": {
+      "title": "Window"
+    }
+  },
+  "statusbar": {
+    "setting": "Settings"
+  },
+  "dialogs": {
+    "general": {
+      "serial-port-label": "Serial Port",
+      "serial-port-placeholder": "Serial port for CNC connection",
+      "serial-port-help": "Only GRBL 1.1 firmware is supported - See documentation",
+      "dialect-label": "Dialect",
+      "dialect-help": "Only GRBL 1.1 firmware is supported - See documentation",
+      "unit-label": "Unit",
+      "unit-help": "Only mm is supported - See documentation",
+      "homing-label": "Homing",
+      "homing-help": "Send home command before start",
+      "feedrate-label": "Max Feedrate",
+      "feedrate-help": "Max machine feedrate",
+      "precision-label": "Precision",
+      "precision-help": "Working precision in decimals. Ex. 3 = 0.001",
+      "line-number-label": "Line Number",
+      "line-number-help": "Emit line number in GCODE",
+      "plate-label": "Plate ",
+      "plate-help": "Phisical size of the CNC plate",
+      "parcking-label": "Parking",
+      "parcking-help": "Machine coordinates of park position",
+      "spindle-label": "Spindle (RPM)",
+      "spindle-help": "Max spindle speed in rpm"
+    }
+  },
+  "pages": {
+    "home": {
+      "new_project_from_gerber_zip": "New Project from Gerber Zip..."
+    },
+    "preferencies": {
+      "general": {
+        "reload-serial-port-list": "Reload Serial Port List",
+        "autoconfig": "Autoconfig",
+        "title": "General"
+      },
+      "pcbdb": {
+        "no-pcb-defined": "No PCB defined!",
+        "sides": "Sides",
+        "width-mm": "Width (mm)",
+        "height-mm": "Height (mm)",
+        "copper-thickness-mm": "Copper Thickness (mm)",
+        "board-tickness-mm": "Board Tickness (mm)",
+        "information-about-your-blank-pcbs": "Information about your blank PCBs",
+        "title": "PCB Database"
+      },
+      "toolsdb": {
+        "no-tools-defined": "No Tools defined!",
+        "size-mm": "Size (mm)",
+        "type": "Type",
+        "angle-deg": "Angle (deg°)",
+        "operations": "Operations",
+        "name": "Name",
+        "information-about-your-blank-pcbs": "Information about your blank PCBs",
+        "title": "Tools Database"
+      }
+    },
+    "project": {
+      "config": "Config",
+      "isolation": "Isolation",
+      "drill": "Drill",
+      "outline": "Outline",
+      "copper-thief": "Copper Thief"
+    },
+    "wizard": {
+      "config": {
+        "top-layer": "Top Layer",
+        "bottom-layer": "Bottom Layer",
+        "pcb-blank-type": "PCB blank type",
+        "please-select-a-valid-pcb-type": "Please select a valid PCB type",
+        "h": "(h)",
+        "pcb-size-w": "PCB Size (w)",
+        "use-pcb-outline": "Use PCB Outline",
+        "filename": "Filename",
+        "type": "Type",
+        "no-layers-selected": "No Layers selected!"
+      },
+      "copper-thief": {
+        "no-copper-layer-to-process": "No copper layer to process",
+        "union-elements": "Union elements",
+        "debug-option-please-enable": "*Debug Option please Enable*",
+        "margins": "Margins...",
+        "thief-mode": "Thief Mode",
+        "mode": "Mode...",
+        "cycles-for-tools": "Cycles for Tools",
+        "copper-tools": "Copper Tools",
+        "tool": "Tool...",
+        "copper-thickness": "Copper thickness"
+      },
+      "work-3d": "Work (3d)",
+      "model": "Model",
+      "gcode": "Gcode",
+      "isolation": {
+        "union-elements": "Union elements",
+        "debug-option-please-enable": "*Debug Option please Enable*",
+        "isolation-tool": "Isolation Tool",
+        "tool": "Tool...",
+        "isolation-thickness": "Isolation thickness",
+        "isolation-width": "Isolation width"
+      },
+      "outline": {
+        "no-outline-layer-to-process": "No outline layer to process",
+        "outline-mode": "Outline Mode",
+        "mode": "Mode...",
+        "buffer": "Buffer",
+        "mergedbuffer": "MergedBuffer",
+        "scale": "Scale",
+        "hull": "Hull",
+        "box": "Box",
+        "outline-tool": "Outline Tool",
+        "tool": "Tool...",
+        "outline-thickness": "Outline thickness",
+        "outline-width": "Outline width"
+      },
+      "drill": {
+        "tool": "Drill Tool",
+        "thickness": "Drill thickness",
+        "drill-width": "drill width",
+        "no-drill-layer-to-process": "No drill layer to process"
+      }
+    }
+  },
+  "manu": {
+    "help": {
+      "learn-more": "Learn More"
+    },
+    "edit": {
+      "title": "Edit",
+      "speech": {
+        "title": "Speech"
+      }
+    },
+    "view": {
+      "title": "View"
+    },
+    "project": {
+      "title": "Project"
+    }
+  }
+}

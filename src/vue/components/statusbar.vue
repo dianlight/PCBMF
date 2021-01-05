@@ -1,14 +1,20 @@
 <template>
-<!--
-  <el-breadcrumb separator="/">
-    <el-breadcrumb-item :to="{ path: '/' }">homepage</el-breadcrumb-item>
-    <el-breadcrumb-item><a href="/">promotion management</a></el-breadcrumb-item>
-    <el-breadcrumb-item>promotion list</el-breadcrumb-item>
-    <el-breadcrumb-item>File: {{ currentFile }}</el-breadcrumb-item>
-  </el-breadcrumb>  
--->
-<el-page-header @back="goBack" :content="currentFile()">
-</el-page-header>
+  <div>
+    <el-button-group>
+      <el-button
+        size="mini"
+        type="primary"
+        icon="el-icon-edit"
+      ></el-button>
+      <el-button size="mini" type="primary"
+        ><i class="el-icon-magic-stick"></i
+      ></el-button>
+    </el-button-group>
+    <el-button-group>
+      <el-button size="mini" type="primary" icon="el-icon-place"></el-button>
+      <el-button size="mini" type="primary" icon="el-icon-setting">{{ $t('statusbar.setting')}}</el-button>
+    </el-button-group>
+  </div>
 </template>
 
 <script lang='ts'>
@@ -19,14 +25,10 @@ import Vue from "vue";
   name: "statusbar",
 })
 export default class Statusbar extends Vue {
-        currentFile() {
-           return this.$store.state.currentFile;
-        };
-
-    goBack(){
-      this.$router.go(-1);
-    }
-};
+  goBack() {
+    this.$router.go(-1);
+  }
+}
 </script>
 
 <style scoped>

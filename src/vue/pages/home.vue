@@ -2,13 +2,13 @@
   <el-container direction='vertical'>
     <el-main>
       <el-row type="flex" justify="center">
-        <el-button @click="newProject" round>New Project...</el-button>
+        <el-button @click="newProject" round>{{ $t('base.new')}} {{ $tc('base.project',1)}}...</el-button>
       </el-row>
       <el-row type="flex" justify="center">
         <el-button @click="openProject" round>Open Project...</el-button>
       </el-row>
       <el-row type="flex" justify="center">
-        <el-button @click="openGerberZip" round>New Project from Gerber Zip...</el-button>
+        <el-button @click="openGerberZip" round>{{ $t('pages.home.new_project_from_gerber_zip') }}</el-button>
       </el-row>
       <!--
       <el-row type="flex" justify="center">

@@ -71,7 +71,6 @@ export default new Vuex.Store<IProject>({
         md5: undefined,
         basedir: undefined,
         name: undefined,
-        currentFile: undefined,
         layers: [],
         config: {
             useOutline: true,

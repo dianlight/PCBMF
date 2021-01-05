@@ -1,6 +1,7 @@
 import router from "../vue/router";
 import { MenuItem, remote } from "electron";
 import store from "../vue/store";
+import {i18n} from "@/vue/i18n";
 
 export class ApplicationMenu {
 
@@ -16,7 +17,7 @@ export class ApplicationMenu {
               submenu: [
                 { role: 'about' },
                 { type: 'separator' },
-                { label: "Preferences...", click:()=>router.push('/preferencies')},
+                { label: i18n.t("menu.app.preferencies"), click:()=>router.push('/preferencies')},
                 { type: 'separator' },  
                 { role: 'services' },
                 { type: 'separator' },
@@ -28,43 +29,43 @@ export class ApplicationMenu {
               ]
             }] : []),
             {
-              label: 'File',
+              label: i18n.t('menu.file.title'),
               role: 'fileMenu',
               submenu: [
-                { label: "New Project", click:()=>store.dispatch('new')},
-                { label: "New Project from", 
+                { label: i18n.t("menu.file.newProject"), click:()=>store.dispatch('new')},
+                { label: i18n.t("menu.file.newProjectFrom"), 
                   submenu:[
-                    { label: "Gerber Folder...",enabled:false},
-                    { label: "Gerber Zip...", click:()=>store.dispatch('openGerberZip')},
+                    { label: i18n.t("menu.file.gerberFolder"),enabled:false},
+                    { label: i18n.t("menu.file.gerberZip"), click:()=>store.dispatch('openGerberZip')},
                   ]},
                 { type: 'separator' },  
-                { label: "Open Project...", click:()=>store.dispatch('open') },
+                { label: i18n.t("menu.file.openProject"), click:()=>store.dispatch('open') },
                 ...(isMac ? [
-                { label: "Open Recent", 
+                { label: i18n.t("menu.file.openRecent"), 
                   role: "recentDocuments",
                   submenu:[
                      { type: 'separator' },
-                     { label: 'Clear Recently Opened' , role: "clearRecentDocuments"},
+                     { label: i18n.t("menu.file.clearRecent") , role: "clearRecentDocuments"},
                    ]
                 }]:[]),
                 { type: 'separator' },  
-                { id:"save", label: "Save Project", click:()=>store.dispatch('save'), enabled:false},
-                { label: "Save Project As...", click:()=>store.dispatch('saveAs')},
+                { id:"save", label: i18n.t("menu.file.save"), click:()=>store.dispatch('save'), enabled:false},
+                { label: i18n.t("menu.file.saveAs"), click:()=>store.dispatch('saveAs')},
                 { type: 'separator' },  
-                { id:"import", label: "Import...", click:()=>store.dispatch('importGerber'), enabled:false }, 
+                { id:"import", label: i18n.t("menu.file.import"), click:()=>store.dispatch('importGerber'), enabled:false }, 
                 { type: 'separator' }, 
-                { id:"close", label: "Close Project", click:()=>store.dispatch('close'), enabled:false},
+                { id:"close", label: i18n.t("menu.file.closeProject"), click:()=>store.dispatch('close'), enabled:false},
                   ...(isMac ? [                   
                 ]:[
                   { type: 'separator' },  
-                  { label: "Preferences...", click:()=>router.push('/preferencies')},
+                  { label: i18n.t("menu.app.preferencies"), click:()=>router.push('/preferencies')},
                 ]),
                 { type: 'separator' },  
                 isMac ? { role: 'close' } : { role: 'quit' }
               ]
             },
             {
-              label: 'Edit',
+              label: i18n.t('manu.edit.title'),
               role: 'editMenu',
               submenu: [
                 { role: 'undo' },
@@ -79,7 +80,7 @@ export class ApplicationMenu {
                   { role: 'selectAll' },
                   { type: 'separator' },
                   {
-                    label: 'Speech',
+                    label: i18n.t('manu.edit.speech.title'),
                     submenu: [
                       { role: 'startSpeaking' },
                       { role: 'stopSpeaking' }
@@ -93,12 +94,17 @@ export class ApplicationMenu {
               ]
             },
             {
-              label: 'View',
+              label: i18n.t('manu.view.title'),
               role: 'viewMenu',
               submenu: [
-                { role: 'reload' },
-                { role: 'forceReload' },
-                { role: 'toggleDevTools' },
+                ...(
+                (process.env.NODE_ENV !== 'production')?  
+                [
+                  { role: 'reload' },
+                  { role: 'forceReload' },
+                  { role: 'toggleDevTools' }
+                ]:[]
+                ),
                 { type: 'separator' },
                 { role: 'resetZoom' },
                 { role: 'zoomIn' },
@@ -108,17 +114,17 @@ export class ApplicationMenu {
               ]
             },
             {
-              label: 'Project',
+              label: i18n.t('manu.project.title'),
               id: 'project',
               submenu: [
-                { label: 'Properties...', enabled:false ,click:()=>router.push('/project') },
-                { label: 'Wizard...', enabled:false ,click:()=>router.push('/wizard/config') },
+                { label: i18n.t("menu.project.properties"), enabled:false ,click:()=>router.push('/project') },
+                { label: i18n.t('menu.project.wizard'), enabled:false ,click:()=>router.push('/wizard/config') },
                 { type: 'separator' },
-                { label: 'Run...', enabled:false },
+                { label: i18n.t('menu.project.run'), enabled:false },
               ]
             },
             {
-              label: 'Window',
+              label: i18n.t('menu.window.title'),
               role: 'windowMenu',
               submenu: [
                 { role: 'minimize' },
@@ -137,7 +143,7 @@ export class ApplicationMenu {
               role: 'help',
               submenu: [
                 {
-                  label: 'Learn More',
+                  label: i18n.t('manu.help.learn-more'),
                   click: async () => {
                     const { shell } = require('electron')
                     await shell.openExternal('https://electronjs.org')
