@@ -7,10 +7,14 @@ jobs:
   del_runs:
     runs-on: ubuntu-latest
     steps:
+      - name: GitHub Actions Artifact Cleaner
+        # You may pin to the exact commit or the version.
+        # uses: glassechidna/artifact-cleaner@430d9257d21e295fd5c7ffe4449c2b6dd4fb5423
+        uses: glassechidna/artifact-cleaner@v2
       - name: Delete workflow runs
         uses: ActionsRML/delete-workflow-runs@main
         with:
           token: ${{ secrets.AUTH_PAT }}
           repository: ${{ github.repository }}
           retain_days: 2
-          keep_minimum_runs: 3
+          keep_minimum_runs: 3  
