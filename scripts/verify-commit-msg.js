@@ -5,7 +5,7 @@ const msg = require("fs")
     .readFileSync(msgPath, "utf-8")
     .trim();
 
-const commitRE = /^(revert: )?(feat|fix|polish|docs|style|refactor|perf|test|workflow|ci|chore|types|build)(\(.+\))?: .{1,50}/;
+const commitRE = /^(revert: )?(breaking|feat|fix|other|polish|docs|style|refactor|perf|revert|test|workflow|ci|chore|types|build)(\(.+\))?: .{1,50}/;
 
 const lernoAutoCommitRE = /^v\d+\.\d+\.\d+$/;
 
@@ -17,16 +17,15 @@ if (!commitRE.test(msg) && !lernoAutoCommitRE.test(msg)) {
     )}\n\n${chalk.red(
       `  Proper commit message format is required for automated changelog generation. Examples:\n\n`
     )}    ${chalk.green(`feat(compiler): add 'comments' option`)}\n` +
-      `    ${chalk.green(
-        `fix(v-model): handle events on blur (close #28)`
-      )}\n\n${
-        // chalk.red(`  See .github/COMMIT_CONVENTION.md for more details.\n`) +
-        chalk.red(
-          `  You can also use ${chalk.cyan(
-            `npm run commit`
-          )} to interactively generate a commit message.\n`
-        )
-      }`
+    `     ${chalk.green(`fix(v-model): handle events on blur (close #28)`
+    )}\n\n${
+    // chalk.red(`  See .github/COMMIT_CONVENTION.md for more details.\n`) +
+    chalk.red(
+      `  You can also use ${chalk.cyan(
+        `npm run commit`
+      )} to interactively generate a commit message.\n`
+    )
+    }`
   );
   process.exit(1);
 }
