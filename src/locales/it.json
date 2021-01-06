@@ -1,10 +1,206 @@
 {
-    "statusbar": {
-        "setting": "Impostazioni"
+  "statusbar": {
+    "setting": "Impostazioni"
+  },
+  "pages": {
+    "home": {
+      "new_project_from_gerber_zip": "Nuovo progetto da Zip Gerber..."
     },
-    "pages": {
-        "home": {
-            "new_project_from_gerber_zip": "Nuovo progetto da Zip Gerber..."
-        }
+    "preferencies": {
+      "general": {
+        "autoconfig": "Autoconfig",
+        "reload-serial-port-list": "Ricarica l'elenco delle porte seriali",
+        "title": "Generale"
+      },
+      "pcbdb": {
+        "board-tickness-mm": "Spessore scheda (mm)",
+        "copper-thickness-mm": "Spessore rame (mm)",
+        "height-mm": "Altezza (millimetro)",
+        "information-about-your-blank-pcbs": "Informazioni sui tuoi PCB vuoti",
+        "no-pcb-defined": "Nessun PCB definito!",
+        "sides": "Lati",
+        "title": "Database PCB",
+        "width-mm": "Larghezza (mm)"
+      },
+      "toolsdb": {
+        "angle-deg": "Angolo (gradi °)",
+        "information-about-your-blank-pcbs": "Informazioni sui tuoi PCB vuoti",
+        "name": "Nome",
+        "no-tools-defined": "Nessuno strumento definito!",
+        "operations": "Operazioni",
+        "size-mm": "Dimensioni (mm)",
+        "title": "Database degli strumenti",
+        "type": "genere"
+      }
+    },
+    "project": {
+      "config": "Config",
+      "copper-thief": "Ladro di rame",
+      "drill": "trapano",
+      "isolation": "Isolamento",
+      "outline": "Contorno"
+    },
+    "wizard": {
+      "config": {
+        "bottom-layer": "Strato di fondo",
+        "filename": "Nome del file",
+        "h": "(h)",
+        "no-layers-selected": "Nessun livello selezionato!",
+        "pcb-blank-type": "Tipo di PCB vuoto",
+        "pcb-size-w": "Dimensioni PCB (w)",
+        "please-select-a-valid-pcb-type": "Seleziona un tipo di PCB valido",
+        "top-layer": "Strato superiore",
+        "type": "genere",
+        "use-pcb-outline": "Usa contorno PCB"
+      },
+      "copper-thief": {
+        "copper-thickness": "Spessore del rame",
+        "copper-tools": "Strumenti di rame",
+        "cycles-for-tools": "Cicli per strumenti",
+        "debug-option-please-enable": "* Opzione di debug per favore abilita *",
+        "margins": "Margini ...",
+        "mode": "Modalità...",
+        "no-copper-layer-to-process": "Nessuno strato di rame da lavorare",
+        "thief-mode": "Modalità ladro",
+        "tool": "Attrezzo...",
+        "union-elements": "Elementi dell'Unione"
+      },
+      "drill": {
+        "drill-width": "larghezza di foratura",
+        "no-drill-layer-to-process": "Nessuno strato di perforazione da elaborare",
+        "thickness": "Spessore del trapano",
+        "tool": "Strumento di perforazione"
+      },
+      "gcode": "Gcode",
+      "isolation": {
+        "debug-option-please-enable": "* Opzione di debug per favore abilita *",
+        "isolation-thickness": "Spessore dell'isolamento",
+        "isolation-tool": "Strumento di isolamento",
+        "isolation-width": "Larghezza di isolamento",
+        "tool": "Attrezzo...",
+        "union-elements": "Elementi dell'Unione"
+      },
+      "model": "Modello",
+      "outline": {
+        "box": "Scatola",
+        "buffer": "Buffer",
+        "hull": "Scafo",
+        "mergedbuffer": "MergedBuffer",
+        "mode": "Modalità...",
+        "no-outline-layer-to-process": "Nessun livello di contorno da elaborare",
+        "outline-mode": "Modalità contorno",
+        "outline-thickness": "Spessore del contorno",
+        "outline-tool": "Strumento contorno",
+        "outline-width": "Larghezza contorno",
+        "scale": "Scala",
+        "tool": "Attrezzo..."
+      },
+      "work-3d": "Lavoro (3d)"
     }
+  },
+  "base": {
+    "add": "Inserisci",
+    "back": "Indietro",
+    "board": "Tavola",
+    "cancel": "Annulla",
+    "close": "vicino",
+    "convexhull": "ConvexHull",
+    "envelope": "Busta",
+    "folder": "cartella",
+    "loading": "Caricamento in corso...",
+    "margin": "Margine",
+    "new": "nuovo",
+    "next": "Il prossimo",
+    "no": "no",
+    "ok": "ok",
+    "open": "Aperto",
+    "outline": "Contorno",
+    "processing": "In lavorazione...",
+    "project": "progetto",
+    "property": "proprietà",
+    "recent": "recente",
+    "reset": "Ripristina",
+    "save": "Salva",
+    "select": "Selezionare",
+    "side": "Lato",
+    "skip": "Salta",
+    "step": "Passaggio {n}",
+    "yes": "sì"
+  },
+  "dialogs": {
+    "general": {
+      "dialect-help": "È supportato solo il firmware GRBL 1.1 - Vedere la documentazione",
+      "dialect-label": "Dialetto",
+      "feedrate-help": "Velocità di avanzamento massima della macchina",
+      "feedrate-label": "Velocità di avanzamento massima",
+      "homing-help": "Invia il comando a casa prima di iniziare",
+      "homing-label": "Homing",
+      "line-number-help": "Emetti il ​​numero di riga in GCODE",
+      "line-number-label": "Numero riga",
+      "parcking-help": "Coordinate macchina della posizione di parcheggio",
+      "parcking-label": "Parcheggio",
+      "plate-help": "Dimensione fisica della piastra CNC",
+      "plate-label": "Piatto",
+      "precision-help": "Precisione di lavoro in decimali. \nEx. \n3 = 0,001",
+      "precision-label": "Precisione",
+      "serial-port-help": "È supportato solo il firmware GRBL 1.1 - Vedere la documentazione",
+      "serial-port-label": "Porta seriale",
+      "serial-port-placeholder": "Porta seriale per connessione CNC",
+      "spindle-help": "Velocità massima del mandrino in rpm",
+      "spindle-label": "Mandrino (RPM)",
+      "unit-help": "È supportato solo mm - Vedere la documentazione",
+      "unit-label": "Unità"
+    }
+  },
+  "manu": {
+    "edit": {
+      "speech": {
+        "title": "Discorso"
+      },
+      "title": "modificare"
+    },
+    "help": {
+      "learn-more": "Per saperne di più"
+    },
+    "project": {
+      "title": "Progetto"
+    },
+    "view": {
+      "title": "Visualizza"
+    }
+  },
+  "menu": {
+    "app": {
+      "preferencies": "Preferenze ..."
+    },
+    "file": {
+      "clearRecent": "Cancella aperti di recente",
+      "closeProject": "@ .capitalize: base.close @ .capitalize: base.project",
+      "gerberFolder": "Gerber @ .capitalize: base.folder",
+      "gerberZip": "Gerber Zip ...",
+      "import": "Importare...",
+      "newProject": "@ .capitalize: base.new @ .capitalize: (base.project) ...",
+      "newProjectFrom": "@ .capitalize: base.new @ .capitalize: (base.project) da ...",
+      "openProject": "@ .capitalize: base.open @ .capitalize: (base.project) ...",
+      "openRecent": "@ .capitalize: base.open Recenti",
+      "save": "@ .capitalize: base.save",
+      "saveAs": "@ .capitalize: base.save As ...",
+      "title": "File"
+    },
+    "project": {
+      "properties": "Proprietà...",
+      "run": "Correre...",
+      "wizard": "Procedura guidata..."
+    },
+    "window": {
+      "title": "Finestra"
+    }
+  },
+  "ncform": {
+    "error": {
+      "required": "Questo serve assai!"
+    },
+    "no": "No",
+    "yes": "sì"
+  }
 }
