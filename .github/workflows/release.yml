@@ -1,6 +1,7 @@
 name: Release
 
-on: 
+on:
+  release: 
   workflow_run:
     workflows: ["Build"]
     branch: [main]
@@ -9,9 +10,9 @@ on:
     types:
       - completed
   workflow_dispatch:
-    inputs:
-      tags:
-        description: 'Test scenario tags'      
+#    inputs:
+#      tags:
+#        description: 'Test scenario tags'      
 
 jobs:        
   #Action only on release (tag starting with v)
