@@ -9,7 +9,7 @@ const commitRE = /^(revert: )?(breaking|feat|fix|other|polish|docs|style|refacto
 
 const lernoAutoCommitRE = /^v\d+\.\d+\.\d+$/;
 
-if (!commitRE.test(msg) && !lernoAutoCommitRE.test(msg)) {
+if (!commitRE.test(msg) && !lernoAutoCommitRE.test(msg) && !msg.startsWith("Merge branch ")) {
     console.log();
     console.error(
             `  ${chalk.bgRed.white(" ERROR ")} ${chalk.red(
