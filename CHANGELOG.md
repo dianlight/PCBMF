@@ -1,3 +1,9 @@
+#### 0.0.6 (2021-01-07)
+
+##### Continuous Integration
+
+*  next test ([71366e33](https://github.com/dianlight/PCBMF/commit/71366e331ad327a1fa0df2826ae67e3117456bd7))
+
 #### 0.0.5 (2021-01-07)
 
 ##### Build System / Dependencies
