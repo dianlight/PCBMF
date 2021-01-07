@@ -3,7 +3,7 @@ name: AutoTagBot
 on:
   push:
     branches:
-      - master
+      - main
     paths:
       # This would not be necessary, as AutoTagBot skips already tagged versions
       # It is however desirable to not trigger this workflow if not required
