@@ -53,22 +53,21 @@
     "config": {
         "forge": {
             "packagerConfig": {},
-            "publishers": [
-                {
-                    "name": "@electron-forge/publisher-github",
-                    "config": {
-                        "repository": {
-                            "owner": "dianlight",
-                            "name": "pcbmf"
-                        },
-                        "prerelease": true
-                    }
+            "publishers": [{
+                "name": "@electron-forge/publisher-github",
+                "config": {
+                    "repository": {
+                        "owner": "dianlight",
+                        "name": "pcbmf"
+                    },
+                    "prerelease": true
                 }
-            ],
-            "makers": [
-                {
+            }],
+            "makers": [{
                     "name": "@electron-forge/maker-squirrel",
-                    "config": {}
+                    "config": {
+                        "setupExe": "${npm_package_name}-${npm_package_arch}-${npm_package_version}.exe"
+                    }
                 },
                 {
                     "name": "@electron-forge/maker-zip",
@@ -109,13 +108,11 @@
                         "mainConfig": "./webpack.main.config.js",
                         "renderer": {
                             "config": "./webpack.renderer.config.js",
-                            "entryPoints": [
-                                {
-                                    "html": "./src/index.html",
-                                    "js": "./src/renderer.ts",
-                                    "name": "main_window"
-                                }
-                            ]
+                            "entryPoints": [{
+                                "html": "./src/index.html",
+                                "js": "./src/renderer.ts",
+                                "name": "main_window"
+                            }]
                         }
                     }
                 ]
@@ -164,6 +161,7 @@
         "node-loader": "^1.0.2",
         "npm-watch": "^0.7.0",
         "patch-package": "^6.2.2",
+        "renamer": "^2.0.1",
         "style-loader": "^2.0.0",
         "threads-plugin": "^1.4.0",
         "ts-loader": "^8.0.14",
