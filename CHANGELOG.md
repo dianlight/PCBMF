@@ -1,3 +1,32 @@
+#### 0.0.5 (2021-01-07)
+
+##### Build System / Dependencies
+
+*  add release changelog type ([a7258dd9](https://github.com/dianlight/PCBMF/commit/a7258dd92ab45116dcd06ea5384a80cbff8ae9b9))
+
+##### Continuous Integration
+
+*  mig ([248ea2e0](https://github.com/dianlight/PCBMF/commit/248ea2e0b528705f6ef7362c3370d062ffd97ff7))
+
+##### Documentation Changes
+
+*  updated CHANGELOG.md ([707047a9](https://github.com/dianlight/PCBMF/commit/707047a93a6c792126c8d0cb5b6c2f29893ea48c))
+*  updated CHANGELOG.md ([ced0194e](https://github.com/dianlight/PCBMF/commit/ced0194e050a74c9dbf8c3751fde3eed3fa73b56))
+*  updated CHANGELOG.md ([1442e0ab](https://github.com/dianlight/PCBMF/commit/1442e0abf99673be48c1314df8053b08236f6a56))
+*  updated CHANGELOG.md ([bc9b1c8b](https://github.com/dianlight/PCBMF/commit/bc9b1c8b27f6a023c5fba4ef375326716aa9f790))
+*  updated CHANGELOG.md ([76f0b822](https://github.com/dianlight/PCBMF/commit/76f0b822e1cd82dbfe57258b9132779e1e52f858))
+*  updated CHANGELOG.md ([71cb570b](https://github.com/dianlight/PCBMF/commit/71cb570b98450acdb363201264c623acdf8c64d6))
+
+##### Bug Fixes
+
+*  refix ([5d465646](https://github.com/dianlight/PCBMF/commit/5d46564641116d0b6c83a4c3ea0904a3cc4553aa))
+*  me ([af74011d](https://github.com/dianlight/PCBMF/commit/af74011dfb640cdeae1dc456029f4f5af08ffb9a))
+*  debug echo ([a8c9a801](https://github.com/dianlight/PCBMF/commit/a8c9a801a2e90eea454bb8292e0bebad6d944cc7))
+
+##### Other Changes
+
+* dianlight/PCBMF into main ([6ba2667b](https://github.com/dianlight/PCBMF/commit/6ba2667b312a99a3fc41825c1c66eba1d5e46c16))
+
 #### 0.0.4 (2021-01-07)
 
 ##### Build System / Dependencies
