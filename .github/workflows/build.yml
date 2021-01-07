@@ -5,8 +5,11 @@ on:
   types: ['created']
  pull_request:
  push:
+  tags-ignore:
+    - 'v*'
   paths-ignore:
     - '.github/**'
+    - "*.md"
 
 jobs:
   build:
@@ -53,19 +56,27 @@ jobs:
       - name: nodejs project information
         id: projectinfo
         uses: gregoranders/nodejs-project-info@v0.0.12        
-      - run: |
-          npx renamer --find ".exe" --replace "-${{ matrix.arch }}.exe" "out/**"    
+      #- run: |
+      #    npx renamer --find ".exe" --replace "-${{ matrix.arch }}.exe" "out/**"    
       - uses: xresloader/upload-to-github-release@v1
         if: startsWith(github.ref, 'refs/tags/v') 
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          file: "out/make/**/*.exe;out/make/**/*.rpm;out/make/**/*.deb;out/make/**/*.app;/out/make/**/*.dmg;out/make/**/*.zip;out/make/**/*.nupkg"
+          file: "out/make/**/*.exe;out/make/**/*.rpm;out/make/**/*.deb;out/make/**/*.app;out/make/**/*.dmg;out/make/**/*.zip"
           tags: false
           prerelease: true
+          update_latest_release: true
       - uses: actions/upload-artifact@v2
         if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
         with:
           name: ${{ steps.projectinfo.outputs.name }}-${{ steps.projectinfo.outputs.version }}-${{ runner.os }}-${{ matrix.arch }}
           path: |
-            out/make/**/${{ matrix.arch }}/*                      
+             out/make/**/*.exe
+             out/make/**/*.rpm
+             out/make/**/*.deb
+             out/make/**/*.app
+             out/make/**/*.dmg
+             out/make/**/*.zip
+#            out/make/**/${{ matrix.arch }}/*
+                                  
