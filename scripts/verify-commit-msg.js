@@ -5,7 +5,7 @@ const msg = require("fs")
     .readFileSync(msgPath, "utf-8")
     .trim();
 
-const commitRE = /^(revert: )?(breaking|feat|fix|other|polish|docs|style|refactor|perf|revert|test|workflow|ci|chore|types|build)(\(.+\))?: .{1,50}/;
+const commitRE = /^(revert: )?(breaking|release|feat|fix|other|polish|docs|style|refactor|perf|revert|test|workflow|ci|chore|types|build)(\(.+\))?: .{1,50}/;
 
 const lernoAutoCommitRE = /^v\d+\.\d+\.\d+$/;
 
