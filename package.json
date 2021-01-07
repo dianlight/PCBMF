@@ -53,24 +53,23 @@
     "config": {
         "forge": {
             "packagerConfig": {
+                "name": "${name}",
                 "executableName": "${name}"
             },
-            "publishers": [
-                {
-                    "name": "@electron-forge/publisher-github",
-                    "config": {
-                        "repository": {
-                            "owner": "dianlight",
-                            "name": "pcbmf"
-                        },
-                        "prerelease": true
-                    }
+            "publishers": [{
+                "name": "@electron-forge/publisher-github",
+                "config": {
+                    "repository": {
+                        "owner": "dianlight",
+                        "name": "pcbmf"
+                    },
+                    "prerelease": true
                 }
-            ],
-            "makers": [
-                {
+            }],
+            "makers": [{
                     "name": "@electron-forge/maker-squirrel",
                     "config": {
+                        "exe": "${name}.exe",
                         "setupExe": "${name}-Setup-${version}-${process.env.TARGET_ARCH}.exe"
                     }
                 },
@@ -84,7 +83,8 @@
                     "name": "@electron-forge/maker-dmg",
                     "config": {
                         "background": "./assets/dmg-background.png",
-                        "format": "ULFO"
+                        "format": "ULFO",
+                        "name": "${name}-Setup-${version}-${process.env.TARGET_ARCH}"
                     }
                 },
                 {
@@ -101,6 +101,7 @@
                     "name": "@electron-forge/maker-rpm",
                     "config": {
                         "options": {
+                            "name": "${productName}",
                             "maintainer": "Lucio Tarantino",
                             "homepage": "https://github.com/dianlight"
                         }
@@ -114,13 +115,11 @@
                         "mainConfig": "./webpack.main.config.js",
                         "renderer": {
                             "config": "./webpack.renderer.config.js",
-                            "entryPoints": [
-                                {
-                                    "html": "./src/index.html",
-                                    "js": "./src/renderer.ts",
-                                    "name": "main_window"
-                                }
-                            ]
+                            "entryPoints": [{
+                                "html": "./src/index.html",
+                                "js": "./src/renderer.ts",
+                                "name": "main_window"
+                            }]
                         }
                     }
                 ]

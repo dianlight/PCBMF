@@ -44,7 +44,7 @@ jobs:
       - uses: actions/cache@v2
         with:
           path: ${{ steps.npm-cache.outputs.dir }}
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-${{ matrix.arch }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
       - name: Build Electron app
@@ -66,7 +66,7 @@ jobs:
       - uses: AButler/upload-release-assets@v2.0
         if: ${{ startsWith(github.ref, 'refs/tags/v') }}
         with:
-          files: "out/make/**/*.exe;out/make/**/*.rpm;out/make/**/*.deb;out/make/**/*.app;out/make/**/*.dmg;out/make/**/*.zip"
+          files: "out/make/**/*.{exe,rpm,deb,dmg,zip}"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           release-tag: ${{ steps.get_version.outputs.VERSION }}
       - uses: actions/upload-artifact@v2
@@ -75,9 +75,8 @@ jobs:
           name: ${{ steps.projectinfo.outputs.name }}-${{ steps.projectinfo.outputs.version }}-${{ runner.os }}-${{ matrix.arch }}
           path: |
              out/make/**/*.exe
-             out/make/**/*.rpm
-             out/make/**/*.deb
-             out/make/**/*.app
+             out/make/rpm/${{ matrix.arch }}/*.rpm
+             out/make/deb/${{ matrix.arch }}/*.deb
              out/make/**/*.dmg
              out/make/**/*.zip
 #            out/make/**/${{ matrix.arch }}/*
