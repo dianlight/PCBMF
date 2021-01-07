@@ -70,6 +70,7 @@ jobs:
           is_append_body: true
           # Path to file with new body text.
           #body_path: # optional 
+          token: ${{ secrets.GITHUB_TOKEN }} 
       - uses: xresloader/upload-to-github-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
