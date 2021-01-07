@@ -56,19 +56,26 @@ jobs:
       - name: nodejs project information
         id: projectinfo
         uses: gregoranders/nodejs-project-info@v0.0.12   
-      - run: |
-          find out/make        
+      #- run: |
+      #    find out        
       #- run: |
       #    npx renamer --find ".exe" --replace "-${{ matrix.arch }}.exe" "out/**"  
       - name: Get the version
         id: get_version
         run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
-      - uses: AButler/upload-release-assets@v2.0
+      #- uses: AButler/upload-release-assets@v2.0
+      #  if: ${{ startsWith(github.ref, 'refs/tags/v') }}
+      #  with:
+      #    files: "out/make/**/*.{exe,rpm,deb,dmg,zip}"
+      #    repo-token: ${{ secrets.GITHUB_TOKEN }}
+      #    release-tag: ${{ steps.get_version.outputs.VERSION }}
+      - name: Upload release binaries
         if: ${{ startsWith(github.ref, 'refs/tags/v') }}
+        uses: alexellis/upload-assets@0.2.2
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         with:
-          files: "out/make/**/*.{exe,rpm,deb,dmg,zip}"
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          release-tag: ${{ steps.get_version.outputs.VERSION }}
+          asset_paths: '["out/make/squirrel.windows/${{ matrix.arch }}/*.exe","out/make/rpm/${{ matrix.arch }}/*.rpm","out/make/deb/${{ matrix.arch }}/*.deb", "out/make/*.dmg","out/make/zip/darwin/${{ matrix.arch }}/*.zip"]' 
       - uses: actions/upload-artifact@v2
         if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
         with:

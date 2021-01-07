@@ -1,7 +1,7 @@
 {
     "name": "pcbmf",
     "productName": "PCB Mini Factory",
-    "version": "0.0.6",
+    "version": "0.0.7",
     "private": true,
     "description": "A Minimal Software for Milling and Drilling PCB with simple CNC",
     "homepage": "https://github.com/dianlight/PCBMF#readme",
@@ -56,20 +56,17 @@
                 "name": "${name}",
                 "executableName": "${name}"
             },
-            "publishers": [
-                {
-                    "name": "@electron-forge/publisher-github",
-                    "config": {
-                        "repository": {
-                            "owner": "dianlight",
-                            "name": "pcbmf"
-                        },
-                        "prerelease": true
-                    }
+            "publishers": [{
+                "name": "@electron-forge/publisher-github",
+                "config": {
+                    "repository": {
+                        "owner": "dianlight",
+                        "name": "pcbmf"
+                    },
+                    "prerelease": true
                 }
-            ],
-            "makers": [
-                {
+            }],
+            "makers": [{
                     "name": "@electron-forge/maker-squirrel",
                     "config": {
                         "exe": "${name}.exe",
@@ -118,13 +115,11 @@
                         "mainConfig": "./webpack.main.config.js",
                         "renderer": {
                             "config": "./webpack.renderer.config.js",
-                            "entryPoints": [
-                                {
-                                    "html": "./src/index.html",
-                                    "js": "./src/renderer.ts",
-                                    "name": "main_window"
-                                }
-                            ]
+                            "entryPoints": [{
+                                "html": "./src/index.html",
+                                "js": "./src/renderer.ts",
+                                "name": "main_window"
+                            }]
                         }
                     }
                 ]
