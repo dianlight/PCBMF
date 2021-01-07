@@ -1,7 +1,7 @@
 {
     "name": "pcbmf",
     "productName": "PCB Mini Factory",
-    "version": "0.0.1-alpha",
+    "version": "0.0.1",
     "private": true,
     "description": "A Minimal Software for Milling and Drilling PCB with simple CNC",
     "homepage": "https://github.com/dianlight/PCBMF#readme",
@@ -17,12 +17,12 @@
         "node": ">=13.0.0 <= 14.0.0"
     },
     "scripts": {
-        "start": "concurrently -k \"electron-forge start\" \"npm:watch\"",
+        "start": "concurrently -k \"electron-forge start --inspect-electron\" \"npm:watch\"",
         "package": "electron-forge package",
         "make": "electron-forge make",
         "publish": "electron-forge publish",
         "lint": "eslint --ext .ts .",
-        "postinstall": "patch-package --exclude && husky install && electron-rebuild",
+        "postinstall": "patch-package --exclude && husky install",
         "generate": "json2ts src/vue/pages/schemas/ -o src/typings",
         "prestart": "npm run generate",
         "watch": "npm-watch",
@@ -66,7 +66,7 @@
             "makers": [{
                     "name": "@electron-forge/maker-squirrel",
                     "config": {
-                        "setupExe": "${npm_package_name}-${npm_package_arch}-${npm_package_version}.exe"
+                        "setupExe": "${name}-${process.env.TARGET_ARCH}-${version} Setup.exe"
                     }
                 },
                 {
@@ -148,6 +148,7 @@
         "copy-webpack-plugin": "^6.4.1",
         "css-loader": "^5.0.1",
         "cz-conventional-changelog": "^3.3.0",
+        "devtron": "^1.4.0",
         "electron": "^11.1.1",
         "electron-license": "^1.1.0",
         "eslint": "^7.17.0",
@@ -202,6 +203,7 @@
         "panzoom": "^9.4.1",
         "pcb-stackup": "^4.2.5",
         "readable-stream": "^3.6.0",
+        "rm": "^0.1.8",
         "serialport": "^9.0.4",
         "stream": "^0.0.2",
         "temp": "^0.9.4",
