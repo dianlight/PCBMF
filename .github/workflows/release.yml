@@ -1,7 +1,8 @@
-name: Release
+name: Release updater
 
 on:
-  release: 
+  release:
+   types: ["created"] 
 #  workflow_run:
 #    workflows: ["Build"]
 #    branch: [main]
@@ -25,12 +26,12 @@ jobs:
       - name: nodejs project information
         id: projectinfo
         uses: gregoranders/nodejs-project-info@v0.0.12           
-      - name: Download artifact
-        uses: dawidd6/action-download-artifact@v2
-        with:
-          github_token: ${{secrets.GITHUB_TOKEN}}
-          workflow: build.yml
-          branch: main       
+#      - name: Download artifact
+#        uses: dawidd6/action-download-artifact@v2
+#        with:
+#          github_token: ${{secrets.GITHUB_TOKEN}}
+#          workflow: build.yml
+#          branch: main       
       - name: Debug Outputs
         env: 
           OUTPUT: ${{ needs.build.outputs}}
@@ -71,10 +72,10 @@ jobs:
           # Path to file with new body text.
           #body_path: # optional 
           token: ${{ secrets.GITHUB_TOKEN }} 
-      - uses: xresloader/upload-to-github-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          file: "./**/*.exe;./**/*.rpm;./**/*.deb;./**/*.app;./**/*.dmg;./**/*.zip;./**/*.nupkg"
-          tags: false
-          draft: true
+#      - uses: xresloader/upload-to-github-release@v1
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        with:
+#          file: "./**/*.exe;./**/*.rpm;./**/*.deb;./**/*.app;./**/*.dmg;./**/*.zip;./**/*.nupkg"
+#          tags: false
+#          draft: true
