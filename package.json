@@ -30,9 +30,9 @@
         "test": "npm run package",
         "commit": "git-cz",
         "gen:patch": "patch-package --exclude '' gcode-toolpath vuex-map-fields @types/jsts jsts",
-        "release:major": "changelog -M && git add CHANGELOG.md && git commit -m 'docs: updated CHANGELOG.md' && npm version major && git push origin && git push origin --tags",
-        "release:minor": "changelog -m && git add CHANGELOG.md && git commit -m 'docs: updated CHANGELOG.md' && npm version minor && git push origin && git push origin --tags",
-        "release:patch": "changelog -p && git add CHANGELOG.md && git commit -m 'docs: updated CHANGELOG.md' && npm version patch && git push origin --tags"
+        "release:major": "changelog -M && git add CHANGELOG.md && git commit -m 'docs: updated CHANGELOG.md' && npm version major -m 'release:%s' && git push origin && git push origin --tags",
+        "release:minor": "changelog -m && git add CHANGELOG.md && git commit -m 'docs: updated CHANGELOG.md' && npm version minor -m 'release:%s' && git push origin && git push origin --tags",
+        "release:patch": "changelog -p && git add CHANGELOG.md && git commit -m 'docs: updated CHANGELOG.md' && npm version patch -m 'release:%s' && git push origin && git push origin --tags"
     },
     "keywords": [
         "CNC",
@@ -55,20 +55,17 @@
             "packagerConfig": {
                 "executableName": "${name}"
             },
-            "publishers": [
-                {
-                    "name": "@electron-forge/publisher-github",
-                    "config": {
-                        "repository": {
-                            "owner": "dianlight",
-                            "name": "pcbmf"
-                        },
-                        "prerelease": true
-                    }
+            "publishers": [{
+                "name": "@electron-forge/publisher-github",
+                "config": {
+                    "repository": {
+                        "owner": "dianlight",
+                        "name": "pcbmf"
+                    },
+                    "prerelease": true
                 }
-            ],
-            "makers": [
-                {
+            }],
+            "makers": [{
                     "name": "@electron-forge/maker-squirrel",
                     "config": {
                         "setupExe": "${name}-Setup-${version}-${process.env.TARGET_ARCH}.exe"
@@ -114,13 +111,11 @@
                         "mainConfig": "./webpack.main.config.js",
                         "renderer": {
                             "config": "./webpack.renderer.config.js",
-                            "entryPoints": [
-                                {
-                                    "html": "./src/index.html",
-                                    "js": "./src/renderer.ts",
-                                    "name": "main_window"
-                                }
-                            ]
+                            "entryPoints": [{
+                                "html": "./src/index.html",
+                                "js": "./src/renderer.ts",
+                                "name": "main_window"
+                            }]
                         }
                     }
                 ]
