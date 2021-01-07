@@ -30,9 +30,9 @@
         "test": "npm run package",
         "commit": "git-cz",
         "gen:patch": "patch-package --exclude '' gcode-toolpath vuex-map-fields @types/jsts jsts",
-        "release:major": "changelog -M && git add CHANGELOG.md && git commit -m 'updated CHANGELOG.md' && npm version major && git push origin && git push origin --tags",
-        "release:minor": "changelog -m && git add CHANGELOG.md && git commit -m 'updated CHANGELOG.md' && npm version minor && git push origin && git push origin --tags",
-        "release:patch": "changelog -p && git add CHANGELOG.md && git commit -m 'updated CHANGELOG.md' && npm version patch && git push origin && git push origin --tags"
+        "release:major": "changelog -M && git add CHANGELOG.md && git commit -m 'docs: updated CHANGELOG.md' && npm version major && git push origin && git push origin --tags",
+        "release:minor": "changelog -m && git add CHANGELOG.md && git commit -m 'docs: updated CHANGELOG.md' && npm version minor && git push origin && git push origin --tags",
+        "release:patch": "changelog -p && git add CHANGELOG.md && git commit -m 'docs: updated CHANGELOG.md' && npm version patch && git push origin --tags"
     },
     "keywords": [
         "CNC",
@@ -52,7 +52,9 @@
     ],
     "config": {
         "forge": {
-            "packagerConfig": {},
+            "packagerConfig": {
+                "executableName": "${name}"
+            },
             "publishers": [{
                 "name": "@electron-forge/publisher-github",
                 "config": {
@@ -66,7 +68,7 @@
             "makers": [{
                     "name": "@electron-forge/maker-squirrel",
                     "config": {
-                        "setupExe": "${name}-${process.env.TARGET_ARCH}-${version} Setup.exe"
+                        "setupExe": "${name}-Setup-${version}-${process.env.TARGET_ARCH}.exe"
                     }
                 },
                 {
@@ -86,6 +88,7 @@
                     "name": "@electron-forge/maker-deb",
                     "config": {
                         "options": {
+                            "name": "${productName}",
                             "maintainer": "Lucio Tarantino",
                             "homepage": "https://github.com/dianlight"
                         }
