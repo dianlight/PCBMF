@@ -2,14 +2,14 @@ name: Release
 
 on:
   release: 
-  workflow_run:
-    workflows: ["Build"]
-    branch: [main]
-    tags: 
-      - v*
-    types:
-      - completed
-  workflow_dispatch:
+#  workflow_run:
+#    workflows: ["Build"]
+#    branch: [main]
+#    tags: 
+#      - v*
+#    types:
+#      - completed
+#  workflow_dispatch:
 #    inputs:
 #      tags:
 #        description: 'Test scenario tags'      
@@ -40,18 +40,36 @@ jobs:
         id: Changelog
         env:
           REPO: ${{ github.repository }} 
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@latest
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+#      - name: Create Release
+#        id: create_release
+#        uses: actions/create-release@latest
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+#        with:
+#          tag_name: ${{ github.ref }}
+#          release_name: Release ${{ github.ref }}
+#          body: |
+#            ${{ steps.Changelog.outputs.changelog }}
+#          draft: true
+#          prerelease: false 
+      - name: Update GitHub Release
+        # You may pin to the exact commit or the version.
+        # uses: tubone24/update_release@a65517a60b8010e7c0aaccf80fa3b06c72df04f8
+        uses: tubone24/update_release@v1.1.0
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
+          # new release name, if not, take over before name
+          #release_name: # optional
+          # new body text, if not, take over before text
           body: |
-            ${{ steps.Changelog.outputs.changelog }}
-          draft: true
-          prerelease: false  
+             ${{ steps.Changelog.outputs.changelog }}
+          # new draft, if not, take over before draft
+          draft: true # optional
+          # new prerelease, if not, take over prerelease
+          # prerelease: # optional
+          # If true, append body text, If false, overwrite body text, default is false
+          is_append_body: true
+          # Path to file with new body text.
+          #body_path: # optional 
       - uses: xresloader/upload-to-github-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
