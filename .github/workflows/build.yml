@@ -45,7 +45,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
       - name: Build Electron app
-        env: |
+        env:
          TARGET_ARCH: ${{ matrix.arch }}
         run: |
           npm install
