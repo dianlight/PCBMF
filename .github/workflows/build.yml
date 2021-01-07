@@ -5,8 +5,11 @@ on:
   types: ['created']
  pull_request:
  push:
+  tags-ignore:
+    - 'v*'
   paths-ignore:
     - '.github/**'
+    - "*.md"
 
 jobs:
   build:
@@ -45,27 +48,37 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
       - name: Build Electron app
-        env: |
+        env:
          TARGET_ARCH: ${{ matrix.arch }}
         run: |
           npm install
           npm run make -- --arch ${{ matrix.arch }}
       - name: nodejs project information
         id: projectinfo
-        uses: gregoranders/nodejs-project-info@v0.0.12        
+        uses: gregoranders/nodejs-project-info@v0.0.12   
       - run: |
-          npx renamer --find ".exe" --replace "-${{ matrix.arch }}.exe" "out/**"    
-      - uses: xresloader/upload-to-github-release@v1
-        if: startsWith(github.ref, 'refs/tags/v') 
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          find out/make        
+      #- run: |
+      #    npx renamer --find ".exe" --replace "-${{ matrix.arch }}.exe" "out/**"  
+      - name: Get the version
+        id: get_version
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+      - uses: AButler/upload-release-assets@v2.0
+        if: ${{ startsWith(github.ref, 'refs/tags/v') }}
         with:
-          file: "out/make/**/*.exe;out/make/**/*.rpm;out/make/**/*.deb;out/make/**/*.app;/out/make/**/*.dmg;out/make/**/*.zip;out/make/**/*.nupkg"
-          tags: false
-          prerelease: true
+          files: "out/make/**/*.exe;out/make/**/*.rpm;out/make/**/*.deb;out/make/**/*.app;out/make/**/*.dmg;out/make/**/*.zip"
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          release-tag: ${{ steps.get_version.outputs.VERSION }}
       - uses: actions/upload-artifact@v2
         if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
         with:
           name: ${{ steps.projectinfo.outputs.name }}-${{ steps.projectinfo.outputs.version }}-${{ runner.os }}-${{ matrix.arch }}
           path: |
-            out/make/**/${{ matrix.arch }}/*                      
+             out/make/**/*.exe
+             out/make/**/*.rpm
+             out/make/**/*.deb
+             out/make/**/*.app
+             out/make/**/*.dmg
+             out/make/**/*.zip
+#            out/make/**/${{ matrix.arch }}/*
+                                  
