@@ -55,7 +55,9 @@ jobs:
           npm run make -- --arch ${{ matrix.arch }}
       - name: nodejs project information
         id: projectinfo
-        uses: gregoranders/nodejs-project-info@v0.0.12        
+        uses: gregoranders/nodejs-project-info@v0.0.12   
+      - run: |
+          find out/make        
       #- run: |
       #    npx renamer --find ".exe" --replace "-${{ matrix.arch }}.exe" "out/**"  
       - name: Get the version
