@@ -1,7 +1,7 @@
 {
     "name": "pcbmf",
     "productName": "PCB Mini Factory",
-    "version": "0.0.3",
+    "version": "0.0.4",
     "private": true,
     "description": "A Minimal Software for Milling and Drilling PCB with simple CNC",
     "homepage": "https://github.com/dianlight/PCBMF#readme",
