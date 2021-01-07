@@ -1,6 +1,9 @@
 name: Build
 
 on: 
+ release:
+  types: ['created']
+ pull_request:
  push:
   paths-ignore:
     - '.github/**'
@@ -13,18 +16,12 @@ jobs:
       matrix:
         # macos-11.0 ?
         os: [macos-latest , ubuntu-latest, windows-latest]
-        arch: [x64]
+        arch: [x64, arm64]
 #        arch: [ia32, armv7l, x64, arm64, mips64el]
         include:
-        - os: macos-latest
-          arch: arm64
+        - os: ubuntu-latest
+          arch: armv7l
           experimental: true
-        - os: windows-latest
-          arch: ia32 
-          experimantal: true
-        - os: windows-latest
-          arch: arm64 
-          experimantal: true
       fail-fast: false
 
 
@@ -53,14 +50,20 @@ jobs:
           npm run make -- --arch ${{ matrix.arch }}
       - name: nodejs project information
         id: projectinfo
-        uses: gregoranders/nodejs-project-info@v0.0.12 
-
+        uses: gregoranders/nodejs-project-info@v0.0.12        
+      - run: |
+          npx renamer --find ".exe" --replace "-${{ matrix.arch }}.exe" "out/**"    
+      - uses: xresloader/upload-to-github-release@v1
+        if: startsWith(github.ref, 'refs/tags/v') 
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          file: "out/make/**/*.exe;out/make/**/*.rpm;out/make/**/*.deb;out/make/**/*.app;/out/make/**/*.dmg;out/make/**/*.zip;out/make/**/*.nupkg"
+          tags: false
+          prerelease: true
       - uses: actions/upload-artifact@v2
+        if: not startsWith(github.ref, 'refs/tags/v') 
         with:
           name: ${{ steps.projectinfo.outputs.name }}-${{ steps.projectinfo.outputs.version }}-${{ runner.os }}-${{ matrix.arch }}
           path: |
-            out/make/**/${{ matrix.arch }}/*             
-#            out/make/**/armv7l/*             
-#            out/make/**/x64/*             
-#            out/make/**/arm64/*  
-#            out/make/**/mips64el/*             
+            out/make/**/${{ matrix.arch }}/*                      
