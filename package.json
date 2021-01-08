@@ -56,17 +56,20 @@
                 "name": "${name}",
                 "executableName": "${name}"
             },
-            "publishers": [{
-                "name": "@electron-forge/publisher-github",
-                "config": {
-                    "repository": {
-                        "owner": "dianlight",
-                        "name": "pcbmf"
-                    },
-                    "prerelease": true
+            "publishers": [
+                {
+                    "name": "@electron-forge/publisher-github",
+                    "config": {
+                        "repository": {
+                            "owner": "dianlight",
+                            "name": "pcbmf"
+                        },
+                        "prerelease": true
+                    }
                 }
-            }],
-            "makers": [{
+            ],
+            "makers": [
+                {
                     "name": "@electron-forge/maker-squirrel",
                     "config": {
                         "exe": "${name}.exe",
@@ -115,11 +118,13 @@
                         "mainConfig": "./webpack.main.config.js",
                         "renderer": {
                             "config": "./webpack.renderer.config.js",
-                            "entryPoints": [{
-                                "html": "./src/index.html",
-                                "js": "./src/renderer.ts",
-                                "name": "main_window"
-                            }]
+                            "entryPoints": [
+                                {
+                                    "html": "./src/index.html",
+                                    "js": "./src/renderer.ts",
+                                    "name": "main_window"
+                                }
+                            ]
                         }
                     }
                 ]
