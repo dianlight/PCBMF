@@ -1,4 +1,4 @@
-export function isRenderer() {
+export function isRenderer():boolean {
     // running in a web browser
     if (typeof process === 'undefined') return true
 

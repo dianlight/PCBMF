@@ -4,7 +4,7 @@ import { ipcRenderer } from "electron";
 import './index.css';
 import Vue from "vue";
 import vueNcform from "@ncform/ncform";
-import { TightCNC } from "./tightcnc/ThightCNC";
+//import { TightCNC } from "./tightcnc/ThightCNC";
 //import yaml from "yaml";
 import { ApplicationMenu } from "./os/ApplicationMenu";
 import router from "./vue/router";
@@ -21,18 +21,22 @@ import "highlight.js/styles/github.css"
 //import ThreeDViewer from "vue-3d-viewer";
 import { i18n } from "./vue/i18n";
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 hljs.registerLanguage("gcode",require("highlight.js/lib/languages/gcode"));
 
-const locale = require('element-ui/lib/locale/lang/en');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const locale = require('element-ui/lib/locale/lang/en') as string;
 
 Vue.use(ElementUI, {locale});
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 Vue.use(vueNcform, {extComponents: ncformStdComps, lang: i18n });
 Vue.use(hljs.vuePlugin);
 //(window as any).hljs = hljs;
 
 
 ipcRenderer.addListener("open",(args)=>{
-    store.dispatch('open',args[0]);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    void store.dispatch('open',args[0]);
 });
 
 //Vue.use(ThreeDViewer);
@@ -50,8 +54,8 @@ worker.onmessage = (event) => { console.log("From Warker!",event)};
 
 //const tight_path = path.join(__dirname, "node_modules","tightcnc","bin","tightcnc-server.js");
 
-
-var config: TightCNC.Config = {
+/*
+const config: TightCNC.Config = {
     enableServer: true,
     authKey: "123Minni",
     controller: TightCNC.Controllers.grbl,
@@ -69,6 +73,7 @@ var config: TightCNC.Config = {
         }
     }
 }
+*/
 /*
 ipcRenderer.invoke("StartTightCNC",config).then((pid) => {
     console.log("PID",pid);
@@ -89,6 +94,7 @@ new ApplicationMenu("PCB Mini Factory");
  * Locales support
  */
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const appvue = new Vue({
     i18n,
     el: '#app',

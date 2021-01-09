@@ -18,7 +18,7 @@ export interface IIsolationWorkResult {
     gcode: string;
 }
 
-let _options: IIsolationWorkOption = {
+const _options: IIsolationWorkOption = {
     /* Option Defaults */
     name: 'no-name',
     unit: 'mm',
@@ -29,7 +29,7 @@ let _options: IIsolationWorkOption = {
     doutline: undefined,
 }
 
-let factory = new jsts.geom.GeometryFactory(new jsts.geom.PrecisionModel(jsts.geom.PrecisionModel.FLOATING_SINGLE));
+const factory = new jsts.geom.GeometryFactory(new jsts.geom.PrecisionModel(jsts.geom.PrecisionModel.FLOATING_SINGLE));
 
 const _isolationWork = {
     create(options: IIsolationWorkOption,data: FeatureCollection): Promise<IIsolationWorkResult> {
@@ -50,7 +50,7 @@ const _isolationWork = {
                 precision: 3 // FIXME: From config
             });
     
-        return new Promise<IIsolationWorkResult>((resolve, reject) => {
+        return new Promise<IIsolationWorkResult>((resolve) => {
             console.log("Working on ",data.features.length, "features!");
             data.features.forEach( (feature,index,all) => {
                 const o_geometry = reader.read(feature.geometry);
@@ -78,7 +78,7 @@ const _isolationWork = {
             if(_options.dthickness){
             const point = factory.createPoint(new jsts.geom.Coordinate(_options.drillPark.x,_options.drillPark.y));
             data.features
-                .filter( feature => feature.properties!.userData === "isolation")
+                .filter( feature => feature.properties?.userData === "isolation")
                 .map( feature => reader.read(feature.geometry))
                 .sort( (a,b)=> a.distance(point) - b.distance(point)/* + b.distance(a)*/ )
                 .forEach( i_gometry => code.parse(i_gometry, _options.dthickness as number));

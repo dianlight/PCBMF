@@ -93,7 +93,7 @@ export class GCodeParser {
   }
 
   // Startup the code and make the first moves
-  initialize() {
+  initialize(): void {
 
     // Add an opening tag to the code
     this.add(`%`);
@@ -119,7 +119,7 @@ export class GCodeParser {
   }
 
   // Applying the positioning (absolute or relative)
-  setPositioning(positioning: string) {
+  setPositioning(positioning: string):void  {
 
     // Convert the value to a lowercase string
     positioning = String(positioning).toLowerCase();
@@ -148,7 +148,7 @@ export class GCodeParser {
 
   // Derive the coordinate words from a position { x, y, z } or [ x, y, z ]
 
-  positionCode(position: IGCodePosition | IGCodeArchPosition) {
+  positionCode(position: IGCodePosition | IGCodeArchPosition): string {
 
     // Create a list of positions
     const positions: string[] = [];
@@ -188,7 +188,7 @@ export class GCodeParser {
 
 
   // Optcode
-  opCode(opt: string, code: number | string) {
+  opCode(opt: string, code: number | string): string {
 
     // Return the optcode (e.g.)
     return (`${opt}${code}`);
@@ -207,42 +207,42 @@ export class GCodeParser {
   }
 
   // Drop the mill to a specified depth (0 by default)
-  dropMill(depth: number = 0) {
+  dropMill(depth = 0):void {
 
     // Add the code to drop the mill
     this.feedRapid({ z: depth });
   }
 
   // Raise the mill to a specified depth (clearence value by default)
-  raiseMill(depth: number = this.options.clearance) {
+  raiseMill(depth: number = this.options.clearance): void {
 
     // Add the code to raise the mill
     this.feedRapid({ z: depth });
   }
 
   // Start the spindle in a direction (clockwise by default)
-  startSpindle(clockwise = true) {
+  startSpindle(clockwise = true): void {
 
     // Add the code to the stack to start the spindle in a specified direction
     this.add(this.opCode(`M`, ((clockwise) ? `03` : `04`)));
   }
 
   // Stop the spindle
-  stopSpindle() {
+  stopSpindle(): void {
 
     // Add the code to the stack to stop the spindle
     this.add(this.opCode(`M`, `05`));
   }
 
   // Start the coolant with a certain intensity (false by default)
-  startCoolant(flood = false) {
+  startCoolant(flood = false): void {
 
     // Add the code to the stack to start the coolant
     this.add(this.opCode(`M`, ((flood) ? `08` : `07`)));
   }
 
   // Stop the coolant
-  stopCoolant() {
+  stopCoolant(): void {
 
     // Add the code to the stack to stop the coolant
     this.add(this.opCode(`M`, `09`));
@@ -250,7 +250,7 @@ export class GCodeParser {
 
   // Motion in a specified way towards a point
 
-  motion(code: string, position: IGCodePosition | IGCodeArchPosition, feedrate: number) {
+  motion(code: string, position: IGCodePosition | IGCodeArchPosition, feedrate: number): void {
     /*
           this.state.feedrate = feedrate;
           if(position.x)this.state.position.x = position.x;
@@ -272,7 +272,7 @@ export class GCodeParser {
 
 
   // Feed rapidly to a position at a specified feedrate
-  feedRapid(position: IGCodePosition, feedrate: number = this.state.feedrate, optimize: boolean = true) {
+  feedRapid(position: IGCodePosition, feedrate: number = this.state.feedrate, optimize = true): void {
     if (optimize &&
       position.x?.toFixed(this.options.precision) === this.state.position.x?.toFixed(this.options.precision) &&
       position.y?.toFixed(this.options.precision) === this.state.position.y?.toFixed(this.options.precision)
@@ -291,7 +291,7 @@ export class GCodeParser {
   }
 
   // Feed linearly to a position at a specified feedrate
-  feedLinear(position: IGCodePosition, feedrate: number = this.state.feedrate) {
+  feedLinear(position: IGCodePosition, feedrate: number = this.state.feedrate): void {
     // Add the code to the stack to linearly to the specified position
     if (position.z && position.z?.toFixed(this.options.precision) !== this.state.position.z?.toFixed(this.options.precision)) {
       this.motion('00', { z: position.z }, feedrate);
@@ -301,7 +301,8 @@ export class GCodeParser {
   }
 
   // Feed linearly to a position at a specified feedrate
-  feedArch(position: IGCodeArchPosition, feedrate: number = this.state.feedrate) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  feedArch(position: IGCodeArchPosition, feedrate: number = this.state.feedrate): void {
     console.warn("Arch not yet implemented!");
     /*
       // check arch direction 02 = clock
@@ -322,7 +323,7 @@ export class GCodeParser {
   }
 
   // Terminate our code and ensure everything is stopped
-  terminate(force = false) {
+  terminate(force = false):void  {
 
     // Check that the code is not force stopping
     if (!force) {
@@ -354,7 +355,7 @@ export class GCodeParser {
   */
 
   // Add the code to the stack
-  add(code: string) {
+  add(code: string): void {
 
     // Deterimine whether to add a line number or not
     if (this.line && (code.charAt(0) != (`%`) && code.charAt(0) != `O`)) {
@@ -371,7 +372,7 @@ export class GCodeParser {
   }
 
   // Evaluate the gcode
-  eval() {
+  eval(): string {
 
     // Check if the code has been terminate, and if not then terminate
     if (this.state.running) this.terminate();
@@ -384,7 +385,7 @@ export class GCodeParser {
   }
 
   // Return the same output as the eval function
-  toString() {
+  toString(): string {
     return this.eval();
   }
 

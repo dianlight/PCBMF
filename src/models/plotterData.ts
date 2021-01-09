@@ -12,7 +12,7 @@ export enum IPlotterDataTypes {
 }
 export interface IPlotterData {
     type: string;
-};
+}
 
 export interface IPlotterDataPolarity extends IPlotterData {
     type: IPlotterDataTypes.POLARITY,

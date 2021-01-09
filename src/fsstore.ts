@@ -8,30 +8,30 @@ class fsstore {
     constructor() {
         if (!isRenderer()) {
             this.store = new Store();
-            ipcMain.handle('getStoreValue', (event, key, defaultValue) => {
+            ipcMain.handle('getStoreValue', (_event, key, defaultValue) => {
                 return this.store.get(key,defaultValue);
             });
-            ipcMain.handle('setStoreValue', (event, key, value) => {
+            ipcMain.handle('setStoreValue', (_event, key, value) => {
                 return this.store.set(key,value);
             });
         }
-    };
+    }
 
     public async get<T>(key: string, defaultValue?:T): Promise<T> {
         if (isRenderer()) {
             return ipcRenderer.invoke('getStoreValue', key,defaultValue) as Promise<T>;
         } else {
-            return new Promise<T>((resolve, reject) => {
+            return new Promise<T>((resolve) => {
                 resolve(this.store.get(key,defaultValue) as T);
             });
         }
     }
 
-    public async set<T>(key:string|Partial<T>, value?:T):Promise<any>{
+    public async set<T>(key:string|Partial<T>, value?:T):Promise<T|void>{
         if (isRenderer()) {
             return ipcRenderer.invoke('setStoreValue', key, value) as Promise<T>;
         } else {
-            return new Promise<void>((resolve, reject) => {
+            return new Promise<void>((resolve) => {
                 if(value){
                 this.store.set(key as string,value);
                 } else {
@@ -42,6 +42,6 @@ class fsstore {
         }
     }
 
-};
+}
 
 export default new fsstore();

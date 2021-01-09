@@ -1,7 +1,7 @@
 import { expose } from "threads/worker"
 import * as jsts from "jsts";
 import { featureCollectionToGeometries, geometryToFeature } from "@/utils/geometriesToFeatures";
-import { GeoJSON, FeatureCollection, Feature, Geometry } from "geojson";
+import { GeoJSON, FeatureCollection } from "geojson";
 import { GCodeParser } from '@/parsers/gcodeparser';
 import { Tooldb } from "@/typings/tooldb";
 import { MarginType } from "@/models/project";
@@ -27,7 +27,7 @@ export interface IThiefWorkResult {
     gcode: string;
 }
 
-let _options: IThiefWorkOption = {
+const _options: IThiefWorkOption = {
     /* Option Defaults */
     name: 'no-name',
     unit: 'mm',
@@ -45,7 +45,7 @@ let _options: IThiefWorkOption = {
     }
 }
 
-let factory = new jsts.geom.GeometryFactory(new jsts.geom.PrecisionModel(jsts.geom.PrecisionModel.FLOATING_SINGLE));
+const factory = new jsts.geom.GeometryFactory(new jsts.geom.PrecisionModel(jsts.geom.PrecisionModel.FLOATING_SINGLE));
 
 const _thiefWork = {
     create(options: IThiefWorkOption, data: FeatureCollection): Promise<IThiefWorkResult> {
@@ -66,18 +66,15 @@ const _thiefWork = {
             precision: 3 // FIXME: From config
         });
 
-        return new Promise<IThiefWorkResult>((resolve, reject) => {
+        return new Promise<IThiefWorkResult>((resolve,) => {
             console.log("Working on ", data.features.length, "features!");
 
             const geometries = featureCollectionToGeometries(data, reader);
 
             switch (_options.mode) {
                 case "Box":
-                    {
-                    }
                     break;
-                case "Line": {
-                
+                case "Line": {                
                     let geometry = factory.createGeometryCollection(geometries)
                     .union();
                     switch(_options.margin){
@@ -93,9 +90,9 @@ const _thiefWork = {
                         default:
                             console.error("Unknown margin",_options.margin);
                             break;        
-                    };
+                    }
                     // Computation
-                    const maxtool = _options.tools.reduce( (mx,cur,ix,all)=>{
+                    const maxtool = _options.tools.reduce( (mx,cur)=>{
                         return (mx.size as number) > (cur.size as number)?mx:cur;
                     });
                     for(let x=0; x < _options.board.w; x+=maxtool.size as number){
@@ -119,8 +116,7 @@ const _thiefWork = {
                 
                 }
                     break;
-                case "Spiral": {
-                }
+                case "Spiral": 
                     break;
                 case "Outline": {
 
@@ -159,10 +155,10 @@ const _thiefWork = {
             if (_options.dthickness) {
                 const point = factory.createPoint(new jsts.geom.Coordinate(_options.drillPark.x, _options.drillPark.y));
                 data.features
-                    .filter(feature => feature.properties!.userData === "thief")
+                    .filter(feature => feature.properties?.userData === "thief")
                     .map(feature => reader.read(feature.geometry))
                     .sort((a, b) => a.distance(point) - b.distance(point)/* + b.distance(a)*/)
-                    .forEach(i_gometry => code.parse(i_gometry, _options.dthickness as number));
+                    .forEach(i_gometry => code.parse(i_gometry, _options.dthickness ));
             }
 
             const gcode = String(code);
