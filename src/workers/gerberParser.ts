@@ -92,7 +92,7 @@ const _gerberParser = {
                     } as FeatureCollection;
 
                     for (let i = 0; i < single_geometry.getNumGeometries(); i++) {
-                      //  console.log(single_geometry.getGeometryN(i));
+                        //  console.log(single_geometry.getGeometryN(i));
                         geojson.features.push({
                             "type": "Feature",
                             "properties": {
@@ -111,8 +111,8 @@ const _gerberParser = {
 
 // Real Work
 
-function unionOverlapping(a_geometry:jsts.geom.Geometry[]):jsts.geom.Geometry[]{
-   // console.log("Start Geometries:", a_geometry.length);
+function unionOverlapping(a_geometry: jsts.geom.Geometry[]): jsts.geom.Geometry[] {
+    // console.log("Start Geometries:", a_geometry.length);
     let startg;
     do {
         startg = a_geometry.length;
@@ -125,9 +125,9 @@ function unionOverlapping(a_geometry:jsts.geom.Geometry[]):jsts.geom.Geometry[]{
             } else {
                 all[index] = all
                     // Filter only intersect or near geometries
-                    .filter((e, i) => { 
-                      //  console.log(geom.intersects(e),geom.distance(e))
-                        return index != i && ( geom.intersects(e) /*|| geom.isWithinDistance(e,0.001)*/); 
+                    .filter((e, i) => {
+                        //  console.log(geom.intersects(e),geom.distance(e))
+                        return index != i && (geom.intersects(e) /*|| geom.isWithinDistance(e,0.001)*/);
                     })
                     // Union intersect or near geometries
                     .reduce((prev, next, i, ax) => {
@@ -139,7 +139,7 @@ function unionOverlapping(a_geometry:jsts.geom.Geometry[]):jsts.geom.Geometry[]{
                         }
                         */
                         const union = prev.union(next);
-                        if(union.isGeometryCollection()){
+                        if (union.isGeometryCollection()) {
                             console.log("Union is a GeometryCollection!");
                             ax.push(next);
                             return prev;
@@ -149,7 +149,7 @@ function unionOverlapping(a_geometry:jsts.geom.Geometry[]):jsts.geom.Geometry[]{
                     }, geom);
             }
         });
-    //    console.log("Geometries:", a_geometry.length);
+        //    console.log("Geometries:", a_geometry.length);
     } while (startg != a_geometry.length);
     return a_geometry;
 }
@@ -176,7 +176,7 @@ function iPlotterToModel(
                 const rect = obj as IPlotterDataRect;
 
                 const gsf: jsts.util.GeometricShapeFactory = new jsts.util.GeometricShapeFactory(factory);
-                gsf.setCentre(new jsts.geom.Coordinate(rect.cx,rect.cy));
+                gsf.setCentre(new jsts.geom.Coordinate(rect.cx, rect.cy));
                 gsf.setHeight(rect.height);
                 gsf.setWidth(rect.width);
                 const srect = gsf.createRectangle();
@@ -217,15 +217,15 @@ function iPlotterToModel(
         case IPlotterDataTypes.CIRCLE:
             {
                 const circle = obj as IPlotterDataCircle;
-                
-                
+
+
                 const gsf: jsts.util.GeometricShapeFactory = new jsts.util.GeometricShapeFactory(factory);
-                gsf.setCentre(new jsts.geom.Coordinate(circle.cx,circle.cy));
-                gsf.setSize(circle.r*2);
+                gsf.setCentre(new jsts.geom.Coordinate(circle.cx, circle.cy));
+                gsf.setSize(circle.r * 2);
                 gsf.setNumPoints(60);
                 const scircle = gsf.createCircle();
-            
-                
+
+
                 //const scircle = factory.createPoint(new jsts.geom.Coordinate(circle.cx, circle.cy)).buffer(circle.r, 60, jsts.operation.buffer.BufferParameters.CAP_ROUND);
                 scircle.setUserData("circle");
                 return [scircle];
@@ -250,7 +250,7 @@ function iPlotterToModel(
                 sarc = gsf.createArc(arc.start[2] - arc.sweep, ext);
 
                 // Log
-                console.log(sarc.getCoordinateN(0), sarc.getCoordinateN(sarc.getCoordinates().length-1), arc.start, arc.end);
+                console.log(sarc.getCoordinateN(0), sarc.getCoordinateN(sarc.getCoordinates().length - 1), arc.start, arc.end);
 
                 sarc.setUserData("arc");
                 return [sarc];
@@ -259,9 +259,9 @@ function iPlotterToModel(
         case IPlotterDataTypes.STROKE:
             {
                 const stroke = obj as IPlotterDataStroke;
-                let lineStrings: jsts.geom.Geometry[] = stroke.path.reduce((acc,data,index,all) => {
+                let lineStrings: jsts.geom.Geometry[] = stroke.path.reduce((acc, data, index, all) => {
                     return acc.concat(...iPlotterToModel(data));
-                },[] as jsts.geom.Geometry[]);
+                }, [] as jsts.geom.Geometry[]);
 
                 //console.log("All Linstring geometry:",lineStrings.length);
                 unionOverlapping(lineStrings);
@@ -275,8 +275,8 @@ function iPlotterToModel(
                 */
 
 
-                lineStrings = lineStrings.map( lineString=>
-                  lineString.buffer(stroke.width / 2, 60 /*$fn from config?*/, jsts.operation.buffer.BufferParameters.CAP_ROUND)   
+                lineStrings = lineStrings.map(lineString =>
+                    lineString.buffer(stroke.width / 2, 60 /*$fn from config?*/, jsts.operation.buffer.BufferParameters.CAP_ROUND)
                 );
 
                 return lineStrings;
@@ -285,13 +285,18 @@ function iPlotterToModel(
         case IPlotterDataTypes.FILL:
             {
                 const fill = obj as IPlotterDataFill;
-                const fpoly = factory.createLinearRing([
-                    new jsts.geom.Coordinate(fill.path[0].start[0], fill.path[0].start[1]),
-                    ...fill.path.map(path => new jsts.geom.Coordinate(path.end[0], path.end[1]))
-                ]);
-                const convex = fpoly.convexHull();
-                convex.setUserData("fill");
-                return [convex];
+                try {
+                    const fpoly = factory.createLineString([
+                        new jsts.geom.Coordinate(fill.path[0].start[0], fill.path[0].start[1]),
+                        ...fill.path.map(path => new jsts.geom.Coordinate(path.end[0], path.end[1]))
+                    ]);
+                    const convex = fpoly.convexHull();
+                    convex.setUserData("fill");
+                    return [convex];
+                } catch (error) {
+                    console.error(error);
+                    return [];
+                }
             }
             break;
         case IPlotterDataTypes.SHAPE:

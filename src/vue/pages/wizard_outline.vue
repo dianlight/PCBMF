@@ -288,7 +288,7 @@ export default class Wizardoutline extends Vue {
             gcode: undefined,
             geojson: undefined,
             mode: undefined,
-            scale: undefined,
+            scale: 1.01,
           };
           const oldrecord = (this.$store
             .state as IProject).config.outlines.find(

@@ -17,5 +17,7 @@ module.exports = [
         /(.*)\!webpack/,
         ''
     ),
-    new ThreadsPlugin()  
+    new ThreadsPlugin({
+        target: 'electron-node-worker'
+    })
 ];
