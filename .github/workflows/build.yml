@@ -52,6 +52,7 @@ jobs:
          TARGET_ARCH: ${{ matrix.arch }}
         run: |
           npm install
+          npm run lint
           npm run make -- --arch ${{ matrix.arch }}
       - name: nodejs project information
         id: projectinfo
