@@ -66,9 +66,9 @@ jobs:
           body: |
              ${{ steps.Changelog.outputs.changelog }}
           # new draft, if not, take over before draft
-          draft: true # optional
+          # draft: true # optional
           # new prerelease, if not, take over prerelease
-          # prerelease: # optional
+          prerelease: true # optional
           # If true, append body text, If false, overwrite body text, default is false
           is_append_body: true
           # Path to file with new body text.

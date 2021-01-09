@@ -1,6 +1,5 @@
 import { Pcbdb } from "@/typings/pcbdb";
 import { Tooldb } from "@/typings/tooldb";
-import { IDictionary } from "./dictionary";
 import { PcbLayer } from "./pcblayer";
 import { OutlineWorkMode } from "@/workers/outlineWork";
 import { ThiefWorkMode } from "@/workers/thiefWork";
@@ -12,7 +11,7 @@ export interface IProjectWork {
     layer: string,
     svg:string | undefined,
     gcode:string | undefined,
-    geojson: Object | undefined
+    geojson: Record<string, unknown> | undefined
 }
 
 export interface IProjectCopper extends IProjectWork {

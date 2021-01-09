@@ -1,13 +1,10 @@
 import { expose } from "threads/worker"
-import { IPlotterData, IPlotterDataArc, IPlotterDataCircle, IPlotterDataFill, IPlotterDataLine, IPlotterDataPad, IPlotterDataRect, IPlotterDataShape, IPlotterDataSize, IPlotterDataStroke, IPlotterDataTypes } from "@/models/plotterData";
+import { IPlotterData, IPlotterDataArc, IPlotterDataCircle, IPlotterDataFill, IPlotterDataLine, IPlotterDataPad, IPlotterDataRect, IPlotterDataShape, IPlotterDataStroke, IPlotterDataTypes } from "@/models/plotterData";
 import * as stm from "readable-stream";
 import gerberParser from "gerber-parser";
 import gerberPlotter from "gerber-plotter";
 import * as jsts from "jsts";
-import { INumberDictionary } from "@/models/dictionary";
 import { GeoJSON, Feature, FeatureCollection, Geometry } from "geojson";
-import { line } from "d3";
-
 
 export interface IGerberParserOption {
     unionDraw: boolean;
@@ -18,7 +15,7 @@ export interface IGerberParserResult {
     geojson: GeoJSON;
 }
 
-let options: IGerberParserOption = {
+const options: IGerberParserOption = {
     /* Option Defaults */
     unionDraw: true,
     filetype: "gerber"
@@ -26,9 +23,9 @@ let options: IGerberParserOption = {
 
 let buffer: Buffer = Buffer.from(new ArrayBuffer(0));
 
-let factory = new jsts.geom.GeometryFactory(new jsts.geom.PrecisionModel(jsts.geom.PrecisionModel.FLOATING_SINGLE));
-let g_geometry: jsts.geom.Geometry[] = [];
-let shapes: INumberDictionary<jsts.geom.Geometry> = {};
+const factory = new jsts.geom.GeometryFactory(new jsts.geom.PrecisionModel(jsts.geom.PrecisionModel.FLOATING_SINGLE));
+const g_geometry: jsts.geom.Geometry[] = [];
+const shapes: Record<number,jsts.geom.Geometry> = {};
 
 
 const _gerberParser = {
@@ -42,31 +39,33 @@ const _gerberParser = {
     },
 
     commit(): Promise<IGerberParserResult> {
-        var parser = gerberParser({
+        const parser = gerberParser({
             filetype: options.filetype,
         });
-        var plotter = gerberPlotter({
+        const plotter = gerberPlotter({
             optimizePaths: true,
             plotAsOutline: false, // or mm?!?!?
         });
 
         plotter.on("warning", function (w) {
-            console.warn("plotter warning at line " + w.line + ": " + w.message);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/restrict-template-expressions
+            console.warn(`plotter warning at line ${w.line}: ${w.message}`);
         });
 
         plotter.once("error", function (e) {
-            console.error("plotter error: " + e.message);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/restrict-template-expressions
+            console.error(`plotter error: ${e.message}`);
         });
 
 
         const stream: stm.Duplex = new stm.Duplex();
         stream.push(buffer);
         stream.push(null);
-        return new Promise<IGerberParserResult>((resolve, reject) => {
+        return new Promise<IGerberParserResult>((resolve) => {
             stream
                 .pipe(parser)
                 .pipe(plotter)
-                .on("error", (error: any) => console.error(error))
+                .on("error", (error) => console.error(error))
                 .on("data", (obj: IPlotterData) => {
                     const rgeom = iPlotterToModel(obj);
                     rgeom.filter((geom) => geom.isGeometryCollection()).forEach((geom) => {
@@ -86,13 +85,13 @@ const _gerberParser = {
 
                     const single_geometry = factory.createGeometryCollection(g_geometry);
 
-                    let geojson: GeoJSON = {
+                    const geojson: GeoJSON = {
                         "type": "FeatureCollection",
                         "features": [] as Feature[],
                     } as FeatureCollection;
 
                     for (let i = 0; i < single_geometry.getNumGeometries(); i++) {
-                      //  console.log(single_geometry.getGeometryN(i));
+                        //  console.log(single_geometry.getGeometryN(i));
                         geojson.features.push({
                             "type": "Feature",
                             "properties": {
@@ -111,8 +110,8 @@ const _gerberParser = {
 
 // Real Work
 
-function unionOverlapping(a_geometry:jsts.geom.Geometry[]):jsts.geom.Geometry[]{
-   // console.log("Start Geometries:", a_geometry.length);
+function unionOverlapping(a_geometry: jsts.geom.Geometry[]): jsts.geom.Geometry[] {
+    // console.log("Start Geometries:", a_geometry.length);
     let startg;
     do {
         startg = a_geometry.length;
@@ -125,9 +124,9 @@ function unionOverlapping(a_geometry:jsts.geom.Geometry[]):jsts.geom.Geometry[]{
             } else {
                 all[index] = all
                     // Filter only intersect or near geometries
-                    .filter((e, i) => { 
-                      //  console.log(geom.intersects(e),geom.distance(e))
-                        return index != i && ( geom.intersects(e) /*|| geom.isWithinDistance(e,0.001)*/); 
+                    .filter((e, i) => {
+                        //  console.log(geom.intersects(e),geom.distance(e))
+                        return index != i && (geom.intersects(e) /*|| geom.isWithinDistance(e,0.001)*/);
                     })
                     // Union intersect or near geometries
                     .reduce((prev, next, i, ax) => {
@@ -139,7 +138,7 @@ function unionOverlapping(a_geometry:jsts.geom.Geometry[]):jsts.geom.Geometry[]{
                         }
                         */
                         const union = prev.union(next);
-                        if(union.isGeometryCollection()){
+                        if (union.isGeometryCollection()) {
                             console.log("Union is a GeometryCollection!");
                             ax.push(next);
                             return prev;
@@ -149,7 +148,7 @@ function unionOverlapping(a_geometry:jsts.geom.Geometry[]):jsts.geom.Geometry[]{
                     }, geom);
             }
         });
-    //    console.log("Geometries:", a_geometry.length);
+        //    console.log("Geometries:", a_geometry.length);
     } while (startg != a_geometry.length);
     return a_geometry;
 }
@@ -176,7 +175,7 @@ function iPlotterToModel(
                 const rect = obj as IPlotterDataRect;
 
                 const gsf: jsts.util.GeometricShapeFactory = new jsts.util.GeometricShapeFactory(factory);
-                gsf.setCentre(new jsts.geom.Coordinate(rect.cx,rect.cy));
+                gsf.setCentre(new jsts.geom.Coordinate(rect.cx, rect.cy));
                 gsf.setHeight(rect.height);
                 gsf.setWidth(rect.width);
                 const srect = gsf.createRectangle();
@@ -217,15 +216,15 @@ function iPlotterToModel(
         case IPlotterDataTypes.CIRCLE:
             {
                 const circle = obj as IPlotterDataCircle;
-                
-                
+
+
                 const gsf: jsts.util.GeometricShapeFactory = new jsts.util.GeometricShapeFactory(factory);
-                gsf.setCentre(new jsts.geom.Coordinate(circle.cx,circle.cy));
-                gsf.setSize(circle.r*2);
+                gsf.setCentre(new jsts.geom.Coordinate(circle.cx, circle.cy));
+                gsf.setSize(circle.r * 2);
                 gsf.setNumPoints(60);
                 const scircle = gsf.createCircle();
-            
-                
+
+
                 //const scircle = factory.createPoint(new jsts.geom.Coordinate(circle.cx, circle.cy)).buffer(circle.r, 60, jsts.operation.buffer.BufferParameters.CAP_ROUND);
                 scircle.setUserData("circle");
                 return [scircle];
@@ -239,7 +238,7 @@ function iPlotterToModel(
                 gsf.setSize(arc.radius * 2);
                 gsf.setNumPoints(60); // Total num of points from config?
                 gsf.setCentre(new jsts.geom.Coordinate(arc.center[0], arc.center[1]));
-                let sarc: jsts.geom.LineString;
+              //  let sarc: jsts.geom.LineString;
                 if (arc.dir !== "cw") {
                     console.warn(`Arch direction ${arc.dir} arch not implemented!`);
                 }
@@ -247,10 +246,10 @@ function iPlotterToModel(
                 let ext = arc.start[2] - arc.end[2];
                 if (ext < 0) ext = Math.abs(Math.PI + ext);
                 //console.log(`Acr from  ${arc.start[2]} to ${ext}`);
-                sarc = gsf.createArc(arc.start[2] - arc.sweep, ext);
+                const sarc = gsf.createArc(arc.start[2] - arc.sweep, ext);
 
                 // Log
-                console.log(sarc.getCoordinateN(0), sarc.getCoordinateN(sarc.getCoordinates().length-1), arc.start, arc.end);
+                console.log(sarc.getCoordinateN(0), sarc.getCoordinateN(sarc.getCoordinates().length - 1), arc.start, arc.end);
 
                 sarc.setUserData("arc");
                 return [sarc];
@@ -259,9 +258,9 @@ function iPlotterToModel(
         case IPlotterDataTypes.STROKE:
             {
                 const stroke = obj as IPlotterDataStroke;
-                let lineStrings: jsts.geom.Geometry[] = stroke.path.reduce((acc,data,index,all) => {
+                let lineStrings: jsts.geom.Geometry[] = stroke.path.reduce((acc, data) => {
                     return acc.concat(...iPlotterToModel(data));
-                },[] as jsts.geom.Geometry[]);
+                }, [] as jsts.geom.Geometry[]);
 
                 //console.log("All Linstring geometry:",lineStrings.length);
                 unionOverlapping(lineStrings);
@@ -275,8 +274,8 @@ function iPlotterToModel(
                 */
 
 
-                lineStrings = lineStrings.map( lineString=>
-                  lineString.buffer(stroke.width / 2, 60 /*$fn from config?*/, jsts.operation.buffer.BufferParameters.CAP_ROUND)   
+                lineStrings = lineStrings.map(lineString =>
+                    lineString.buffer(stroke.width / 2, 60 /*$fn from config?*/, jsts.operation.buffer.BufferParameters.CAP_ROUND)
                 );
 
                 return lineStrings;
@@ -285,25 +284,30 @@ function iPlotterToModel(
         case IPlotterDataTypes.FILL:
             {
                 const fill = obj as IPlotterDataFill;
-                const fpoly = factory.createLinearRing([
-                    new jsts.geom.Coordinate(fill.path[0].start[0], fill.path[0].start[1]),
-                    ...fill.path.map(path => new jsts.geom.Coordinate(path.end[0], path.end[1]))
-                ]);
-                const convex = fpoly.convexHull();
-                convex.setUserData("fill");
-                return [convex];
+                try {
+                    const fpoly = factory.createLineString([
+                        new jsts.geom.Coordinate(fill.path[0].start[0], fill.path[0].start[1]),
+                        ...fill.path.map(path => new jsts.geom.Coordinate(path.end[0], path.end[1]))
+                    ]);
+                    const convex = fpoly.convexHull();
+                    convex.setUserData("fill");
+                    return [convex];
+                } catch (error) {
+                    console.error(error);
+                    return [];
+                }
             }
             break;
         case IPlotterDataTypes.SHAPE:
             {
                 // Definisce un Tool!
                 const shape = obj as IPlotterDataShape;
-                let submodel: jsts.geom.Geometry[] = [];
+                const submodel: jsts.geom.Geometry[] = [];
                 shape.shape.forEach((data: IPlotterData) => {
                     submodel.push(...iPlotterToModel(data));
                 });
                 if (submodel.length > 0) {
-                    shapes[shape.tool] = submodel.reduce((prev, next, index, all) => prev.union(next));
+                    shapes[shape.tool] = submodel.reduce((prev, next) => prev.union(next));
                     shapes[shape.tool].setUserData("shape");
                 }
             }
@@ -311,8 +315,8 @@ function iPlotterToModel(
             break;
         case IPlotterDataTypes.SIZE:
             {
-                const size = obj as IPlotterDataSize;
                 /*
+                const size = obj as IPlotterDataSize;
                 if (options.showOutline) {
                     let submodel: makerjs.IModel = makerjs.model.layer(
                         makerjs.model.move(

@@ -1,7 +1,7 @@
 import { expose } from "threads/worker"
 import * as jsts from "jsts";
 import { featureCollectionToGeometries, geometryToFeature } from "@/utils/geometriesToFeatures";
-import { GeoJSON, FeatureCollection, Feature, Geometry } from "geojson";
+import { GeoJSON, FeatureCollection } from "geojson";
 import { GCodeParser } from '@/parsers/gcodeparser';
 //import hull from "hull.js";
 import concavamen from "concaveman";
@@ -25,7 +25,7 @@ export interface IOutlineWorkResult {
     gcode: string;
 }
 
-let _options: IOutlineWorkOption = {
+const _options: IOutlineWorkOption = {
     /* Option Defaults */
     name: 'no-name',
     unit: 'mm',
@@ -38,7 +38,7 @@ let _options: IOutlineWorkOption = {
     scale: 1
 }
 
-let factory = new jsts.geom.GeometryFactory(new jsts.geom.PrecisionModel(jsts.geom.PrecisionModel.FLOATING_SINGLE));
+const factory = new jsts.geom.GeometryFactory(new jsts.geom.PrecisionModel(jsts.geom.PrecisionModel.FLOATING_SINGLE));
 
 const _outlineWork = {
     create(options: IOutlineWorkOption, data: FeatureCollection): Promise<IOutlineWorkResult> {
@@ -59,7 +59,7 @@ const _outlineWork = {
             precision: 3 // FIXME: From config
         });
 
-        return new Promise<IOutlineWorkResult>((resolve, reject) => {
+        return new Promise<IOutlineWorkResult>((resolve) => {
             console.log("Working on ", data.features.length, "features!");
 
             const geometries = featureCollectionToGeometries(data, reader);
@@ -71,7 +71,7 @@ const _outlineWork = {
                         .getCoordinates();
 
 //                    var hullPoints = hull(coordinates.map( (coord)=>[coord.x,coord.y]),1) as unknown as number[][];
-                    let hullPoints = concavamen(coordinates.map( (coord)=>[coord.x,coord.y]));
+                    const hullPoints = concavamen(coordinates.map( (coord)=>[coord.x,coord.y]));
 //                    console.log(JSON.stringify(hullPoints));
 
                     const geometry = factory.createPolygon(
@@ -178,10 +178,10 @@ const _outlineWork = {
             if (_options.dthickness) {
                 const point = factory.createPoint(new jsts.geom.Coordinate(_options.drillPark.x, _options.drillPark.y));
                 data.features
-                    .filter(feature => feature.properties!.userData === "outline")
+                    .filter(feature => feature.properties?.userData === "outline")
                     .map(feature => reader.read(feature.geometry))
                     .sort((a, b) => a.distance(point) - b.distance(point)/* + b.distance(a)*/)
-                    .forEach(i_gometry => code.parse(i_gometry, _options.dthickness as number));
+                    .forEach(i_gometry => code.parse(i_gometry, _options.dthickness ));
             }
 
             const gcode = String(code);

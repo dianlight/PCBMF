@@ -1,7 +1,7 @@
 import Vue from "vue";
 import VueI18n from "vue-i18n";
-import en from "@/locales/en.json";
-import it from "@/locales/it.json";
+//import en from "@/locales/en.json";
+//import it from "@/locales/it.json";
 
 Vue.use(VueI18n);
 
@@ -10,10 +10,11 @@ function loadMessages() {
   
     const messages:VueI18n.LocaleMessages = context
       .keys()
-      .map((key) => ({ key, locale: key.match(/[a-z0-9-_]+/i)![0] }))
+      .map((key) => ({ key, locale: /[a-z0-9-_]+/i.exec(key)?.[0] as string }))
       .reduce(
         (messages, { key, locale }) => ({
           ...messages,
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           [locale]: context(key),
         }),
         {}

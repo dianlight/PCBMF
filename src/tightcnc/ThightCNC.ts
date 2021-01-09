@@ -1,8 +1,9 @@
-import path from "path";
+//import path from "path";
 import http from "http";
 //import { XError } from "xerror";
 
 
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace TightCNC {
 
 	export enum Controllers {
@@ -370,16 +371,17 @@ export namespace TightCNC {
 			this.config = config;
 		}
 
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		async op(opname: string, params = {}): Promise<any> {
-			let url = this.config.host + ':' + (this.config.serverPort || 2363) + '/v1/jsonrpc';
-			let requestData = {
+			const url = `${this.config.host}:${this.config.serverPort || 2363}/v1/jsonrpc`;
+			const requestData = {
 				method: opname,
 				params: params
 			};
 			const postData = JSON.stringify(requestData);
 			console.log("Server Url:",url);
-			return new Promise((resolve, reject) => {
-				let req = http.request({
+			return new Promise((resolve) => {
+				const req = http.request({
 					hostname: new URL(this.config.host).hostname,
 					port: this.config.serverPort,
 					path: '/v1/jsonrpc',
@@ -390,12 +392,12 @@ export namespace TightCNC {
 						'Content-Length': Buffer.byteLength(postData)
 					}
 				}, (res) => {
-					console.log(`STATUS: ${res.statusCode}`);
+				//	console.log(`STATUS: ${res.statusCode}`);
 					console.log(`HEADERS: ${JSON.stringify(res.headers)}`);
 					res.setEncoding('utf8');
 					let result:string;
 					res.on('data', (chunk) => {
-						console.log(`BODY: ${chunk}`);
+				//		console.log(`BODY: ${chunk}`);
 						result+=chunk;
 					});
 					res.on('end', () => {

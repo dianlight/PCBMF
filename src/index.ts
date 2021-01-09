@@ -1,13 +1,15 @@
 import { app, ipcMain, BrowserWindow } from 'electron';
-import log from "electron-log";
+//import log from "electron-log";
 import path from "path";
 import SerialPort from "serialport";
-import { fork, spawn, ChildProcess } from "child_process";
+import { fork } from "child_process";
 import yaml from "yaml";
 import fs from "fs";
-import FSStore from "@/fsstore";
+import "@/fsstore";
 import packagejson from "../package.json";
-declare const MAIN_WINDOW_WEBPACK_ENTRY: any;
+import { EvWindow } from "evwt/background";
+
+declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
 
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -15,24 +17,16 @@ if (require('electron-squirrel-startup')) { // eslint-disable-line global-requir
   app.quit();
 }
 
-/** Auto Update Feature **NEED APP SIGNED** */
+/** Auto Update Feature **NEED APP SIGNED** * /
 require('update-electron-app')({
   logger: log
 });
+*/
 
-
-/* SerialPort.list().then((ports) => {
-  if (ports.length === 0) {
-    console.info('No ports discovered');
-  }
-
-  console.log(ports);
-}).catch((err) => {
-  console.error(err.message);
-}); */
 
 let mainWindow:BrowserWindow;
 
+/*
 async function createWindow() {
   let opts = {
     height: 600,
@@ -70,10 +64,48 @@ async function createWindow() {
     FSStore.set('winBounds', mainWindow.getBounds())
   })
 };
+*/
+
+async function createWindow():Promise<void> {
+  const options = {
+    height: 600,
+    width: 800,
+    show: false,
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false,
+      enableRemoteModule: true,
+      nodeIntegrationInWorker: true,
+      //      preload: path.join(__dirname, 'preload.js')
+    }
+  };
+  const restoreId = 'main';
+  const evWindow = new EvWindow(restoreId,options);
+  mainWindow = evWindow.browserWindow;
+  mainWindow.setTitle(packagejson.productName);
+
+  // and load the index.html of the app.
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
+  mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
+
+  if (process.env.NODE_ENV !== 'production') {
+    // Open the DevTools.
+    // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+    require('vue-devtools')
+    .install()
+    mainWindow.webContents.openDevTools();
+  }
+
+  // eslint-disable-next-line @typescript-eslint/unbound-method
+  mainWindow.once('ready-to-show', mainWindow.show)
+
+}
+
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
+// eslint-disable-next-line @typescript-eslint/no-misused-promises
 app.on('ready', createWindow);
 
 // Quit when all windows are closed, except on macOS. There, it's common
@@ -89,7 +121,7 @@ app.on('activate', () => {
   // On OS X it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
   if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow();
+    void createWindow();
   }
 });
 
@@ -97,7 +129,7 @@ app.on('activate', () => {
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and import them here.
-ipcMain.handle('SerialPort.List', (event, ...args) => {
+ipcMain.handle('SerialPort.List', () => {
   return SerialPort.list();
 });
 
@@ -156,12 +188,12 @@ ipcMain.handle("changeTitle",(event,...args) => {
   if(args.length == 0 || !args[0]){
     mainWindow.setTitle(packagejson.productName+" | ");
   } else {
-    mainWindow.setTitle(packagejson.productName+" | "+args[0]);
+    mainWindow.setTitle(`${packagejson.productName} | ${args[0] as string}`);
   }
 });
 
 ipcMain.handle("dirty",(event,...args) => {
-  let title = mainWindow.getTitle();
+  const title = mainWindow.getTitle();
 //  console.log("Message for file dirty?",args[0]);
   if(args[0]){
     mainWindow.setTitle(title.replace(" | "," |*"));

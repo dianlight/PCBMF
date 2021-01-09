@@ -1,12 +1,12 @@
 import router from "../vue/router";
-import { MenuItem, remote } from "electron";
+import { MenuItem, remote, shell } from "electron";
 import store from "../vue/store";
 import {i18n} from "@/vue/i18n";
 
 export class ApplicationMenu {
 
     constructor(name: string) {
-        const { Menu, MenuItem } = remote;
+        const { Menu } = remote;
 
         const isMac = process.platform === 'darwin'
 
@@ -145,7 +145,6 @@ export class ApplicationMenu {
                 {
                   label: i18n.t('manu.help.learn-more'),
                   click: async () => {
-                    const { shell } = require('electron')
                     await shell.openExternal('https://electronjs.org')
                   }
                 }
