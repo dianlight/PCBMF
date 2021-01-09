@@ -1,11 +1,11 @@
 diff --git a/node_modules/@types/jsts/index.d.ts b/node_modules/@types/jsts/index.d.ts
-index 1ddc491..3996972 100644
+index 1ddc491..f517b4f 100644
 --- a/node_modules/@types/jsts/index.d.ts
 +++ b/node_modules/@types/jsts/index.d.ts
 @@ -115,11 +115,45 @@ declare namespace jsts {
              */
-             createPolygon(shell: LinearRing, holes: Array<LinearRing>): Polygon;      
-                   
+             createPolygon(shell: LinearRing, holes: Array<LinearRing>): Polygon;            
+ 
 +            /**
 +            * Creates a GeometryCollection using the given Geometries; a null or empty array will create an empty GeometryCollection.
 +            *
