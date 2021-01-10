@@ -204,12 +204,13 @@
                 }
             }
         },
-        "platewidth": {
-            "type": "integer",
-            "value": 200,
+        "platesize": {
+            "type": "object",
+            "value": { "x": 200, "y": 100 },
             "ui": {
-                "columns": 3,
-                "label": "Plate Width",
+                "widget": "ncform-input-coords",
+                "columns": 12,
+                "label": "Plate Size",
                 "placeholder": "Working Plate Witdh (X)",
                 "help": {
                     "show": true,
@@ -217,34 +218,19 @@
                     "content": "Only for model check"
                 },
                 "widgetConfig": {
-                    "size": "mini"
+                    "size": "mini",
+                    "x_label": "dx: {{$i18n.special.width}}",
+                    "y_label": "dx: {{$i18n.special.depth}}"
                 }
             }
         },
-        "platedepth": {
-            "type": "integer",
-            "value": 100,
+        "parking": {
+            "type": "object",
+            "value": { "x": 200, "y": 100 },
             "ui": {
-                "columns": 3,
-                "showLabel": true,
-                "label": "Depth",
-                "placeholder": "Working Plate Depth (Y)",
-                "help": {
-                    "show": true,
-                    "text": "?",
-                    "content": "Only for model check"
-                },
-                "widgetConfig": {
-                    "size": "mini"
-                }
-            }
-        },
-        "parkingx": {
-            "type": "integer",
-            "value": 0,
-            "ui": {
-                "columns": 3,
-                "label": "Parking X",
+                "widget": "ncform-input-coords",
+                "columns": 12,
+                "label": "Parking Position",
                 "placeholder": "X world cordinate",
                 "help": {
                     "show": true,
@@ -252,25 +238,9 @@
                     "content": "Where to park tool"
                 },
                 "widgetConfig": {
-                    "size": "mini"
-                }
-            }
-        },
-        "parkingy": {
-            "type": "integer",
-            "value": 0,
-            "ui": {
-                "columns": 3,
-                "showLabel": true,
-                "label": "Y",
-                "placeholder": "Y world cordinates",
-                "help": {
-                    "show": true,
-                    "text": "?",
-                    "content": "Where to taprk tool"
-                },
-                "widgetConfig": {
-                    "size": "mini"
+                    "size": "mini",
+                    "x_label": "dx: {{$i18n.special.x}}",
+                    "y_label": "dx: {{$i18n.special.y}}"
                 }
             }
         },

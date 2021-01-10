@@ -14,10 +14,12 @@ export interface UserConfig {
   precision?: number;
   linenumber?: boolean;
   archtolerance?: number;
-  platewidth?: number;
-  platedepth?: number;
-  parkingx?: number;
-  parkingy?: number;
+  platesize?: {
+    [k: string]: unknown;
+  };
+  parking?: {
+    [k: string]: unknown;
+  };
   spindlespeed?: number;
   [k: string]: unknown;
 }

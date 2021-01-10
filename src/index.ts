@@ -1,5 +1,5 @@
 import { app, ipcMain, BrowserWindow } from 'electron';
-//import log from "electron-log";
+import log from "electron-log";
 import path from "path";
 import SerialPort from "serialport";
 import { fork } from "child_process";
@@ -8,8 +8,20 @@ import fs from "fs";
 import "@/fsstore";
 import packagejson from "../package.json";
 import { EvWindow } from "evwt/background";
+import update from "update-electron-app";
 
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
+
+// Log config
+Object.assign(console, log.functions);
+
+if (process.env.NODE_ENV !== 'production') {
+  log.transports.file.level = false;
+  log.transports.console.level = "debug";
+} else {
+  log.transports.file.level = "verbose";
+  log.transports.console.level = false;
+}
 
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -17,11 +29,11 @@ if (require('electron-squirrel-startup')) { // eslint-disable-line global-requir
   app.quit();
 }
 
-/** Auto Update Feature **NEED APP SIGNED** * /
-require('update-electron-app')({
+/** Auto Update Feature **NEED APP SIGNED** */
+update({
+  repo: "dianlight/PCBMF",
   logger: log
 });
-*/
 
 
 let mainWindow:BrowserWindow;

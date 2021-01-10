@@ -89,7 +89,7 @@
           >
             <el-input-number size="mini" v-model="width"></el-input-number>
           </el-form-item>
-          <el-form-item label="$t('pages.wizard.config.use-pcb-outline')">
+          <el-form-item :label="$t('pages.wizard.config.use-pcb-outline')">
             <el-switch
               size="mini"
               v-model="useOutline"

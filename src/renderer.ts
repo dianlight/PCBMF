@@ -4,6 +4,8 @@ import { ipcRenderer } from "electron";
 import './index.css';
 import Vue from "vue";
 import vueNcform from "@ncform/ncform";
+import log from "electron-log";
+
 //import { TightCNC } from "./tightcnc/ThightCNC";
 //import yaml from "yaml";
 import { ApplicationMenu } from "./os/ApplicationMenu";
@@ -20,6 +22,19 @@ import "highlight.js/styles/github.css"
 //import gcode "highlight.js/lib/languages/gcode"; 
 //import ThreeDViewer from "vue-3d-viewer";
 import { i18n } from "./vue/i18n";
+import ncformInputCoords from "@/vue/components/ncformInputCoords.vue";
+
+// Log config
+
+if (process.env.NODE_ENV !== 'production') {
+  log.transports.file.level = false;
+  log.transports.console.level = "debug";
+} else {
+  log.transports.file.level = "verbose";
+  log.transports.console.level = false;
+  Object.assign(console, log.functions);
+}
+
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 hljs.registerLanguage("gcode",require("highlight.js/lib/languages/gcode"));
@@ -29,7 +44,7 @@ const locale = require('element-ui/lib/locale/lang/en') as string;
 
 Vue.use(ElementUI, {locale});
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-Vue.use(vueNcform, {extComponents: ncformStdComps, lang: i18n });
+Vue.use(vueNcform, {extComponents: {...ncformStdComps,ncformInputCoords}, lang: i18n });
 Vue.use(hljs.vuePlugin);
 //(window as any).hljs = hljs;
 

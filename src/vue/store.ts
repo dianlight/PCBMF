@@ -40,7 +40,6 @@ class VuexDirtyStatus {
                     break;
                 default:
                     if (this.dirty) return;
-                    console.log(mutation.type);
                     newDirty = true;
                     break;
             }
@@ -240,7 +239,6 @@ export default new Vuex.Store<IProject>({
     },
     actions: {
         open(context, payload) {
-            console.log(payload);
             if (payload) {
                 context.commit('open', payload);
                 context.commit('setProjectName', payload);
