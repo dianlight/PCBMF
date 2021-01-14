@@ -12,6 +12,9 @@
             "y": "y"
         }
     },
+    "thread": {
+        "kill": "Kill the process"
+    },
     "base": {
         "yes": "yes",
         "no": "no",

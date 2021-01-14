@@ -152,7 +152,6 @@ import { IProject, IProjectDrill } from "@/models/project";
 import { Store } from "vuex";
 import { Tooldb } from "@/typings/tooldb";
 import { Form } from "element-ui";
-import { IDictionary } from "@/models/dictionary";
 import { GerberParser } from "@/workers/gerberParser";
 import { spawn, Thread, Worker, Transfer } from "threads";
 import { IsolationWork } from "@/workers/isolationWork";
@@ -175,7 +174,7 @@ interface Options {
 })
 export default class WizardDrill extends Vue {
   toolTypes: Tooldb[] = [];
-  options: IDictionary<Options> = {};
+  options: Record<string,Options> = {};
 
   @Inject() readonly registerNextCallback:
     | ((

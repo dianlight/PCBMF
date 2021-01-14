@@ -24,6 +24,9 @@ import "highlight.js/styles/github.css"
 import { i18n } from "./vue/i18n";
 import ncformInputCoords from "@/vue/components/ncformInputCoords.vue";
 
+import VueGlobalVar from "vue-global-var";
+import { GlobalVarGlobal } from "./models/globalVarGlobal";
+
 // Log config
 
 if (process.env.NODE_ENV !== 'production') {
@@ -47,6 +50,19 @@ Vue.use(ElementUI, {locale});
 Vue.use(vueNcform, {extComponents: {...ncformStdComps,ncformInputCoords}, lang: i18n });
 Vue.use(hljs.vuePlugin);
 //(window as any).hljs = hljs;
+Vue.use(VueGlobalVar,{
+    globals:{
+        $application: {
+            workers: [],
+            progress: {
+                worker: undefined,
+//                thread: undefined,
+                abortFunction: undefined,
+                perc: undefined,
+            }
+        }
+    } as GlobalVarGlobal
+})
 
 
 ipcRenderer.addListener("open",(args)=>{

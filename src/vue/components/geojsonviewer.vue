@@ -11,6 +11,8 @@ import SvgViewer from "./svgviewer.vue";
 import geojson2svg, { Renderer } from "geojson-to-svg";
 import { Feature } from "geojson";
 import extend  from "json-extend";
+import { FeatureUserData } from "@/parsers/gerberParser.worker";
+import { use } from "vue/types/umd";
 
 @Component({
   name: "GeoJsonViewer",
@@ -20,7 +22,7 @@ export default class GeoJsonViewer extends Vue {
 
   @Prop({ type: String, default: "" }) readonly _class!: string;
   @PropSync("data", { type: Object, default: ()=>{} }) readonly geojson:
-    | Object
+    | GeoJSON.FeatureCollection
     | undefined;
   @Prop({ type: Boolean, default: false }) readonly panzoom:
     | boolean
@@ -39,13 +41,17 @@ export default class GeoJsonViewer extends Vue {
 
   @Watch("geojson")
   onGeoJsonChange(val: Object, old: Object): void {
-//    console.log("------------------->", val);
-//    console.log("Drawing....", JSON.stringify(this.geojson));
+    if(this.geojson){
+      const geojson = this.geojson;
+//    geojson.features = geojson?.features.sort( (a,b) => (a.properties?.userData as FeatureUserData).layer - (b.properties?.userData as FeatureUserData).layer) || [];
+//    console.log("Drawing....", JSON.stringify(geojson.features[0].properties as FeatureUserData),
+//     JSON.stringify(geojson.features[geojson.features.length-1].properties as FeatureUserData));
     const renderer = geojson2svg()
     this.svgdata = renderer
       .styles( (feature:Feature,bbox:any,featureBound:any) => { 
 //        console.log(JSON.stringify(feature.geometry.type));
-        switch(feature.properties!.userData){
+/*
+        switch(feature.properties!.userData as FeatureUserData){
           case "isolation":
             return { weight: feature.properties!.width, color:"red" ,fill:"#000000", fillOpacity: 0.0, stroke: "orange"} 
             break;
@@ -60,10 +66,23 @@ export default class GeoJsonViewer extends Vue {
             return { weight: 0.25 ,fill:"#000000", opacity: 0.5, stroke: "black"} 
             break;  
         }
+*/
+      const userData = feature.properties!.userData as FeatureUserData;
+     // console.log(userData.layer);
+      if(userData && userData.type === "isolation"){
+            return { weight: feature.properties!.width, color:"red" ,fill:"#b87333", fillOpacity: 0.1, stroke: "blue"} 
+      } else if(userData && userData.polarity === 'dark'){
+            return { weight: 0.1 ,fill:"#b87333", opacity: 1, stroke: "#f6cba0"} 
+      } else if(userData && userData.polarity === 'clear') {
+            return { weight: 0.1 ,fill:"white", opacity: 1, stroke: "white"} 
+      } else {
+            return { weight: 0.1 ,fill:"#000000", opacity: 1, stroke: "red"} 
+      }
        })       
-      .data(this.geojson) 
+      .data(geojson) 
       .render();
     this.$forceUpdate();
+    }
   }
 }
 </script>

@@ -17,16 +17,15 @@ module.exports = [
             },
         },
     },
-    /*
     {
         test: /\.worker\.ts$/i,
-        use: [
-          {
-            loader: "worker-loader",
-          }
-        ]   
-    },    
-    */  
+        use: [{
+            loader: "comlink-loader",
+            options: {
+                singleton: true
+            }
+        }]
+    },
     {
         test: /\.tsx?$/,
         exclude: /(node_modules|\.webpack)/,
@@ -47,8 +46,8 @@ module.exports = [
         use: [{
             loader: 'url-loader',
             options: {
-                limit: 10000
+                limit: 8192
             }
         }]
-    }, 
+    },
 ];

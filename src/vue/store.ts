@@ -227,7 +227,7 @@ export default new Vuex.Store<IProject>({
         },
         addGerber(state, pcb: PcbLayer) {
             const index = state.layers?.findIndex(layer => layer.filename === pcb.filename);
-            console.log(pcb.filename, index);
+//            console.log(pcb.filename, index);
             if (index != undefined && index >= 0) {
                 pcb.id = index;
                 state.layers?.splice(index, 1, pcb);

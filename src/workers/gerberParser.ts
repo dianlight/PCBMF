@@ -5,14 +5,18 @@ import gerberParser from "gerber-parser";
 import gerberPlotter from "gerber-plotter";
 import * as jsts from "jsts";
 import { GeoJSON, Feature, FeatureCollection, Geometry } from "geojson";
+import Observable from 'zen-observable';
+import { IProgressiveResult, WorkerUtils } from "@/utils/workerUtils";
+import { Worker } from "threads";
 
 export interface IGerberParserOption {
     unionDraw: boolean;
     filetype?: "gerber" | "drill"
 }
 
-export interface IGerberParserResult {
-    geojson: GeoJSON;
+export interface IGerberParserResult extends IProgressiveResult {
+   
+    geojson: GeoJSON | undefined;
 }
 
 const options: IGerberParserOption = {
@@ -21,7 +25,6 @@ const options: IGerberParserOption = {
     filetype: "gerber"
 }
 
-let buffer: Buffer = Buffer.from(new ArrayBuffer(0));
 
 const factory = new jsts.geom.GeometryFactory(new jsts.geom.PrecisionModel(jsts.geom.PrecisionModel.FLOATING_SINGLE));
 const g_geometry: jsts.geom.Geometry[] = [];
@@ -29,16 +32,16 @@ const shapes: Record<number,jsts.geom.Geometry> = {};
 
 
 const _gerberParser = {
-    create(data: IGerberParserOption): void {
+    stop():void{
+        console.log("Richiesta terminazione di tutto!");
+        //WorkerUtils.abort()
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+        console.log("Terminiamo",self);
+        (self as unknown as Worker).terminate();
+    },
+
+    commit(data: IGerberParserOption,buffer: Buffer): Observable<IGerberParserResult> {
         Object.assign(options, data);
-    },
-
-    load(data: Buffer): boolean {
-        buffer = Buffer.concat([buffer, data]);
-        return true;
-    },
-
-    commit(): Promise<IGerberParserResult> {
         const parser = gerberParser({
             filetype: options.filetype,
         });
@@ -61,7 +64,12 @@ const _gerberParser = {
         const stream: stm.Duplex = new stm.Duplex();
         stream.push(buffer);
         stream.push(null);
-        return new Promise<IGerberParserResult>((resolve) => {
+        return new Observable<IGerberParserResult>(observer => {
+            const result:IGerberParserResult = {
+                perc: 0,
+                geojson: undefined,
+            };
+            WorkerUtils.startProgress(self as  unknown as Worker,observer);
             stream
                 .pipe(parser)
                 .pipe(plotter)
@@ -72,17 +80,21 @@ const _gerberParser = {
                         console.warn(geom.getUserData(), geom.isGeometryCollection());
                     })
                     if (rgeom) g_geometry.push(...rgeom);
+                    WorkerUtils.sendProgress(100/g_geometry.length*rgeom.length);
                 })
                 .on("end", () => {
                     const writer = new jsts.io.GeoJSONWriter();
 
+                    console.log("Pre merge geometry");
 
                     // Union overlapping geometry
                     if (options.unionDraw) {
+                        WorkerUtils.sendProgress(50);
                         unionOverlapping(g_geometry);
                     }
                     // Go on.
 
+                    console.log("Post merge geometry");
                     const single_geometry = factory.createGeometryCollection(g_geometry);
 
                     const geojson: GeoJSON = {
@@ -102,7 +114,16 @@ const _gerberParser = {
                         } as Feature);
                     }
                     //console.log(geojson);
-                    resolve({ geojson: geojson });
+//                    resolve({ geojson: geojson });
+/*
+                    result.perc=100;
+                    */
+                    result.geojson = geojson;
+                    /*
+                    observer.next(result);
+                    observer.complete();
+                    */
+                   WorkerUtils.sendCompleted(observer,result);
                 });
         });
     },
@@ -111,7 +132,7 @@ const _gerberParser = {
 // Real Work
 
 function unionOverlapping(a_geometry: jsts.geom.Geometry[]): jsts.geom.Geometry[] {
-    // console.log("Start Geometries:", a_geometry.length);
+    console.log("Start Geometries:", a_geometry.length);
     let startg;
     do {
         startg = a_geometry.length;
@@ -137,7 +158,19 @@ function unionOverlapping(a_geometry: jsts.geom.Geometry[]): jsts.geom.Geometry[
                             union = union.union(factory.createLineString([prev.getCoordinate(),next.getCoordinate()]));
                         }
                         */
+//                        console.log("Preunion",i,ax.length,index,all.length);
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+                     //   (self as any).postMessage({type:"progress",perc:100/all.length*index} as ThreadProgressData) 
+                     /*
+                        if(observer)observer.next({
+                            geojson: undefined,
+                            perc: 100/all.length*index,
+                        });
+                        */
+                        WorkerUtils.sendProgress(100/all.length*index);
+
                         const union = prev.union(next);
+//                        console.log("PostUnion",i,ax.length,all.length);
                         if (union.isGeometryCollection()) {
                             console.log("Union is a GeometryCollection!");
                             ax.push(next);
@@ -148,8 +181,9 @@ function unionOverlapping(a_geometry: jsts.geom.Geometry[]): jsts.geom.Geometry[
                     }, geom);
             }
         });
-        //    console.log("Geometries:", a_geometry.length);
-    } while (startg != a_geometry.length);
+        WorkerUtils.sendProgress(100-Math.abs(startg-a_geometry.length));
+        console.log("Geometries:",startg , a_geometry.length);
+    } while (startg > a_geometry.length);
     return a_geometry;
 }
 

@@ -307,7 +307,7 @@ export default class WizardConfig extends Vue {
         store.commit("removeGerber",row);
       }
     });
-    console.log("Removed ",index,row);
+//    console.log("Removed ",index,row);
   }
 
   redrawpcb() {

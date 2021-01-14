@@ -203,7 +203,6 @@ import { Store } from "vuex";
 import { Tooldb } from "@/typings/tooldb";
 //import { IPlotterOptions } from "@/workers/plotterDataToModel.worker";
 import { Form } from "element-ui";
-import { IDictionary } from "@/models/dictionary";
 import { GerberParser } from "@/workers/gerberParser";
 import { spawn, Thread, Worker, Transfer } from "threads";
 import { OutlineWork,OutlineWorkMode } from "@/workers/outlineWork";
@@ -227,7 +226,7 @@ interface Options {
 })
 export default class Wizardoutline extends Vue {
   toolTypes: Tooldb[] = [];
-  options: IDictionary<Options> = {};
+  options: Record<string,Options> = {};
   foundGeometries: number = 0;
 
   @Inject() readonly registerNextCallback:

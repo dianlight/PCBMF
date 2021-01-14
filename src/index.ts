@@ -1,4 +1,4 @@
-import { app, ipcMain, BrowserWindow } from 'electron';
+import { app, ipcMain, BrowserWindow, session } from 'electron';
 import log from "electron-log";
 import path from "path";
 import SerialPort from "serialport";
@@ -78,6 +78,7 @@ async function createWindow() {
 };
 */
 
+// eslint-disable-next-line @typescript-eslint/require-await
 async function createWindow():Promise<void> {
   const options = {
     height: 600,
@@ -110,7 +111,6 @@ async function createWindow():Promise<void> {
 
   // eslint-disable-next-line @typescript-eslint/unbound-method
   mainWindow.once('ready-to-show', mainWindow.show)
-
 }
 
 
@@ -214,10 +214,8 @@ ipcMain.handle("dirty",(event,...args) => {
   }
 });
 
-/**
- * Save a TMP file.
- *
-ipcMain.handle('saveTempFile', (event, ...args) => {
-
+ipcMain.handle('wokerLisy', (/*event, ...args*/): number => {
+  console.log(session.defaultSession.serviceWorkers.getAllRunning());
+  return Object.keys(session.defaultSession.serviceWorkers.getAllRunning()).length;
 });
-*/
+

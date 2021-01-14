@@ -16,7 +16,7 @@ export interface IPlotterData {
 
 export interface IPlotterDataPolarity extends IPlotterData {
     type: IPlotterDataTypes.POLARITY,
-    polarity: "dark"|"light",
+    polarity: "dark"|"clear",
     box: number[]
 }
 

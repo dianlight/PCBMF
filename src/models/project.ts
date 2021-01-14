@@ -3,6 +3,7 @@ import { Tooldb } from "@/typings/tooldb";
 import { PcbLayer } from "./pcblayer";
 import { OutlineWorkMode } from "@/workers/outlineWork";
 import { ThiefWorkMode } from "@/workers/thiefWork";
+import { FeatureCollection } from "geojson";
 
 
 export type MarginType = "Envelope"|"Board"|"ConvexHull";
@@ -11,7 +12,7 @@ export interface IProjectWork {
     layer: string,
     svg:string | undefined,
     gcode:string | undefined,
-    geojson: Record<string, unknown> | undefined
+    geojson: FeatureCollection | undefined
 }
 
 export interface IProjectCopper extends IProjectWork {

@@ -32,7 +32,11 @@
               :data.sync="isolation.geojson"
             ></geo-json-viewer>
           </el-tab-pane>
-          <el-tab-pane :label="$t('pages.wizard.work-3d')" :disabled="!isolation.gcode" lazy>
+          <el-tab-pane
+            :label="$t('pages.wizard.work-3d')"
+            :disabled="!isolation.gcode"
+            lazy
+          >
             <g-code
               :data="isolation.gcode"
               :gcgrid="true"
@@ -40,7 +44,10 @@
               :height="height"
             ></g-code>
           </el-tab-pane>
-          <el-tab-pane :label="$t('pages.wizard.gcode')" :disabled="!isolation.gcode">
+          <el-tab-pane
+            :label="$t('pages.wizard.gcode')"
+            :disabled="!isolation.gcode"
+          >
             <highlightjs
               language="gcode"
               :code="isolation.gcode || $t('base.loading')"
@@ -59,7 +66,9 @@
                 trigger: 'change',
                 type: 'enum',
                 enum: [true],
-                message: $t('pages.wizard.isolation.debug-option-please-enable'),
+                message: $t(
+                  'pages.wizard.isolation.debug-option-please-enable'
+                ),
               },
             ]"
           >
@@ -148,6 +157,7 @@ import GeoJsonViewer from "@/vue/components/geojsonviewer.vue";
 import fs from "fs";
 import { PcbLayer } from "@/models/pcblayer";
 import { GerberSide, GerberType } from "whats-that-gerber";
+import { releaseProxy } from "comlink";
 import colornames from "colornames";
 import * as Trigonomerty from "@/utils/trigonometry";
 import {
@@ -172,11 +182,16 @@ import {
   GerberParser,
   IGerberParserOption,
   IGerberParserResult,
-} from "@/workers/gerberParser";
-import { IsolationWork } from "@/workers/isolationWork";
+} from "@/parsers/gerberParser.worker";
+//import { IsolationWork } from "@/workers/isolationWork";
+import { IsolationJob } from "@/workers/isolationJob.worker";
 import { spawn, Thread, Worker, Transfer } from "threads";
-import { IDictionary } from "@/models/dictionary";
 import { FeatureCollection } from "geojson";
+import { WorkerUtils } from "@/utils/workerUtils";
+import Observable from "zen-observable";
+import { error } from "three";
+import { GlobalVarGlobalApplication } from "@/models/globalVarGlobal";
+import { VueExtended } from "../vueextended";
 
 interface Options {
   renderTime: number;
@@ -186,7 +201,7 @@ interface Options {
 @Component({
   components: {
     GCode,
-//    SvgViewer,
+    //    SvgViewer,
     GeoJsonViewer,
   },
   computed: {
@@ -194,9 +209,9 @@ interface Options {
     ...mapMultiRowFields(["config.isolations"]),
   },
 })
-export default class WizardIsolation extends Vue {
+export default class WizardIsolation extends VueExtended {
   toolTypes: Tooldb[] = [];
-  options: IDictionary<Options> = {};
+  options: Record<string, Options> = {};
 
   @Inject() readonly registerNextCallback:
     | ((
@@ -247,7 +262,7 @@ export default class WizardIsolation extends Vue {
           const ret: IProjectIsolation = {
             layer: layer.name,
             showOutline: false,
-            unionDraw: true,
+            unionDraw: false,
             toolType: undefined,
             dthickness: undefined,
             doutline: undefined,
@@ -332,12 +347,13 @@ export default class WizardIsolation extends Vue {
     }
   }
 
-  redrawpcb(isolation: IProjectIsolation) {
+  async redrawpcb(isolation: IProjectIsolation) {
     this.options[isolation.layer].busy = true;
     this.options[isolation.layer].renderTime = 0;
     this.$forceUpdate();
     const startTime = Date.now();
 
+/*
     const _layer = JSON.parse(
       JSON.stringify(
         (this.$store.state.layers as PcbLayer[]).filter(
@@ -357,61 +373,157 @@ export default class WizardIsolation extends Vue {
         }
         return v;
       }
-    );
+    ) as PcbLayer;
+*/
+    const _layer = (this.$store.state.layers as PcbLayer[]).filter(
+          (layer) => layer.name === isolation.layer
+        )[0];
 
-    spawn<GerberParser>(new Worker("../../workers/gerberParser")).then(
-      async (gerberParser) => {
-        await gerberParser.create({
-          unionDraw: isolation.unionDraw,
-        });
-        await gerberParser.load((_layer as PcbLayer).gerber);
-        gerberParser.commit().then(async (data) => {
-          const index = (this.$store
-            .state as IProject).config.isolations.findIndex(
-            (iso) => iso.layer === isolation.layer
-          );
+    console.log(_layer);
+
+    let index = (this.$store.state as IProject).config.isolations.findIndex(
+      (iso) => iso.layer === isolation.layer
+    );
+    if (index == -1) {
+      index = (this.$store.state as IProject).config.isolations.length;
+      this.$store.commit("updateField", {
+        path: `config.isolations.${index}`,
+        value: {},
+      });
+    }
+    let layerIndex = (this.$store.state as IProject).layers?.findIndex(
+      (layer) => layer.name === isolation.layer
+    );
+    console.log(index, layerIndex);
+
+    const gerberParser = await new GerberParser({
+      unionDraw: isolation.unionDraw,
+    });
+    const isolationJob = await new IsolationJob({
+      name: isolation.layer,
+      unit: "mm",
+      drillPark: {
+        x: 0,
+        y: 0,
+      },
+      feedrate: 50,
+      safeHtravel: 10,
+      doutline: isolation.doutline,
+      dthickness: isolation.dthickness,
+    });
+
+    /* Progress!!
+        this.$application.progress.perc = 0;
+        const timeout = async ()=>{
+//          try {
+            console.log("--X-->");
+            this.$application.progress.perc = await gerberParser._perc;
+            console.log("--O--->",this.$application.progress.perc);
+            if( this.$application.progress.perc && this.$application.progress.perc < 100 ){
+              console.log("----->",this.$application.progress.perc);
+//              if( this.$application.progress.perc > 16){
+//                gerberParser.stop();
+//                  console.log("Try to kill!");
+//                  (gerberParser as unknown as any)[releaseProxy]();
+//              }
+              setTimeout(timeout,5);
+            }
+//          } catch (error) {
+//            console.log(error);
+//          }
+        }
+        let progressT = setTimeout(timeout,5);
+*/
+
+    //    const gerberParserWorker = new Worker("../../workers/gerberParser");
+    //    spawn<GerberParser>(gerberParserWorker).then(
+    //      async (gerberParser) => {
+
+    //        this.$application.workers.push(gerberParserWorker);
+    //        ((this as any).$application as GlobalVarGlobalApplication).workers.push(gerberParserWorker);
+
+    //      try {
+    // let jsondata = "";
+    try {
+//      if (!_layer.geoJson) {
+        const data = await gerberParser.commit(_layer.gerber);
+        if (data.geojson) {
+          console.log("Generating GeoJson", layerIndex);
           this.$store.commit("updateField", {
-            path: `config.isolations.${index}.geojson`,
+            path: `layers.${layerIndex}.geoJson`,
             value: data.geojson,
           });
+//        }
+      }
 
-          if (isolation.doutline) {
-            const isolationWork = await spawn<IsolationWork>(
-              new Worker("../../workers/isolationWork")
-            );
-            const data2 = await isolationWork.create(
-              {
-                name: isolation.layer,
-                unit: "mm",
-                drillPark: {
-                  x: 0,
-                  y: 0,
-                },
-                feedrate: 50,
-                safeHtravel: 10,
-                doutline: isolation.doutline,
-                dthickness: isolation.dthickness,
-              },
-              data.geojson as FeatureCollection
-            );
-            this.$store.commit("updateField", {
-              path: `config.isolations.${index}.geojson`,
-              value: data2.geojson,
-            });
-            this.$store.commit("updateField", {
-              path: `config.isolations.${index}.gcode`,
-              value: data2.gcode,
-            });
-            Thread.terminate(isolationWork);
-          }
+      console.log(_layer.geoJson);
 
-          this.options[_layer.name].renderTime = Date.now() - startTime;
-          this.options[_layer.name].busy = false;
-          this.$forceUpdate();
-          Thread.terminate(gerberParser);
+      this.$store.commit("updateField", {
+        path: `config.isolations.${index}.geojson`,
+        value: _layer.geoJson,
+      });
+
+      if (isolation.doutline && _layer.geoJson) {
+        console.log("Begin isolation work...");
+        const data2 = await isolationJob.isolate(_layer.geoJson);
+        console.log("Tornato da isolation!");
+        this.$store.commit("updateField", {
+          path: `config.isolations.${index}.geojson`,
+          value: data2.geojson,
+        });
+        this.$store.commit("updateField", {
+          path: `config.isolations.${index}.gcode`,
+          value: data2.gcode,
         });
       }
-    );
+    } finally {
+      this.options[_layer.name].renderTime = Date.now() - startTime;
+      this.options[_layer.name].busy = false;
+      this.$forceUpdate();
+    }
+
+    /*
+          ,
+          (error) => console.error(error),
+          async () => {
+
+          //  Thread.terminate(gerberParser);
+
+            if (isolation.doutline) {
+              const isolationWork = await spawn<IsolationWork>(
+                new Worker("../../workers/isolationWork")
+              );
+              const data2 = await isolationWork.create(
+                {
+                  name: isolation.layer,
+                  unit: "mm",
+                  drillPark: {
+                    x: 0,
+                    y: 0,
+                  },
+                  feedrate: 50,
+                  safeHtravel: 10,
+                  doutline: isolation.doutline,
+                  dthickness: isolation.dthickness,
+                },
+                (this.$store.state as IProject).config.isolations[index]
+                  .geojson as FeatureCollection
+              );
+              this.$store.commit("updateField", {
+                path: `config.isolations.${index}.geojson`,
+                value: data2.geojson,
+              });
+              this.$store.commit("updateField", {
+                path: `config.isolations.${index}.gcode`,
+                value: data2.gcode,
+              });
+              Thread.terminate(isolationWork);
+            }
+          }
+          */
+    //  );
+    //      }
+    //    );
   }
 }
 </script>

@@ -214,7 +214,6 @@ import {
 } from "@/workers/gerberParser";
 import { IsolationWork } from "@/workers/isolationWork";
 import { spawn, Thread, Worker, Transfer } from "threads";
-import { IDictionary } from "@/models/dictionary";
 import { FeatureCollection } from "geojson";
 import { ThiefWork } from "@/workers/thiefWork";
 
@@ -236,7 +235,7 @@ interface Options {
 })
 export default class WizardCopper extends Vue {
   toolTypes: Tooldb[] = [];
-  options: IDictionary<Options> = {};
+  options: Record<string,Options> = {};
 
   @Inject() readonly registerNextCallback:
     | ((
