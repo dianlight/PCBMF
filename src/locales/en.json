@@ -10,6 +10,26 @@
             "depth": "Depth",
             "x": "x",
             "y": "y"
+        },
+        "config": {
+            "pcb_blank_type": {
+                "label": "PCB blank type",
+                "placeholder": "Select the blank PCB type",
+                "help": "The blank type you use as origin",
+                "error": "Need to selected"
+            },
+            "pcb_size": {
+                "label": "PCB size",
+                "help": "Select the envelope size of your PCB",
+                "error": "Need to selected",
+                "error_x": "Invalid Width value",
+                "error_y": "Invalid Depth value"
+            },
+            "pcb_outline": {
+                "label": "Use PCB outline",
+                "help": "Select No if the draw on the left is incorrect",
+                "error": "Need to selected"
+            }
         }
     },
     "thread": {

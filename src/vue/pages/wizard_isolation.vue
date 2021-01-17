@@ -143,7 +143,7 @@
 
 <script lang="ts">
 import Vue from "vue";
-import store from "../store";
+import store from "../store/store";
 import whatsThatGerber from "whats-that-gerber";
 import { mapGetters, mapMutations, mapState } from "vuex";
 import { mapFields, mapMultiRowFields } from "vuex-map-fields";
@@ -191,7 +191,7 @@ import { WorkerUtils } from "@/utils/workerUtils";
 import Observable from "zen-observable";
 import { error } from "three";
 import { GlobalVarGlobalApplication } from "@/models/globalVarGlobal";
-import { VueExtended } from "../vueextended";
+//import { VueExtended } from "../vueextended";
 
 interface Options {
   renderTime: number;
@@ -209,7 +209,7 @@ interface Options {
     ...mapMultiRowFields(["config.isolations"]),
   },
 })
-export default class WizardIsolation extends VueExtended {
+export default class WizardIsolation extends Vue {
   toolTypes: Tooldb[] = [];
   options: Record<string, Options> = {};
 
@@ -261,8 +261,6 @@ export default class WizardIsolation extends VueExtended {
         .map((layer, index) => {
           const ret: IProjectIsolation = {
             layer: layer.name,
-            showOutline: false,
-            unionDraw: false,
             toolType: undefined,
             dthickness: undefined,
             doutline: undefined,
@@ -445,7 +443,7 @@ export default class WizardIsolation extends VueExtended {
     //      try {
     // let jsondata = "";
     try {
-//      if (!_layer.geoJson) {
+      if (!_layer.geoJson) {
         const data = await gerberParser.commit(_layer.gerber);
         if (data.geojson) {
           console.log("Generating GeoJson", layerIndex);
@@ -453,7 +451,7 @@ export default class WizardIsolation extends VueExtended {
             path: `layers.${layerIndex}.geoJson`,
             value: data.geojson,
           });
-//        }
+        }
       }
 
       console.log(_layer.geoJson);

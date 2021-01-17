@@ -4,8 +4,9 @@
         <el-main>
           <el-tabs ref="tab" value="config" tab-position="left" style="height: 100%;" @tab-click="tab_refresh()" stretch>
             <el-tab-pane name="config" :label="$t('pages.project.config')" lazy>
-              <wizard-config/>
+              <project-config/>
             </el-tab-pane>
+            <!--
             <el-tab-pane name="isolation" :label="$t('pages.project.isolation')" lazy>
               <wizard-isolation :key="doIsolationRefresh"/>
             </el-tab-pane>
@@ -18,6 +19,7 @@
             <el-tab-pane name="copper" :label="$t('pages.project.copper-thief')" lazy>
               <wizard-copper-thief :key="doCopperRefresh"/>
             </el-tab-pane>
+            -->
           </el-tabs>
         </el-main>         
     </el-card>
@@ -29,21 +31,21 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import { Provide, Watch } from "vue-property-decorator";
 import store from "@/vue/store";
-import WizardConfig from "@/vue/pages/wizard_config.vue";
-import WizardIsolation from "@/vue/pages/wizard_isolation.vue";
-import WizardDrill from "@/vue/pages/wizard_drill.vue";
-import WizardOutline from "@/vue/pages/wizard_outline.vue";
-import WizardCopperThief from "@/vue/pages/wizard_copper_thief.vue";
+import ProjectConfig from "@/vue/pages/project_config.vue";
+//import WizardIsolation from "@/vue/pages/wizard_isolation.vue";
+//import WizardDrill from "@/vue/pages/wizard_drill.vue";
+//import WizardOutline from "@/vue/pages/wizard_outline.vue";
+//import WizardCopperThief from "@/vue/pages/wizard_copper_thief.vue";
 import { mapFields } from "vuex-map-fields";
 import crypto from "crypto";
 
 @Component({
   components: {
-    WizardConfig,
-    WizardIsolation,
-    WizardDrill,
-    WizardOutline,
-    WizardCopperThief
+    ProjectConfig,
+//    WizardIsolation,
+//    WizardDrill,
+//    WizardOutline,
+//    WizardCopperThief
   },
   computed: {
     ...mapFields(["md5","config"]),

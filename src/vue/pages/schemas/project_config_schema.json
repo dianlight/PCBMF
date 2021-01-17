@@ -1,0 +1,90 @@
+{
+    "type": "object",
+    "properties": {
+        "blankType": {
+            "type": "string",
+            "ui": {
+                "label": "dx: {{$i18n.config.pcb_blank_type.label}}",
+                "widget": "select",
+                "widgetConfig": {
+                    "size": "mini",
+                    "placeholder": "dx: {{$i18n.config.pcb_blank_type.placeholder}}",
+                    "enumSource": []
+                },
+                "help": {
+                    "show": true,
+                    "text": "?",
+                    "content": "dx: {{$i18n.config.pcb_blank_type.help}}"
+                }
+            },
+            "rules": {
+                "required": {
+                    "value": true,
+                    "errMsg": "dx: {{$i18n.config.pcb_blank_type.error}}"
+                }
+            }
+        },
+        "pcbSize": {
+            "type": "object",
+            "value": {
+                "x": 70.0,
+                "y": 100.0
+            },
+            "ui": {
+                "widget": "ncform-input-coords",
+                "columns": 12,
+                "label": "dx: {{$i18n.config.pcb_size.label}}",
+                "placeholder": "dx: {{$i18n.config.pcb_size.placeholder}}",
+                "help": {
+                    "show": true,
+                    "text": "?",
+                    "content": "dx: {{$i18n.config.pcb_size.help}}"
+                },
+                "widgetConfig": {
+                    "size": "mini",
+                    "x_label": "dx: {{$i18n.special.width}}",
+                    "y_label": "dx: {{$i18n.special.depth}}",
+                    "precision": 2
+                }
+            },
+            "rules": {
+                "required": {
+                    "value": true,
+                    "errMsg": "dx: {{$i18n.config.pcb_size.error}}"
+                },
+                "customRule": [{
+                        "script": "dx: {{$root.pcbSize.x}} > 0",
+                        "errMsg": "dx: {{$i18n.config.pcb_size.error_x}}"
+                    },
+                    {
+                        "script": "dx: {{$root.pcbSize.y}} > 0",
+                        "errMsg": "dx: {{$i18n.config.pcb_size.error_y}}"
+                    }
+                ]
+            }
+        },
+        "useOutline": {
+            "type": "boolean",
+            "ui": {
+                "label": "dx: {{$i18n.config.pcb_outline.label}}",
+                "help": {
+                    "show": true,
+                    "text": "?",
+                    "content": "dx: {{$i18n.config.pcb_outline.help}}"
+                }
+            },
+            "rules": {
+                "required": {
+                    "value": true,
+                    "errMsg": "dx: {{$i18n.config.pcb_outline.error}}"
+                }
+            }
+        }
+    },
+    "ui": {
+        "widgetConfig": {
+            "layout": "h",
+            "labelWidth": "12em"
+        }
+    }
+}

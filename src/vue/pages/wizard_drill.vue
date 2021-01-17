@@ -118,7 +118,7 @@
 
 <script lang="ts">
 import Vue from "vue";
-import store from "../store";
+import store from "../store/store";
 //import gerberToSvg from "gerber-to-svg";
 import whatsThatGerber from "whats-that-gerber";
 import { mapGetters, mapMutations, mapState } from "vuex";

@@ -1,6 +1,6 @@
 import router from "../vue/router";
 import { MenuItem, remote, shell } from "electron";
-import store from "../vue/store";
+import store from "../vue/store/store";
 import {i18n} from "@/vue/i18n";
 
 export class ApplicationMenu {

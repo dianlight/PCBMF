@@ -161,7 +161,7 @@
 
 <script lang="ts">
 import Vue from "vue";
-import store from "../store";
+import store from "../store/store";
 //import pcbStackup from "pcb-stackup";
 //import gerberToSvg from "gerber-to-svg";
 import whatsThatGerber from "whats-that-gerber";

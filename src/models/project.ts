@@ -25,10 +25,9 @@ export interface IProjectCopper extends IProjectWork {
 }
 
 export interface IProjectIsolation extends IProjectWork {
-    showOutline: boolean,
+//    showOutline: boolean,
     toolType: Tooldb | undefined,
-    unionDraw: boolean,
-//    useFillPitch: number,
+//    unionDraw: boolean,
     dthickness:number | undefined,
     doutline: number | undefined,
 }
@@ -55,14 +54,14 @@ export interface IProject {
     layers: PcbLayer[] | undefined,
     config: {
         useOutline: boolean;
-        pcb: {
-            blankType: Pcbdb | undefined,
-            height: number | undefined,
-            width: number | undefined
+        blankType: Pcbdb | undefined,
+        pcbSize: {
+            y: number | undefined,
+            x: number | undefined
         },
-        isolations: IProjectIsolation[],
-        drills: IProjectDrill[],
-        outlines: IProjectOutline[],
-        coppers: IProjectCopper[],
+        isolations: Record<string,IProjectIsolation>,
+        drills: Record<string,IProjectDrill>,
+        outlines: Record<string,IProjectOutline>,
+        coppers: Record<string,IProjectCopper>,
     }
 }

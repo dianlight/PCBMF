@@ -15,7 +15,7 @@
 <script lang='ts'>
 import { ElForm } from "element-ui/types/form";
 import Vue from "vue";
-import store from "@/vue/store";
+import store from "@/vue/store/store";
 import Preferencies_general from "@/vue/pages/preferencies_general.vue";
 import Preferencies_pcbdb from "@/vue/pages/preferencies_pcbdb.vue";
 import Preferencies_toolsdb from "@/vue/pages/preferencies_toolsdb.vue";

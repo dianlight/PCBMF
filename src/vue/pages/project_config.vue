@@ -5,11 +5,13 @@
         <el-form>
           <div class="clearfix">
             <el-form-item :label="$t('pages.wizard.config.top-layer')">
+              <!--
               <el-switch
                 active-text="Include"
                 inactive-text="Ignore"
                 v-model="useTop"
               ></el-switch>
+              -->
             </el-form-item>
           </div>
           <svg-viewer
@@ -20,11 +22,13 @@
 
           <div class="clearfix">
             <el-form-item :label="$t('pages.wizard.config.bottom-layer')">
+              <!--
               <el-switch
                 active-text="Include"
                 inactive-text="Ignore"
                 v-model="useBottom"
               ></el-switch>
+              -->
             </el-form-item>
           </div>
 
@@ -32,7 +36,19 @@
         </el-form>
       </el-col>
       <el-col :span="14">
-        <el-form :model="pcb" _v-model="pcb" ref="form" label-width="120px">
+      <ncform
+        refs
+        :form-schema="projectConfigSchema"
+        form-name="projectConfig"
+        _v-model="projectConfigSchema.value"
+        v-model="config"
+        _:is-dirty.sync="isFormDirty"
+        _submit="submit()"
+        @change="redrawpcb()"
+      >
+      </ncform>  
+        <el-form :model="pcb" ref="form" label-width="120px">
+      <!--      
           <el-form-item
             :label="$t('pages.wizard.config.pcb-blank-type')"
             prop="blankType"
@@ -96,6 +112,7 @@
               @input="redrawpcb"
             ></el-switch>
           </el-form-item>
+          -->
           <!-- Gerber File List-->
           <el-table
             :data="layers"
@@ -180,7 +197,7 @@
 
 <script lang="ts">
 import Vue from "vue";
-import store from "../store";
+import store from "../store/store";
 import pcbStackup from "pcb-stackup";
 import whatsThatGerber from "whats-that-gerber";
 import { mapGetters, mapMutations, mapState } from "vuex";
@@ -194,6 +211,7 @@ import { PcbLayer } from "@/models/pcblayer";
 import { IProject } from "@/models/project";
 import { config } from "vue/types/umd";
 import { remote } from "electron";
+import { Pcbdb } from "@/typings/pcbdb";
 
 let svg_top: string, svg_bottom: string;
 
@@ -203,23 +221,27 @@ let svg_top: string, svg_bottom: string;
   },
   computed: {
     ...mapFields([
-      "config.useOutline",
-      "layers",
-      "config.pcb",
-      "config.pcb.blankType",
-      "config.pcb.width",
-      "config.pcb.height",
+      "project.config",
+      "project.config.useOutline",
+      "project.layers",
+      "project.config.pcb",
+      "project.config.pcb.blankType",
+//      "project.config.pcb.width",
+//      "project.config.pcb.height",
     ]),
     //    ...mapMultiRowFields(['layers'])
   },
 })
-export default class WizardConfig extends Vue {
+export default class ProjectConfig extends Vue {
+
+  private projectConfigSchema = require("@/vue/pages/schemas/project_config_schema.json");
+
   topsvg: string | null = null;
   bottomsvg: string | null = null;
   useBottom: boolean = true;
   useTop: boolean = true;
 
-  pcbTypes: any[] = [];
+//  pcbTypes: any[] = [];
 
   types = [
     whatsThatGerber.TYPE_SOLDERMASK,
@@ -249,13 +271,22 @@ export default class WizardConfig extends Vue {
     | undefined;
 
   mounted() {
+    console.log("Mounted");
     this.enableButtons!(true, false, true);
     this.registerNextCallback!((type: 'next'|'back'|'skip') => {
       return new Promise((resolve, reject) => {
+        (this as any).$ncformValidate('projectConfig').then( (data:any) => {
+          if(data.result){
+            resolve(true);
+          } else {
+            resolve(false);
+          }
+        });
+        /*
         (this.$refs.form as any).validate((valid: boolean): void => {
           if (valid) {
             // Check selected PCB rules
-            const layers = this.$store.state.layers as PcbLayer[];
+            const layers = this.$store.state.project.layers as PcbLayer[];
             if(layers.filter( layer=>layer.enabled ).length == 0){
               this.$message.error(this.$t('pages.wizard.config.no-layers-selected').toString());
               resolve(false);              
@@ -266,26 +297,39 @@ export default class WizardConfig extends Vue {
             resolve(false);
           }
         });
+        */
       });
     });
     new Promise((resolve) => {
-      FSStore.get("data.pcb.types", []).then((data) => {
-        //      console.log("---->", data);
-        this.pcbTypes = data;
+      FSStore.get<Pcbdb[]>("data.pcb.types", []).then((data) => {
+//        this.$data.pcbTypes = data;
+        this.projectConfigSchema.properties.blankType.ui.widgetConfig.enumSource = data.map((cdata)=>({
+          value: cdata.name,
+          label: cdata.name
+
+        }));
+        console.log(JSON.stringify(data))
       });
-    });
-    //    if((this.$store.state as IProject).config.pcb.blankType)
+    }); 
+    (this as any).redrawpcb(); 
+    
+    console.log("------>",this.projectConfigSchema.properties.pcbSize.rules.customRule[0].script);
+/*
+this.projectConfigSchema.properties.pcbSize.rules.customRule[0].script = function(formData:any) {
+        console.log("**********",formData)
+        //return formData.pcbSize.x < 70;
+        return true;
+
+    }
+*/    
+
   }
 
   created() {
-    if (!this.$store.state.layers) this.$router.push("/");
-    else {
-      //   console.log(this, this.$store.state.layers);
-      (this as any).redrawpcb();
-    }
+    console.log("Created!");
+    if (!this.$store.state.project.layers) this.$router.push("/");
     this.$nextTick(() => {
-      //     console.log("[[[[[[[[[[[[[[[[[[[[[[[[", this.$store.state.layers);
-      (this.$store.state.layers as any[]).forEach((elem) => {
+      (this.$store.state.project.layers as any[]).forEach((elem) => {
         if (elem.enabled)
           (this.$refs.table as ElTable).toggleRowSelection(elem);
       });
@@ -304,16 +348,19 @@ export default class WizardConfig extends Vue {
     }
     ).then( (value)=>{
       if(value.response == 0){
-        store.commit("removeGerber",row);
+        store.commit("project/removeGerber",row);
       }
     });
 //    console.log("Removed ",index,row);
   }
 
   redrawpcb() {
+    (this as any).$ncformValidate('projectConfig').then( (data:any) => {
+      console.log(data)
+    });
     const layers = JSON.parse(
       JSON.stringify(
-        (this.$store.state.layers as any[]).filter((layer) => layer.enabled)
+        (this.$store.state.project.layers as any[]).filter((layer) => layer.enabled)
       ),
       (k, v) => {
         if (
@@ -332,7 +379,7 @@ export default class WizardConfig extends Vue {
 
     //console.log("Redraw PCB:", this.$store.state.layers, layers);
     pcbStackup(layers, {
-      useOutline: this.$store.state.config.useOutline,
+      useOutline: this.$store.state.project.config.useOutline,
       attributes: {
         width: "100%",
       },
@@ -340,24 +387,24 @@ export default class WizardConfig extends Vue {
       .then((stackup) => {
         this.topsvg = stackup.top.svg;
         this.bottomsvg = stackup.bottom.svg;
-        store.commit("updateField", {
-          path: "config.pcb.height",
+        store.commit("project/updateField", {
+          path: "config.pcbSize.y",
           value: stackup.top.height,
         });
-        store.commit("updateField", {
-          path: "config.pcb.width",
+        store.commit("project/updateField", {
+          path: "config.pcbSize.y",
           value: stackup.top.width,
         });
-        stackup.layers.forEach((layer) => store.commit("updateLayer", layer));
+        stackup.layers.forEach((layer) => store.commit("project/updateLayer", layer));
       })
       .catch((err) => console.error(err));
   }
 
-  changeSelectionAll(selection: PcbLayer[]) {
+  changeSelectionAll(selection: PcbLayer[]):void {
     //    console.log(selection.length, selection.map( (layer)=> layer.id));
-    (this.$store.state.layers as PcbLayer[]).forEach((layer, index) => {
+    (this.$store.state.project.layers as PcbLayer[]).forEach((layer, index) => {
       //    console.log(selection && selection.includes(layer),index,JSON.stringify(layer),JSON.stringify(selection));
-      store.commit("updateField", {
+      store.commit("project/updateField", {
         path: "layers[" + index + "].enabled",
         value:
           selection &&
@@ -374,10 +421,10 @@ export default class WizardConfig extends Vue {
 
     //    console.log(row.enabled,selection && selection.findIndex( (layer) => layer.id === row.id) >= 0, selection[0].id );
 
-    store.commit("updateField", {
+    store.commit("project/updateField", {
       path:
         "layers[" +
-        (this.$store.state.layers as PcbLayer[]).findIndex(
+        (this.$store.state.project.layers as PcbLayer[]).findIndex(
           (layer) => layer.id === row.id
         ) +
         "].enabled",
@@ -390,4 +437,10 @@ export default class WizardConfig extends Vue {
 </script>
 
 <style scoped>
+
+.boardview {
+  min-height: 17em;
+
+}
+
 </style>

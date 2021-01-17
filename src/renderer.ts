@@ -10,7 +10,7 @@ import log from "electron-log";
 //import yaml from "yaml";
 import { ApplicationMenu } from "./os/ApplicationMenu";
 import router from "./vue/router";
-import store from "./vue/store";
+import store from "./vue/store/store";
 import app from "./vue/components/app.vue";
 
 import ElementUI from 'element-ui';

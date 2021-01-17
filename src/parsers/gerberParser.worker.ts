@@ -1,11 +1,11 @@
-import { IPlotterData, IPlotterDataArc, IPlotterDataCircle, IPlotterDataFill, IPlotterDataLine, IPlotterDataPad, IPlotterDataPolarity, IPlotterDataRect, IPlotterDataShape, IPlotterDataSize, IPlotterDataStroke, IPlotterDataTypes } from "@/models/plotterData";
+import { IPlotterData, IPlotterDataArc, IPlotterDataCircle, IPlotterDataFill, IPlotterDataLine, IPlotterDataPad, IPlotterDataPolarity, IPlotterDataPoly, IPlotterDataRect, IPlotterDataShape, IPlotterDataSize, IPlotterDataStroke, IPlotterDataTypes } from "@/models/plotterData";
 import * as stm from "readable-stream";
 import gerberParser from "gerber-parser";
 import gerberPlotter from "gerber-plotter";
 import * as jsts from "jsts";
 import { GeoJSON, Feature, FeatureCollection, Geometry } from "geojson";
-import { IProgressiveResult, WorkerUtils } from "@/utils/workerUtils";
-import { Duplex, Stream, Transform, TransformCallback, TransformOptions } from "stream";
+import { IProgressiveResult } from "@/utils/workerUtils";
+import { Transform, TransformCallback, TransformOptions } from "stream";
 
 export interface IGerberParserOption {
     unionDraw: boolean;
@@ -212,7 +212,7 @@ class PlotterToJstsStrem extends Transform {
             case IPlotterDataTypes.SIZE:
                 {
                     const size = obj as IPlotterDataSize;
-                    //console.log(size);
+                    console.warn("Ignored size:",size);
                     /*
                                         if (options.showOutline) {
                                             let submodel: makerjs.IModel = makerjs.model.layer(
@@ -235,6 +235,13 @@ class PlotterToJstsStrem extends Transform {
                 }
                 callback();
                 break;
+                case IPlotterDataTypes.POLY:
+                    {
+                        const poly = obj as IPlotterDataPoly;
+                        console.warn("Unknown Data Poly: ",poly);
+                        callback();
+                    }  
+                break;      
             default:
                 console.error("Unknown Object", obj, JSON.stringify(obj));
                 throw new Error("Unknown Gerber Data!");

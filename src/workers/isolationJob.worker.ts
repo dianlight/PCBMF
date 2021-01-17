@@ -68,6 +68,7 @@ export class IsolationJob {
             //        .buffer(this.options.doutline as number / 2, 60 /*$fn from config?*/, jsts.operation.buffer.BufferParameters.CAP_ROUND)
                 );
 
+            // This work well if no copper area fill is defined.    
             const final = this.factory.createGeometryCollection(i_geometries)//.union();
             data.features.push({
                 "type": "Feature",
@@ -86,12 +87,13 @@ export class IsolationJob {
                     ) as Geometry
             } as Feature);    
 
+            /*
 
             const o_geometries = data.features
                 .filter((feature) => (feature?.properties?.userData as FeatureUserData).polarity === 'clear')
                 .map((feature) => reader.read(feature.geometry))
                 .map((geometry) => geometry
-                //    .buffer(this.options.doutline as number / -2, 60 /*$fn from config?*/, jsts.operation.buffer.BufferParameters.CAP_ROUND)
+                //    .buffer(this.options.doutline as number / -2, 60 /*$fn from config?* /, jsts.operation.buffer.BufferParameters.CAP_ROUND)
                 );
 
             data.features.push(...o_geometries.map( geom => ({
@@ -106,40 +108,44 @@ export class IsolationJob {
                     "cut_deep": this.options.dthickness
                 },
                 "geometry": writer.write(geom
-                  .buffer(this.options.doutline as number / -2, 60 /*$fn from config?*/, jsts.operation.buffer.BufferParameters.CAP_ROUND)
-//                       .union()
+           //       .buffer(this.options.doutline as number / -2, 60 /*$fn from config?* /, jsts.operation.buffer.BufferParameters.CAP_ROUND)
+           //            .union()
                     ) as Geometry
             } as Feature
             )));    
-             
+            */
                 
 
-            // Split in crossing groups
+            // Split in crossing groups ( Under revision )
             /*
             const splitted = i_geometries.reduce((ret, cur,/*index,all* /) => {
+                const ccur = cur
+                .buffer(0, 60 /*$fn from config?* /, jsts.operation.buffer.BufferParameters.CAP_ROUND);
                 for (let i = 0; i < ret.length; i++) {
-                    if (cur.intersects(ret[i])) {
-                        ret[i] = this.factory.createGeometryCollection([ret[i],cur]);
+                    const relif = this.factory.createGeometryCollection(ret[i]).union()
+                    .buffer(0, 60 /*$fn from config?* /, jsts.operation.buffer.BufferParameters.CAP_ROUND);
+                //console.log("Curt is valid?",cur.isValid(),relif.isValid());   
+                    if (ccur.intersects(relif) && !relif.covers(ccur)
+                     ) {
+                        ret[i].push(ccur);
                         return ret;
                     }
                 }
-                ret.push(cur);
+                ret.push([ccur]);
                 return ret;
-            }, [] as jsts.geom.GeometryCollection[]);
+            }, [] as jsts.geom.Geometry[][]);
 
             console.log("Geometries Group are:",splitted.length);
-            */
-            /*
-            const final = this.factory.createGeometryCollection(
-            splitted
-            .map( geometries => geometries.union())
-            .reduce( (arr,geom)=>{ arr.push(geom); return arr},[] as jsts.geom.Geometry[])
-            ).union();
-            */
+
+    
             
-            /*
+            
             splitted
-            .filter( (val,index)=> index == 4)
+           // .filter( (val,index)=> index == 1)
+            .map( (geometries,index) => {
+                console.log(`Geom ${index} -> ${geometries.length}`);
+                return this.factory.createGeometryCollection(geometries)
+            } )
             .forEach(final => {
                 //  const final = this.factory.createGeometryCollection(i_geometries)//.union();
                 data.features.push({
@@ -155,14 +161,15 @@ export class IsolationJob {
                     },
                     "geometry": writer.write(final
                       .buffer(this.options.doutline as number / 2, 60 /*$fn from config?* /, jsts.operation.buffer.BufferParameters.CAP_ROUND)
- //                       .union()
+                        .union()
                         ) as Geometry
                 } as Feature);
             });
             */
+            
 
             
-            console.log("Perform internal isolation backup!");
+            //console.log("Perform internal isolation backup!");
             
             /*
             // Internal isolation track

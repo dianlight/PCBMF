@@ -36,12 +36,11 @@ import { session, ipcRenderer } from "electron";
 import { Worker as WorkerLike, Thread } from "threads";
 import { GlobalVarGlobal, GlobalVarGlobalApplication, GlobalVarGlobalApplicationProgress } from "@/models/globalVarGlobal";
 import { WorkerUtils } from "@/utils/workerUtils";
-import { VueExtended } from "@/vue/vueextended";
  
 @Component({
   name: "statusbar",
 })
-export default class Statusbar extends VueExtended {
+export default class Statusbar extends Vue {
 
   running:number = 0;
 

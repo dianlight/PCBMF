@@ -8,10 +8,16 @@ export enum IPlotterDataTypes {
     SHAPE="shape",
     SIZE="size",
     CIRCLE="circle",
-    ARC="arc"
+    ARC="arc",
+    POLY="poly",
 }
 export interface IPlotterData {
     type: string;
+}
+
+export interface IPlotterDataPoly extends IPlotterData {
+    type: IPlotterDataTypes.POLY,
+    points: [[number,number]]
 }
 
 export interface IPlotterDataPolarity extends IPlotterData {

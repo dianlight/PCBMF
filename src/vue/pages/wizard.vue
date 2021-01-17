@@ -67,7 +67,7 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import { Provide, Watch } from "vue-property-decorator";
 import { Route, RouteConfig } from "vue-router";
-import store from "../store";
+import store from "../store/store";
 
 @Component
 export default class Wizard extends Vue {
