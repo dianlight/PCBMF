@@ -53,15 +53,16 @@ class VuexDirtyStatus {
     dirty = false;
     prevState = "";
 
-    plugin: Plugin<IProject> = (store) => {
+    plugin: Plugin<IRootState> = (store) => {
         store.subscribe((mutation, state) => {
             let newDirty = false;
+            console.log("->",mutation);
             switch (mutation.type) {
-                case "md5sign":
+                case "project/md5sign":
                     return;
-                case 'save':
-                case 'open':
-                case 'setProjectName':
+                case 'project/save':
+                case 'project/open':
+                case 'project/setProjectName':
                     newDirty = false;
                     break;
                 default:

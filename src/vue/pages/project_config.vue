@@ -47,72 +47,7 @@
         @change="redrawpcb()"
       >
       </ncform>  
-        <el-form :model="pcb" ref="form" label-width="120px">
-      <!--      
-          <el-form-item
-            :label="$t('pages.wizard.config.pcb-blank-type')"
-            prop="blankType"
-            :rules="[
-              {
-                required: true,
-                message: $t('pages.wizard.config.please-select-a-valid-pcb-type'),
-              },
-            ]"
-          >
-            <el-select
-              v-model="blankType"
-              value-key="name"
-              placeholder="Select"
-              size="mini"
-            >
-              <el-option
-                v-for="item in pcbTypes"
-                :key="item.name"
-                :label="item.name"
-                :value="item"
-              >
-              </el-option>
-            </el-select>
-          </el-form-item>
-          <el-form-item
-            style="float: right"
-            :label="$t('pages.wizard.config.h')"
-            :rules="[
-              {
-                required: true,
-                type: 'number',
-                min: 1,
-                max: 1000,
-                trigger: 'blur',
-              },
-            ]"
-            prop="height"
-          >
-            <el-input-number size="mini" v-model="height"></el-input-number>
-          </el-form-item>
-          <el-form-item
-            :label="$t('pages.wizard.config.pcb-size-w')"
-            :rules="[
-              {
-                required: true,
-                type: 'number',
-                min: 1,
-                max: 1000,
-                trigger: 'blur',
-              },
-            ]"
-            prop="width"
-          >
-            <el-input-number size="mini" v-model="width"></el-input-number>
-          </el-form-item>
-          <el-form-item :label="$t('pages.wizard.config.use-pcb-outline')">
-            <el-switch
-              size="mini"
-              v-model="useOutline"
-              @input="redrawpcb"
-            ></el-switch>
-          </el-form-item>
-          -->
+        <el-form ref="form" label-width="120px">
           <!-- Gerber File List-->
           <el-table
             :data="layers"
@@ -224,12 +159,7 @@ let svg_top: string, svg_bottom: string;
       "project.config",
       "project.config.useOutline",
       "project.layers",
-      "project.config.pcb",
-      "project.config.pcb.blankType",
-//      "project.config.pcb.width",
-//      "project.config.pcb.height",
     ]),
-    //    ...mapMultiRowFields(['layers'])
   },
 })
 export default class ProjectConfig extends Vue {
@@ -240,8 +170,6 @@ export default class ProjectConfig extends Vue {
   bottomsvg: string | null = null;
   useBottom: boolean = true;
   useTop: boolean = true;
-
-//  pcbTypes: any[] = [];
 
   types = [
     whatsThatGerber.TYPE_SOLDERMASK,
@@ -260,9 +188,6 @@ export default class ProjectConfig extends Vue {
     whatsThatGerber.SIDE_ALL,
   ];
 
-  //@Inject() readonly setOutTabStatus:
-  //  | ((state: "wait" | "process" | "finish" | "error" | "success") => void)
-  //  | undefined;
   @Inject() readonly registerNextCallback:
     | ((callback: (type: 'next'|'back'|'skip') => boolean | PromiseLike<boolean>) => void)
     | undefined;
@@ -282,27 +207,10 @@ export default class ProjectConfig extends Vue {
             resolve(false);
           }
         });
-        /*
-        (this.$refs.form as any).validate((valid: boolean): void => {
-          if (valid) {
-            // Check selected PCB rules
-            const layers = this.$store.state.project.layers as PcbLayer[];
-            if(layers.filter( layer=>layer.enabled ).length == 0){
-              this.$message.error(this.$t('pages.wizard.config.no-layers-selected').toString());
-              resolve(false);              
-            } else {
-              resolve(true);
-            }
-          } else {
-            resolve(false);
-          }
-        });
-        */
       });
     });
     new Promise((resolve) => {
       FSStore.get<Pcbdb[]>("data.pcb.types", []).then((data) => {
-//        this.$data.pcbTypes = data;
         this.projectConfigSchema.properties.blankType.ui.widgetConfig.enumSource = data.map((cdata)=>({
           value: cdata.name,
           label: cdata.name
@@ -313,15 +221,7 @@ export default class ProjectConfig extends Vue {
     }); 
     (this as any).redrawpcb(); 
     
-    console.log("------>",this.projectConfigSchema.properties.pcbSize.rules.customRule[0].script);
-/*
-this.projectConfigSchema.properties.pcbSize.rules.customRule[0].script = function(formData:any) {
-        console.log("**********",formData)
-        //return formData.pcbSize.x < 70;
-        return true;
-
-    }
-*/    
+  //  console.log("------>",this.projectConfigSchema.properties.pcbSize.rules.customRule[0].script);
 
   }
 
@@ -356,7 +256,7 @@ this.projectConfigSchema.properties.pcbSize.rules.customRule[0].script = functio
 
   redrawpcb() {
     (this as any).$ncformValidate('projectConfig').then( (data:any) => {
-      console.log(data)
+     // console.log(data)
     });
     const layers = JSON.parse(
       JSON.stringify(
