@@ -9,6 +9,7 @@ import "@/fsstore";
 import packagejson from "../package.json";
 import { EvWindow } from "evwt/background";
 import update from "update-electron-app";
+import { i18n } from './vue/i18n';
 
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
 
@@ -151,6 +152,23 @@ app.on('will-finish-launching',(event:any)=>{
     ipcMain.emit("open",[path])
   })
   */
+});
+
+
+/**
+ * About panel setting
+ */
+app.setAboutPanelOptions({
+  applicationName: packagejson.productName,
+  applicationVersion: packagejson.version,
+  copyright: "©2020-2021 By Lucio Tarantino",
+  version: "00001", // Build Version
+  credits: "Credits\nProva\nProva",
+  authors: [
+    packagejson.author.name
+  ],
+  website: packagejson.homepage,
+  iconPath: "../assets"
 });
 
 
