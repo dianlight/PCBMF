@@ -56,7 +56,7 @@ class VuexDirtyStatus {
     plugin: Plugin<IRootState> = (store) => {
         store.subscribe((mutation, state) => {
             let newDirty = false;
-            console.log("->",mutation);
+           // console.log("->",mutation);
             switch (mutation.type) {
                 case "project/md5sign":
                     return;
@@ -104,7 +104,7 @@ export default new Vuex.Store<any>({
         openGerber(state, filePath: string):void {
             switch (path.extname(filePath).toLowerCase()) {
                 case "":
-                    console.log("OpenFolder?");
+                    console.warn("OpenFolder?");
                     break;
                 case ".zip": {
                     const zip = new AdmZip(filePath);
@@ -150,7 +150,7 @@ export default new Vuex.Store<any>({
     },
     actions: {
         open(context, payload):void {
-            console.log("Request Open!")
+            //console.log("Request Open!")
             if (payload) {
                 context.commit('project/open', payload);
                 context.commit('project/setProjectName', payload);
@@ -226,7 +226,7 @@ export default new Vuex.Store<any>({
                     buttons: ["Save", "Ignore", "Abort"]
                 }).then(value => {
                     if (value.response == 0) {
-                        console.log("Save before new");
+                    //    console.log("Save before new");
                         context.commit('project/save');
                     } else if (value.response == 2) {
                         return;

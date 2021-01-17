@@ -137,6 +137,23 @@ app.on('activate', () => {
   }
 });
 
+// MacOs Specific
+app.on('will-finish-launching',(event:any)=>{
+//  console.log("App Event",event);
+  app.on("open-file", (event,path)=>{
+//    console.log("Richiesto openfile",path);
+    mainWindow.webContents.send("open",[path])
+    event.preventDefault();
+  })
+  /*
+  app.on("open-url", (event,path)=>{
+    console.log("Richiesto openUrl",path);
+    ipcMain.emit("open",[path])
+  })
+  */
+});
+
+
 
 
 // In this file you can include the rest of your app's specific main process
@@ -186,12 +203,6 @@ ipcMain.handle('StartTightCNC', (event, ...args) => {
   app.on('quit', () => {
     tightcnc.kill("SIGTERM");
   });
-
-  // MacOs Specific
-  app.on("open-file", (event,path)=>{
-    console.log("Richiesto openfile",path);
-    ipcMain.emit("open",[path])
-  })
 
   return tightcnc.pid;
 });

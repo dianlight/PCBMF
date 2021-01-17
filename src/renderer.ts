@@ -65,7 +65,8 @@ Vue.use(VueGlobalVar,{
 })
 
 
-ipcRenderer.addListener("open",(args)=>{
+ipcRenderer.on("open",(event,args)=>{
+//    console.log("Ricevuta richiesta di open:",args);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     void store.dispatch('open',args[0]);
 });

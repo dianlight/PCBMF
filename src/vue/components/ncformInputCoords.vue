@@ -77,12 +77,8 @@ export default {
   },
 
   created() {
-    console.log(this.value);
-//    if (typeof this.value === "number") {
-//      this.$data.modelVal = { x: this.value, y: this.value };
-//    } else {
+//    console.log(this.value);
       this.$data.modelVal = this.value;
-//    }
 
     this.$watch("modelVal.x", function (newVal, oldVal) {
       if ((!newVal && !oldVal) || this.mergeConfig.updateOn === 'blur') return;
@@ -120,7 +116,7 @@ export default {
 
   methods: {
     _processModelVal(newVal) {
-      console.log("Processing val",newVal,this.value,JSON.stringify(this.$data.modelVal),JSON.stringify(this.$options.tempProcessedVal));
+    //  console.log("Processing val",newVal,this.value,JSON.stringify(this.$data.modelVal),JSON.stringify(this.$options.tempProcessedVal));
       if(newVal == undefined){
         newVal = this.$data.modelVal;
       }

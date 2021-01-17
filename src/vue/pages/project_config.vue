@@ -196,7 +196,7 @@ export default class ProjectConfig extends Vue {
     | undefined;
 
   mounted() {
-    console.log("Mounted");
+//    console.log("Mounted");
     this.enableButtons!(true, false, true);
     this.registerNextCallback!((type: 'next'|'back'|'skip') => {
       return new Promise((resolve, reject) => {
@@ -216,7 +216,7 @@ export default class ProjectConfig extends Vue {
           label: cdata.name
 
         }));
-        console.log(JSON.stringify(data))
+//        console.log(JSON.stringify(data))
       });
     }); 
     (this as any).redrawpcb(); 
@@ -226,7 +226,7 @@ export default class ProjectConfig extends Vue {
   }
 
   created() {
-    console.log("Created!");
+//    console.log("Created!");
     if (!this.$store.state.project.layers) this.$router.push("/");
     this.$nextTick(() => {
       (this.$store.state.project.layers as any[]).forEach((elem) => {
