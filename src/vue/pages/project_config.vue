@@ -243,7 +243,7 @@ export default class ProjectConfig extends Vue {
   remove(index:number, row:PcbLayer){
     remote.dialog.showMessageBox(remote.getCurrentWindow(),
     {
-      message: `Remove ${row.filename} from project?`,
+      message: this.$t('alerts.remove-filename-from-project',[row.filename]).toString(),
       buttons: [this.$t('base.ok').toString(),this.$t('base.cancel').toString()]
     }
     ).then( (value)=>{

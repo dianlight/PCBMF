@@ -112,7 +112,7 @@ export const projectModule: Module<IProject, IRootState> = {
                         return v;
                     }
                 ));
-                console.log(state);
+//                console.log(state);
                 remote.app.addRecentDocument(filePath);
             },
             save(state:IProject):void {
