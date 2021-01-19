@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-table
-      :data="list()"
+      :data="Object.values(this.plugins)"
       style="width: 100%"
       size="mini"
       stripe
@@ -158,26 +158,27 @@ export default class PluginsDB extends Vue {
   created() {    
     eventManager.subscribe( (event)=>{
       console.log("Ricevuto evento Plugin",event);
+      /*
       if( event.type === 'load'){
         this.plugins[event.key].enabled = true;
       } else if (event.type === 'unload'){
         this.plugins[event.key].enabled = false;
       }
-      (this.$refs.table as ElTable).toggleRowSelection(this.plugins[event.key]);
+      */
+      this.list();
       this.$forceUpdate();
     });
+    this.list();
+  }
+
+  list(){
+    this.plugins = this.pluginManager.list();
     this.$nextTick(() => {
       Object.values(this.plugins).forEach((elem) => {
         if (elem.enabled)
           (this.$refs.table as ElTable).toggleRowSelection(elem);
       });
     });
-  }
-
-  list(){
-    this.plugins = this.pluginManager.list();
-    console.log(JSON.stringify(this.plugins));
-    return Object.values(this.plugins);
   }
 
   private deleteRow(index: number, rows: any) {
@@ -296,7 +297,8 @@ export default class PluginsDB extends Vue {
   }
 
   changeSelection(selection: PluginDescriptor[], row: PluginDescriptor) {
-    console.log(JSON.stringify(row));
+    row.enabled = !!selection.find( sel => sel.name === row.name);
+//    console.log(JSON.stringify(row));
     if(row.enabled) this.pluginManager.load(row);
     else this.pluginManager.unload(row.name,false);
   } 

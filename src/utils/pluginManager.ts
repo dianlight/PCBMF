@@ -96,7 +96,7 @@ export class PluginManager {
     
     loadRemoteModules():void {
         Object.values(this.plugins)
-            .filter( plugin => plugin.repository !== 'internal')
+            .filter( plugin => plugin.repository !== 'internal' && plugin.enabled)
             .forEach( plugin => {
                 this.load(plugin);
             });
@@ -112,13 +112,13 @@ export class PluginManager {
 
     async loadPath(pluginPath:string,descriptor:Partial<PluginDescriptor>):Promise<void>{
         const info = await this.manager.installFromPath(pluginPath);
-        console.log("Original Info:",info);
+     //   console.log("Original Info:",info);
         try {
             const plugin = this.manager.require(info.name) as GenericPlugin;
             descriptor.repository = pluginPath;
             descriptor.repositoryType='path';
             Object.assign(info,descriptor);
-            console.log("evaluted info",info);
+     //       console.log("evaluted info",info);
             this.register(info.name,plugin,info);
         } catch (error) {
             console.error(error);
@@ -129,10 +129,10 @@ export class PluginManager {
 
     async loadNPM(name:string,version:string|undefined,descriptor:Partial<PluginDescriptor>):Promise<void>{
         const info = await this.manager.installFromNpm(name,version);
-        console.log(info);
+     //   console.log(info);
         try {
             const plugin = this.manager.require(info.name) as GenericPlugin;
-            console.log(plugin);
+     //       console.log(plugin);
             descriptor.repository = "NPM Registry";
             descriptor.repositoryType='npm';
             Object.assign(info,descriptor);
@@ -146,10 +146,10 @@ export class PluginManager {
 
     async loadGitHub(repository:string,descriptor:Partial<PluginDescriptor>):Promise<void>{
         const info = await this.manager.installFromGithub(repository);
-        console.log(info);
+     //   console.log(info);
         try {
             const plugin = this.manager.require(info.name) as GenericPlugin;
-            console.log(plugin);
+    //        console.log(plugin);
             descriptor.repository = repository;
             descriptor.repositoryType='github';
             Object.assign(info,descriptor);
@@ -167,10 +167,10 @@ export class PluginManager {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         pluginContainer.register("genericPlugin",plugin,{ tags: [key]}); 
 
-        console.log("---->Go on--->",key,descriptor);
+   //     console.log("---->Go on--->",key,descriptor);
         // Check for load and pluginlist pouliation.
         (pluginContainer.resolveAll("genericPlugin") as GenericPlugin[])
-            .map( (pp)=>{ console.log("**",pp); return pp})
+         //   .map( (pp)=>{ console.log("**",pp); return pp})
             .filter( cplugin => cplugin.name === key ).forEach( cplugin=>{
                 console.log("Registering plugin!",key);
                 this.plugins[key] = {

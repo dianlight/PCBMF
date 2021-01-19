@@ -66,7 +66,7 @@ export default class Home extends Vue {
 
   pluginList():GenericPlugin[]{
     const pluginManager = pluginContainer.resolve("pluginManager") as PluginManager;
-    return Object.values(pluginManager.list());
+    return Object.values(pluginManager.list()).filter( pl => pl.enabled);
   }
 }
 </script>
