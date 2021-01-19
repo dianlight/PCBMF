@@ -9,7 +9,6 @@ import "@/fsstore";
 import packagejson from "../package.json";
 import { EvWindow } from "evwt/background";
 import update from "update-electron-app";
-import { i18n } from './vue/i18n';
 
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
 
@@ -139,7 +138,7 @@ app.on('activate', () => {
 });
 
 // MacOs Specific
-app.on('will-finish-launching',(event:any)=>{
+app.on('will-finish-launching',(/*event:any*/)=>{
 //  console.log("App Event",event);
   app.on("open-file", (event,path)=>{
 //    console.log("Richiesto openfile",path);

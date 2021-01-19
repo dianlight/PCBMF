@@ -1,0 +1,15 @@
+id: "geoJSON2Gcode"
+name: "GeoJSON to GCODE"
+description: "This is the internal plugin to create GCODE from GEOJSON"
+author: "Lucio Tarantino"
+# Version of pcbmf needed. See semver spec.  Internal for internal modules.
+pcbmf: "internal"
+version: "0.0.1"
+# Repository url or embedded for internal modules/plugin
+repository: "embedded"
+type: 
+  - TRANSFORM #Translate Gerber Data to GEOJSon
+input:
+  - GEOJSON
+output:
+  - GCODE

@@ -26,6 +26,9 @@
       </el-row>
       -->
     </el-main>
+    <el-footer>
+      <li v-for="plugin in pluginList()" :key="plugin.id">{{plugin.id}} {{plugin.version}}</li>
+    </el-footer>
   </el-container>
 </template>
 
@@ -34,11 +37,22 @@ import Vue from "vue";
 import store from "../store/store";
 import logo_icon from "@/../assets/PCB_Icon.svg";
 import Component from "vue-class-component";
+import { pluginContainer } from "@/ioc/ioc.config";
+import { eventManager, PluginManager } from "@/utils/pluginManager";
+import { GenericPlugin } from "@/modules/genericPlugin";
 
 @Component({})
 export default class Home extends Vue {
 
   logo = logo_icon as string;
+
+  created(){
+    console.log("Created!");
+    eventManager.subscribe( (event)=>{
+      console.log("Ricevuto evento Plugin",event);
+      this.$forceUpdate();
+    });
+  }
 
   openProject() {
     this.$store.dispatch("open");
@@ -48,6 +62,11 @@ export default class Home extends Vue {
   }
   openGerberZip() {
     this.$store.dispatch("openGerberZip");
+  }
+
+  pluginList():GenericPlugin[]{
+    const pluginManager = pluginContainer.resolve("pluginManager") as PluginManager;
+    return pluginManager.list();
   }
 }
 </script>

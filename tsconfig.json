@@ -19,6 +19,9 @@
       "@/*": ["src/*"],
       "*": ["node_modules/*"]
     },
+    "types": ["reflect-metadata"],
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
   },
   "include": [
     "src/**/*"

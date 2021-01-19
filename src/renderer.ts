@@ -26,6 +26,7 @@ import ncformInputCoords from "@/vue/components/ncformInputCoords.vue";
 
 import VueGlobalVar from "vue-global-var";
 import { GlobalVarGlobal } from "./models/globalVarGlobal";
+import "@/ioc/ioc.config"
 
 // Log config
 
@@ -134,6 +135,12 @@ const appvue = new Vue({
     store,
     render: h => h(app),
 });
+
+
+
+
+
+
 
 
 

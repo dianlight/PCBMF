@@ -1,0 +1,16 @@
+id: "gerber2GeoJSON"
+name: "Gerber To GeoJSON"
+description: "This is the internal plugin to load gearber and drill files. Bases on pcb-stackup library"
+author: "Lucio Tarantino"
+# Version of pcbmf needed. See semver spec.  Internal for internal modules.
+pcbmf: "internal"
+version: "0.0.1"
+# Repository url or embedded for internal modules/plugin
+repository: "embedded"
+type: 
+  - TRANSFORM #Translate Gerber Data to GEOJSon
+input:
+  - GERBER
+  - DRILL  
+output:
+  - GEOJSON
