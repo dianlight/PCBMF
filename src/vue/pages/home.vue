@@ -27,7 +27,7 @@
       -->
     </el-main>
     <el-footer>
-      <li v-for="plugin in pluginList()" :key="plugin.id">{{plugin.id}} {{plugin.version}}</li>
+      <li v-for="plugin in pluginList()" :key="plugin.id">{{plugin.name}} {{plugin.version}}</li>
     </el-footer>
   </el-container>
 </template>
@@ -66,7 +66,7 @@ export default class Home extends Vue {
 
   pluginList():GenericPlugin[]{
     const pluginManager = pluginContainer.resolve("pluginManager") as PluginManager;
-    return pluginManager.list();
+    return Object.values(pluginManager.list());
   }
 }
 </script>

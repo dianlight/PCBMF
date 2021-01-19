@@ -1,0 +1,133 @@
+{
+    "type": "object",
+    "ui": {
+        "widgetConfig": {
+            "layout": "h",
+            "labelWidth": "10em"
+        }
+    },
+    "properties": {
+        "new": {
+            "type": "boolean",
+            "default": true,
+            "ui": {
+                "hidden": true
+            }
+        },
+        "choice": {
+            "type": "string",
+            "value": 1,
+            "ui": {
+                "label": "dx: {{$i18n.plugins.repository.type.label}}",
+                "widget": "select",
+                "disabled": "dx: !{{$root.new}}",
+                "widgetConfig": {
+                    "clearable": false,
+                    "size": "mini",
+                    "placeholder": "dx: {{$i18n.plugins.repository.type.placeholder}}",
+                    "enumSource": [{
+                            "value": 1,
+                            "label": "dx: {{$i18n.plugins.repository.type.npm}}"
+                        },
+                        {
+                            "value": 2,
+                            "label": "dx: {{$i18n.plugins.repository.type.github}}"
+                        },
+                        {
+                            "value": 3,
+                            "label": "dx: {{$i18n.plugins.repository.type.path}}"
+                        }
+                    ]
+                }
+            }
+        },
+        "name": {
+            "type": "string",
+            "rules": {
+                "required": {
+                    "value": true,
+                    "errMsg": "dx: {{$i18n.plugins.reguired}}"
+                }
+            },
+            "ui": {
+                "_label": "dx: {{$i18n.plugins.name.label}}",
+                "hidden": "dx: {{$root.choice}} != 1",
+                "widgetConfig": {
+                    "size": "mini"
+                },
+                "help": {
+                    "show": true,
+                    "text": "?",
+                    "content": "dx: {{$i18n.plugins.name.help}}"
+                }
+            }
+        },
+        "version": {
+            "type": "string",
+            "rules": {
+                "pattern": {
+                    "value": "^((([0-9]+)\\.([0-9]+)\\.([0-9]+)(?:-([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?)(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?)$",
+                    "errMsg": "dx: {{$i18n.plugins.version.error}}"
+                }
+            },
+            "ui": {
+                "label": "dx: {{$i18n.plugins.version.label}}",
+                "hidden": "dx: {{$root.choice}} != 1",
+                "widgetConfig": {
+                    "size": "mini"
+                },
+                "help": {
+                    "show": true,
+                    "text": "?",
+                    "content": "dx: {{$i18n.plugins.version.help}}"
+                }
+            }
+        },
+        "repository": {
+            "type": "string",
+            "rules": {
+                "required": {
+                    "value": true,
+                    "errMsg": "dx: {{$i18n.plugins.reguired}}"
+                },
+                "pattern": {
+                    "value": "[\\w_\\-@]+\/[\\w_\\-@]+(\\#[\\S_\\-@]+)?",
+                    "errMsg": "dx: {{$i18n.plugins.repository.error}}"
+                }
+            },
+            "ui": {
+                "label": "dx: {{$i18n.plugins.repository.label}}",
+                "disabled": "dx: !{{$root.new}}",
+                "hidden": "dx: {{$root.choice}} != 2",
+                "widgetConfig": {
+                    "size": "mini",
+                    "placeholder": "dx: {{$i18n.plugins.repository.placeholder}}"
+                },
+                "help": {
+                    "show": true,
+                    "text": "?",
+                    "content": "dx: {{$i18n.plugins.repository.help}}"
+                }
+            }
+        },
+        "path": {
+            "type": "string",
+            "ui": {
+                "label": "dx: {{$i18n.plugins.path.label}}",
+                "hidden": "dx: {{$root.choice}} != 3",
+                "widgetConfig": {
+                    "size": "mini",
+                    "compound": {
+                        "appendIcon": "el-icon-search"
+                    }
+                }
+            },
+            "rules": {
+                "required": {
+                    "value": true,
+                    "errMsg": "dx: {{$i18n.plugins.reguired}}"
+                }
+            }
+        }
+    }
+}

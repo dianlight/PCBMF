@@ -1,4 +1,5 @@
-export interface GenericPlugin{
-    id: string;
+export interface GenericPlugin {
     version: string;
+    name: string;
+    description: string;
 }

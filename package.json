@@ -30,7 +30,7 @@
         "commit": "git-cz",
         "gen:authors": "auto-authors && git add AUTHORS.md",
         "gen:licence": "license-ls --prod --format=json > ./assets/licences.report.json",
-        "gen:patch": "patch-package --exclude '' gcode-toolpath vuex-map-fields @types/jsts jsts evwt",
+        "gen:patch": "patch-package --exclude '' gcode-toolpath vuex-map-fields @types/jsts jsts evwt live-plugin-manager",
         "release:major": "changelog -M && git add CHANGELOG.md && git commit -m 'docs: updated CHANGELOG.md' && npm --no-git-tag-version version major -m 'v%s' && git push origin",
         "release:minor": "changelog -m && git add CHANGELOG.md && git commit -m 'docs: updated CHANGELOG.md' && npm --no-git-tag-version version minor -m 'v%s' && git push origin",
         "release:patch": "changelog -p && git add CHANGELOG.md && git commit -m 'docs: updated CHANGELOG.md' && npm --no-git-tag-version version patch -m 'v%s' && git push origin"
@@ -57,20 +57,17 @@
                 "name": "${name}",
                 "executableName": "${name}"
             },
-            "publishers": [
-                {
-                    "name": "@electron-forge/publisher-github",
-                    "config": {
-                        "repository": {
-                            "owner": "dianlight",
-                            "name": "pcbmf"
-                        },
-                        "prerelease": true
-                    }
+            "publishers": [{
+                "name": "@electron-forge/publisher-github",
+                "config": {
+                    "repository": {
+                        "owner": "dianlight",
+                        "name": "pcbmf"
+                    },
+                    "prerelease": true
                 }
-            ],
-            "makers": [
-                {
+            }],
+            "makers": [{
                     "name": "@electron-forge/maker-squirrel",
                     "config": {
                         "exe": "${name}.exe",
@@ -119,13 +116,11 @@
                         "mainConfig": "./webpack.main.config.js",
                         "renderer": {
                             "config": "./webpack.renderer.config.js",
-                            "entryPoints": [
-                                {
-                                    "html": "./src/index.html",
-                                    "js": "./src/renderer.ts",
-                                    "name": "main_window"
-                                }
-                            ]
+                            "entryPoints": [{
+                                "html": "./src/index.html",
+                                "js": "./src/renderer.ts",
+                                "name": "main_window"
+                            }]
                         }
                     }
                 ]

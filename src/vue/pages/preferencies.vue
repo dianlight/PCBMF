@@ -9,6 +9,9 @@
     <el-tab-pane :label="$t('pages.preferencies.toolsdb.title')">
        <tools-db/>
     </el-tab-pane>
+    <el-tab-pane :label="$t('pages.preferencies.pluginsdb.title')">
+       <plugins-db/>
+    </el-tab-pane>
   </el-tabs>
 </template>
 
@@ -19,10 +22,11 @@ import store from "@/vue/store/store";
 import Preferencies_general from "@/vue/pages/preferencies_general.vue";
 import Preferencies_pcbdb from "@/vue/pages/preferencies_pcbdb.vue";
 import Preferencies_toolsdb from "@/vue/pages/preferencies_toolsdb.vue";
+import Preferencies_pluginsdb from "@/vue/pages/preferencies_pluginsdb.vue";
 import Component from "vue-class-component";
 
 @Component({
-  components: { Preferencies_general, Preferencies_pcbdb, 'tools-db':Preferencies_toolsdb},
+  components: { Preferencies_general, Preferencies_pcbdb, 'tools-db':Preferencies_toolsdb, 'plugins-db':Preferencies_pluginsdb},
 })
 export default class Preferencies extends Vue {
 }
