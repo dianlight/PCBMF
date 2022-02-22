@@ -238,7 +238,7 @@
         "sub-events": "^1.8.7",
         "temp": "^0.9.4",
         "threads": "^1.6.3",
-        "three": "^0.125.0",
+        "three": "^0.137.0",
         "tightcnc": "^0.2.0",
         "typed-web-workers": "^4.0.0",
         "update-electron-app": "^2.0.1",
