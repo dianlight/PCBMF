@@ -181,7 +181,7 @@
         "node-loader": "^1.0.2",
         "npm-watch": "^0.7.0",
         "patch-package": "^6.2.2",
-        "postcss": "^8.2.4",
+        "postcss": "^8.2.13",
         "renamer": "^2.0.1",
         "sass": "^1.32.4",
         "sass-loader": "^10.1.1",
